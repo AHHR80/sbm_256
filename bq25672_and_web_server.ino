@@ -11,22 +11,18 @@
 const char* ssid = "ESP32_BQ25672_Monitor";
 const char* password = "password123";
 
-// Create AsyncWebServer object on port 80
+// --- Interrupt & WebSocket Setup ---
+const int interruptPin = 4; // پین INT چیپ به این پین GPIO وصل شود
 AsyncWebServer server(80);
+AsyncWebSocket ws("/ws"); // WebSocket endpoint
+volatile bool interruptFired = false; // فلگ برای تشخیص وقفه
 
 // --- I2C Communication Functions ---
-
 bool readWord(uint8_t reg, uint16_t& value) {
     Wire.beginTransmission(BQ25672_I2C_ADDR);
     Wire.write(reg);
-    if (Wire.endTransmission(false) != 0) {
-        Serial.printf("I2C write error for reg 0x%02X\n", reg);
-        return false;
-    }
-    if (Wire.requestFrom((uint8_t)BQ25672_I2C_ADDR, (uint8_t)2) != 2) {
-        Serial.printf("I2C read error for reg 0x%02X\n", reg);
-        return false;
-    }
+    if (Wire.endTransmission(false) != 0) { return false; }
+    if (Wire.requestFrom((uint8_t)BQ25672_I2C_ADDR, (uint8_t)2) != 2) { return false; }
     uint8_t lsb = Wire.read();
     uint8_t msb = Wire.read();
     value = (msb << 8) | lsb;
@@ -35,16 +31,102 @@ bool readWord(uint8_t reg, uint16_t& value) {
 
 bool readByte(uint8_t reg, uint8_t& value) {
     uint16_t wordValue;
-    if (!readWord(reg, wordValue)) {
-        return false;
-    }
+    if (!readWord(reg, wordValue)) { return false; }
     value = (uint8_t)wordValue;
     return true;
 }
 
+// --- Interrupt Logic ---
+
+// این تابع رجیسترهای Flag را می خواند تا دلیل وقفه را پیدا کند
+// خواندن این رجیسترها به صورت خودکار آنها را پاک می کند
+String getInterruptReason() {
+    String reason = "";
+    uint8_t flag_reg;
+
+    // Charger Flag 0 (0x22)
+    if (readByte(0x22, flag_reg) && flag_reg != 0) {
+        if (flag_reg & 0b10000000) reason += "IINDPM event. ";
+        if (flag_reg & 0b01000000) reason += "VINDPM event. ";
+        if (flag_reg & 0b00100000) reason += "Watchdog expired. ";
+        if (flag_reg & 0b00010000) reason += "Poor source detected. ";
+        if (flag_reg & 0b00001000) reason += "Power Good status changed. ";
+    }
+    
+    // Charger Flag 1 (0x23)
+    if (readByte(0x23, flag_reg) && flag_reg != 0) {
+        if (flag_reg & 0b10000000) reason += "Charge status changed. ";
+        if (flag_reg & 0b01000000) reason += "ICO status changed. ";
+        if (flag_reg & 0b00010000) reason += "VBUS status changed. ";
+        if (flag_reg & 0b00000100) reason += "Thermal regulation. ";
+    }
+
+    // Charger Flag 2 (0x24)
+    if (readByte(0x24, flag_reg) && flag_reg != 0) {
+        if (flag_reg & 0b01000000) reason += "DPDM detection done. ";
+        if (flag_reg & 0b00100000) reason += "ADC conversion done. ";
+        if (flag_reg & 0b00010000) reason += "VSYS regulation status changed. ";
+        if (flag_reg & 0b00001000) reason += "Fast charge timer expired. ";
+        if (flag_reg & 0b00000100) reason += "Trickle charge timer expired. ";
+        if (flag_reg & 0b00000010) reason += "Pre-charge timer expired. ";
+        if (flag_reg & 0b00000001) reason += "Top-off timer expired. ";
+    }
+
+    // Charger Flag 3 (0x25)
+    if (readByte(0x25, flag_reg) && flag_reg != 0) {
+        if (flag_reg & 0b00010000) reason += "VBAT too low for OTG. ";
+        if (flag_reg & 0b00001000) reason += "TS Cold event. ";
+        if (flag_reg & 0b00000100) reason += "TS Cool event. ";
+        if (flag_reg & 0b00000010) reason += "TS Warm event. ";
+        if (flag_reg & 0b00000001) reason += "TS Hot event. ";
+    }
+
+    // FAULT Flag 0 (0x26)
+    if (readByte(0x26, flag_reg) && flag_reg != 0) {
+        if (flag_reg & 0b10000000) reason += "IBAT regulation. ";
+        if (flag_reg & 0b01000000) reason += "VBUS OVP Fault. ";
+        if (flag_reg & 0b00100000) reason += "VBAT OVP Fault. ";
+        if (flag_reg & 0b00010000) reason += "IBUS OCP Fault. ";
+        if (flag_reg & 0b00001000) reason += "IBAT OCP Fault. ";
+        if (flag_reg & 0b00000100) reason += "Converter OCP Fault. ";
+    }
+    
+    // FAULT Flag 1 (0x27)
+    if (readByte(0x27, flag_reg) && flag_reg != 0) {
+        if (flag_reg & 0b10000000) reason += "VSYS Short Fault. ";
+        if (flag_reg & 0b01000000) reason += "VSYS OVP Fault. ";
+        if (flag_reg & 0b00100000) reason += "OTG OVP Fault. ";
+        if (flag_reg & 0b00010000) reason += "OTG UVP Fault. ";
+        if (flag_reg & 0b00000100) reason += "Thermal Shutdown. ";
+    }
+
+    return reason;
+}
+
+// Interrupt Service Routine
+void IRAM_ATTR handleInterrupt() {
+    interruptFired = true;
+}
+
+// WebSocket event handler
+void onEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventType type,
+             void *arg, uint8_t *data, size_t len) {
+    switch (type) {
+        case WS_EVT_CONNECT:
+            Serial.printf("WebSocket client #%u connected from %s\n", client->id(), client->remoteIP().toString().c_str());
+            break;
+        case WS_EVT_DISCONNECT:
+            Serial.printf("WebSocket client #%u disconnected\n", client->id());
+            break;
+        case WS_EVT_DATA:
+        case WS_EVT_PONG:
+        case WS_EVT_ERROR:
+            break;
+    }
+}
+
 
 // --- API Handlers ---
-
 void handleApiData1(AsyncWebServerRequest *request) {
     StaticJsonDocument<1024> doc;
     uint16_t val16;
@@ -308,7 +390,7 @@ void handleApiData5(AsyncWebServerRequest *request) {
 
 void setup() {
     Serial.begin(115200);
-    Wire.begin(); // Join I2C bus
+    Wire.begin();
 
     // Initialize LittleFS
     if (!LittleFS.begin(true)) {
@@ -324,25 +406,23 @@ void setup() {
     Serial.print("AP IP address: ");
     Serial.println(IP);
 
-    // Route for root / web page
-    server.on("/", HTTP_GET, [](AsyncWebServerRequest *request) {
-        request->send(LittleFS, "/index.html", "text/html");
-    });
-    
-    // Route for other HTML pages
+    // --- Setup Interrupt Pin ---
+    pinMode(interruptPin, INPUT_PULLUP);
+    attachInterrupt(digitalPinToInterrupt(interruptPin), handleInterrupt, FALLING);
+
+    // --- Setup WebSocket ---
+    ws.onEvent(onEvent);
+    server.addHandler(&ws);
+
+    // --- Setup Web Server Routes ---
+    server.on("/", HTTP_GET, [](AsyncWebServerRequest *request) { request->send(LittleFS, "/index.html", "text/html"); });
     server.on("/page1.html", HTTP_GET, [](AsyncWebServerRequest *request){ request->send(LittleFS, "/page1.html", "text/html"); });
     server.on("/page2.html", HTTP_GET, [](AsyncWebServerRequest *request){ request->send(LittleFS, "/page2.html", "text/html"); });
     server.on("/page3.html", HTTP_GET, [](AsyncWebServerRequest *request){ request->send(LittleFS, "/page3.html", "text/html"); });
     server.on("/page4.html", HTTP_GET, [](AsyncWebServerRequest *request){ request->send(LittleFS, "/page4.html", "text/html"); });
     server.on("/page5.html", HTTP_GET, [](AsyncWebServerRequest *request){ request->send(LittleFS, "/page5.html", "text/html"); });
-
-    // Route for CSS and JS
-    server.on("/style.css", HTTP_GET, [](AsyncWebServerRequest *request) {
-        request->send(LittleFS, "/style.css", "text/css");
-    });
-    server.on("/script.js", HTTP_GET, [](AsyncWebServerRequest *request) {
-        request->send(LittleFS, "/script.js", "text/javascript");
-    });
+    server.on("/style.css", HTTP_GET, [](AsyncWebServerRequest *request) { request->send(LittleFS, "/style.css", "text/css"); });
+    server.on("/script.js", HTTP_GET, [](AsyncWebServerRequest *request) { request->send(LittleFS, "/script.js", "text/javascript"); });
 
     // API routes
     server.on("/api/data1", HTTP_GET, handleApiData1);
@@ -351,17 +431,24 @@ void setup() {
     server.on("/api/data4", HTTP_GET, handleApiData4);
     server.on("/api/data5", HTTP_GET, handleApiData5);
 
+    server.onNotFound([](AsyncWebServerRequest *request) { request->send(404, "text/plain", "Not found"); });
 
-    // Not Found
-    server.onNotFound([](AsyncWebServerRequest *request) {
-        request->send(404, "text/plain", "Not found");
-    });
-
-    // Start server
     server.begin();
     Serial.println("HTTP server started");
 }
 
 void loop() {
-    // Nothing to do here in async mode
+    if (interruptFired) {
+        interruptFired = false; // Reset the flag
+        Serial.println("Interrupt received!");
+        
+        String reason = getInterruptReason();
+        
+        if (reason.length() > 0) {
+            Serial.print("Reason: ");
+            Serial.println(reason);
+            ws.textAll(reason); // Send reason to all connected web clients
+        }
+    }
+    ws.cleanupClients(); // Handle disconnected clients
 }

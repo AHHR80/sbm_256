@@ -14,7 +14,6 @@
             <p>این مقادیر هر ۱۰ ثانیه به‌روزرسانی می‌شوند.</p>
         </header>
         <main class="data-grid" id="data-container">
-            <!-- Data will be populated by JavaScript -->
             <div class="data-card"><span class="label">VSYSMIN (mV)</span><span id="VSYSMIN_5_0" class="value">--</span></div>
             <div class="data-card"><span class="label">CELL_COUNT</span><span id="CELL_1_0" class="value">--</span></div>
             <div class="data-card"><span class="label">VOTG (mV)</span><span id="VOTG_10_0" class="value">--</span></div>
@@ -36,10 +35,8 @@
             <div class="data-card"><span class="label">TDIE_ADC (°C)</span><span id="TDIE_ADC_15_0" class="value">--</span></div>
         </main>
     </div>
-    <script>
-        // Set the API endpoint for this specific page
-        window.API_ENDPOINT = '/api/data1';
-    </script>
+    <div id="toast"></div>
+    <script> window.API_ENDPOINT = '/api/data1'; </script>
     <script src="script.js"></script>
 </body>
 </html>
