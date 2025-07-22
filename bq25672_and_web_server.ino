@@ -36,7 +36,6 @@ bool readByte(uint8_t reg, uint8_t& value) {
     return true;
 }
 
-// *** CORRECTED AND FINAL OPTIMIZED FUNCTION ***
 // Helper function to read a block of consecutive 8-bit registers using multi-read
 bool readBytes(uint8_t startReg, uint8_t* buffer, uint8_t count) {
     Wire.beginTransmission(BQ25672_I2C_ADDR);
@@ -163,7 +162,7 @@ void onEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventType 
 }
 
 
-// --- API Handlers (Unchanged) ---
+// --- API Handlers ---
 void handleApiData1(AsyncWebServerRequest *request) {
     StaticJsonDocument<1024> doc;
     uint16_t val16;
@@ -185,15 +184,16 @@ void handleApiData1(AsyncWebServerRequest *request) {
     if (readByte(0x1D, val8)) { doc["VBAT_PRESENT_STAT"] = val8 & 0x01; } else { doc["VBAT_PRESENT_STAT"] = -1; }
     if (readByte(0x1E, val8)) { doc["VSYS_STAT"] = (val8 >> 4) & 0x01; } else { doc["VSYS_STAT"] = -1; }
     
-    if(readWord(0x31, val16)) { doc["IBUS_ADC_15_0"] = (int16_t)val16; } else { doc["IBUS_ADC_15_0"] = -1; }
-    if(readWord(0x33, val16)) { doc["IBAT_ADC_15_0"] = (int16_t)val16; } else { doc["IBAT_ADC_15_0"] = -1; }
-    if(readWord(0x35, val16)) { doc["VBUS_ADC_15_0"] = val16; } else { doc["VBUS_ADC_15_0"] = -1; }
-    if(readWord(0x37, val16)) { doc["VAC1_ADC_15_0"] = val16; } else { doc["VAC1_ADC_15_0"] = -1; }
-    if(readWord(0x39, val16)) { doc["VAC2_ADC_15_0"] = val16; } else { doc["VAC2_ADC_15_0"] = -1; }
-    if(readWord(0x3B, val16)) { doc["VBAT_ADC_15_0"] = val16; } else { doc["VBAT_ADC_15_0"] = -1; }
-    if(readWord(0x3D, val16)) { doc["VSYS_ADC_15_0"] = val16; } else { doc["VSYS_ADC_15_0"] = -1; }
-    if(readWord(0x3F, val16)) { doc["TS_ADC_15_0"] = (float)val16 * 0.0976563; } else { doc["TS_ADC_15_0"] = -1.0; }
-    if(readWord(0x41, val16)) { doc["TDIE_ADC_15_0"] = (float)((int16_t)val16) * 0.5; } else { doc["TDIE_ADC_15_0"] = -999.0; }
+    // --- ADC Readings with correct signed/unsigned handling ---
+    if(readWord(0x31, val16)) { doc["IBUS_ADC_15_0"] = (int16_t)val16; } else { doc["IBUS_ADC_15_0"] = -1; } // Signed
+    if(readWord(0x33, val16)) { doc["IBAT_ADC_15_0"] = (int16_t)val16; } else { doc["IBAT_ADC_15_0"] = -1; } // Signed
+    if(readWord(0x35, val16)) { doc["VBUS_ADC_15_0"] = val16; } else { doc["VBUS_ADC_15_0"] = -1; } // Unsigned
+    if(readWord(0x37, val16)) { doc["VAC1_ADC_15_0"] = val16; } else { doc["VAC1_ADC_15_0"] = -1; } // Unsigned
+    if(readWord(0x39, val16)) { doc["VAC2_ADC_15_0"] = val16; } else { doc["VAC2_ADC_15_0"] = -1; } // Unsigned
+    if(readWord(0x3B, val16)) { doc["VBAT_ADC_15_0"] = val16; } else { doc["VBAT_ADC_15_0"] = -1; } // Unsigned
+    if(readWord(0x3D, val16)) { doc["VSYS_ADC_15_0"] = val16; } else { doc["VSYS_ADC_15_0"] = -1; } // Unsigned
+    if(readWord(0x3F, val16)) { doc["TS_ADC_15_0"] = (float)val16 * 0.0976563; } else { doc["TS_ADC_15_0"] = -1.0; } // Unsigned
+    if(readWord(0x41, val16)) { doc["TDIE_ADC_15_0"] = (float)((int16_t)val16) * 0.5; } else { doc["TDIE_ADC_15_0"] = -999.0; } // Signed
 
     String output;
     serializeJson(doc, output);
