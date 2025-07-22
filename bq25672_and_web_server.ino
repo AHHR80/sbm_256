@@ -17,6 +17,10 @@ AsyncWebServer server(80);
 AsyncWebSocket ws("/ws"); // WebSocket endpoint
 volatile bool interruptFired = false; // Flag for interrupt detection
 
+// --- Watchdog Timer ---
+unsigned long lastWatchdogReset = 0;
+const long watchdogInterval = 30000; // 30 seconds (less than the default 40s timeout)
+
 // --- I2C Communication Functions ---
 // Reads a 16-bit word (two bytes) from a register
 bool readWord(uint8_t reg, uint16_t& value) {
@@ -570,5 +574,18 @@ void loop() {
             ws.textAll(reason);
         }
     }
+
+    // Automatic Watchdog Reset
+    if (millis() - lastWatchdogReset > watchdogInterval) {
+        lastWatchdogReset = millis();
+        // Reset the watchdog timer by writing 1 to WD_RST bit (REG0x10[3])
+        Serial.println("Resetting BQ25672 watchdog timer...");
+        if (modifyByte(0x10, 0b00001000, 0b00001000)) {
+            Serial.println("Watchdog reset successful.");
+        } else {
+            Serial.println("Failed to reset watchdog.");
+        }
+    }
+    
     ws.cleanupClients();
 }
