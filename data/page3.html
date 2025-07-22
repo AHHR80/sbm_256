@@ -9,25 +9,25 @@
 <body>
     <div class="container">
         <header>
-            <a href="/" class="back-button">&larr; بازگشت به صفحه اصلی</a>
+            <a href="/" class="back-button">&larr;</a>
             <h1>صفحه ۳: کنترل پیش‌شارژ و خاتمه</h1>
-            <p>این مقادیر هر ۱۰ ثانیه به‌روزرسانی می‌شوند.</p>
+            <p>برای ویرایش، روی کارت‌های قابل نوشتن کلیک کنید.</p>
         </header>
         <main class="data-grid" id="data-container">
-            <div class="data-card"><span class="label">VBAT_LOWV</span><span id="VBAT_LOWV_1_0" class="value">--</span></div>
-            <div class="data-card"><span class="label">IPRECHG (mA)</span><span id="IPRECHG_5_0" class="value">--</span></div>
-            <div class="data-card"><span class="label">ITERM (mA)</span><span id="ITERM_4_0" class="value">--</span></div>
-            <div class="data-card"><span class="label">TRECHG</span><span id="TRECHG_1_0" class="value">--</span></div>
-            <div class="data-card"><span class="label">VRECHG (mV)</span><span id="VRECHG_3_0" class="value">--</span></div>
-            <div class="data-card"><span class="label">VAC_OVP</span><span id="VAC_OVP_1_0" class="value">--</span></div>
-            <div class="data-card"><span class="label">EN_IBAT</span><span id="EN_IBAT" class="value">--</span></div>
-            <div class="data-card"><span class="label">IBAT_REG</span><span id="IBAT_REG_1_0" class="value">--</span></div>
-            <div class="data-card"><span class="label">EN_IINDPM</span><span id="EN_IINDPM" class="value">--</span></div>
-            <div class="data-card"><span class="label">EN_EXTILIM</span><span id="EN_EXTILIM" class="value">--</span></div>
+            <div class="data-card writable" data-reg="VBAT_LOWV_1_0"><span class="label">VBAT_LOWV</span><span id="VBAT_LOWV_1_0" class="value">--</span></div>
+            <div class="data-card writable" data-reg="IPRECHG_5_0"><span class="label">IPRECHG (mA)</span><span id="IPRECHG_5_0" class="value">--</span></div>
+            <div class="data-card writable" data-reg="ITERM_4_0"><span class="label">ITERM (mA)</span><span id="ITERM_4_0" class="value">--</span></div>
+            <div class="data-card writable" data-reg="TRECHG_1_0"><span class="label">TRECHG</span><span id="TRECHG_1_0" class="value">--</span></div>
+            <div class="data-card writable" data-reg="VRECHG_3_0"><span class="label">VRECHG (mV)</span><span id="VRECHG_3_0" class="value">--</span></div>
+            <div class="data-card writable" data-reg="VAC_OVP_1_0"><span class="label">VAC_OVP</span><span id="VAC_OVP_1_0" class="value">--</span></div>
+            <div class="data-card writable" data-reg="EN_IBAT"><span class="label">EN_IBAT</span><span id="EN_IBAT" class="value">--</span></div>
+            <div class="data-card writable" data-reg="IBAT_REG_1_0"><span class="label">IBAT_REG</span><span id="IBAT_REG_1_0" class="value">--</span></div>
+            <div class="data-card writable" data-reg="EN_IINDPM"><span class="label">EN_IINDPM</span><span id="EN_IINDPM" class="value">--</span></div>
+            <div class="data-card writable" data-reg="EN_EXTILIM"><span class="label">EN_EXTILIM</span><span id="EN_EXTILIM" class="value">--</span></div>
             <div class="data-card"><span class="label">ICO_STAT</span><span id="ICO_STAT_1_0" class="value">--</span></div>
             <div class="data-card"><span class="label">VAC2_OVP_STAT</span><span id="VAC2_OVP_STAT" class="value">--</span></div>
             <div class="data-card"><span class="label">VAC1_OVP_STAT</span><span id="VAC1_OVP_STAT" class="value">--</span></div>
-            <div class="data-card"><span class="label">ADC_SAMPLE</span><span id="ADC_SAMPLE_1_0" class="value">--</span></div>
+            <div class="data-card writable" data-reg="ADC_SAMPLE_1_0"><span class="label">ADC_SAMPLE</span><span id="ADC_SAMPLE_1_0" class="value">--</span></div>
         </main>
     </div>
     <div id="toast"></div>

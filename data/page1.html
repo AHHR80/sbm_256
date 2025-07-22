@@ -9,16 +9,19 @@
 <body>
     <div class="container">
         <header>
-            <a href="/" class="back-button">&larr; بازگشت به صفحه اصلی</a>
+            <a href="/" class="back-button">&larr;</a>
             <h1>صفحه ۱: وضعیت اصلی و ADC</h1>
-            <p>این مقادیر هر ۱۰ ثانیه به‌روزرسانی می‌شوند.</p>
+            <p>برای ویرایش، روی کارت‌های قابل نوشتن کلیک کنید.</p>
         </header>
         <main class="data-grid" id="data-container">
-            <div class="data-card"><span class="label">VSYSMIN (mV)</span><span id="VSYSMIN_5_0" class="value">--</span></div>
+            <!-- Writable registers have the 'writable' class and a 'data-reg' attribute -->
+            <div class="data-card writable" data-reg="VSYSMIN_5_0"><span class="label">VSYSMIN (mV)</span><span id="VSYSMIN_5_0" class="value">--</span></div>
             <div class="data-card"><span class="label">CELL_COUNT</span><span id="CELL_1_0" class="value">--</span></div>
-            <div class="data-card"><span class="label">VOTG (mV)</span><span id="VOTG_10_0" class="value">--</span></div>
-            <div class="data-card"><span class="label">IOTG (mA)</span><span id="IOTG_6_0" class="value">--</span></div>
-            <div class="data-card"><span class="label">EN_CHG</span><span id="EN_CHG" class="value">--</span></div>
+            <div class="data-card writable" data-reg="VOTG_10_0"><span class="label">VOTG (mV)</span><span id="VOTG_10_0" class="value">--</span></div>
+            <div class="data-card writable" data-reg="IOTG_6_0"><span class="label">IOTG (mA)</span><span id="IOTG_6_0" class="value">--</span></div>
+            <div class="data-card writable" data-reg="EN_CHG"><span class="label">EN_CHG</span><span id="EN_CHG" class="value">--</span></div>
+            
+            <!-- Read-only registers -->
             <div class="data-card"><span class="label">VBUS_PRESENT_STAT</span><span id="VBUS_PRESENT_STAT" class="value">--</span></div>
             <div class="data-card"><span class="label">CHG_STAT</span><span id="CHG_STAT_2_0" class="value">--</span></div>
             <div class="data-card"><span class="label">VBUS_STAT</span><span id="VBUS_STAT_3_0" class="value">--</span></div>

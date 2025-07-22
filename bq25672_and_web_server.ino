@@ -36,97 +36,100 @@ bool readByte(uint8_t reg, uint8_t& value) {
     return true;
 }
 
-// Helper function to read a block of consecutive 8-bit registers using multi-read
-bool readBytes(uint8_t startReg, uint8_t* buffer, uint8_t count) {
+bool writeWord(uint8_t reg, uint16_t value) {
     Wire.beginTransmission(BQ25672_I2C_ADDR);
-    Wire.write(startReg);
-    if (Wire.endTransmission(false) != 0) {
-        Serial.printf("I2C multi-read write error for reg 0x%02X\n", startReg);
+    Wire.write(reg);
+    Wire.write(value & 0xFF); // LSB
+    Wire.write(value >> 8);   // MSB
+    if (Wire.endTransmission() != 0) {
+        Serial.printf("I2C writeWord error for reg 0x%02X\n", reg);
         return false;
-    }
-
-    // For these sequential 8-bit registers, we read exactly 'count' bytes.
-    if (Wire.requestFrom((uint8_t)BQ25672_I2C_ADDR, count) != count) {
-        Serial.printf("I2C multi-read read error for reg 0x%02X\n", startReg);
-        return false;
-    }
-
-    for (int i = 0; i < count; i++) {
-        buffer[i] = Wire.read(); // Read and store each byte.
     }
     return true;
 }
 
+// BQ25672 uses a 16-bit architecture. To write an 8-bit value, we write it as the LSB and 0x00 as the MSB.
+bool writeByte(uint8_t reg, uint8_t value) {
+    return writeWord(reg, (uint16_t)value);
+}
 
-// --- Interrupt Logic (Using Corrected Multi-Read) ---
+// Helper function to read-modify-write an 8-bit register
+bool modifyByte(uint8_t reg, uint8_t value, uint8_t mask) {
+    uint8_t currentValue;
+    if (!readByte(reg, currentValue)) {
+        return false;
+    }
+    uint8_t newValue = (currentValue & ~mask) | (value & mask);
+    return writeByte(reg, newValue);
+}
+
+// Helper function to read a block of consecutive 8-bit registers using multi-read
+bool readBytes(uint8_t startReg, uint8_t* buffer, uint8_t count) {
+    Wire.beginTransmission(BQ25672_I2C_ADDR);
+    Wire.write(startReg);
+    if (Wire.endTransmission(false) != 0) { return false; }
+    if (Wire.requestFrom((uint8_t)BQ25672_I2C_ADDR, count) != count) { return false; }
+    for (int i = 0; i < count; i++) { buffer[i] = Wire.read(); }
+    return true;
+}
+
+
+// --- Interrupt Logic ---
 String getInterruptReason() {
     String reason = "";
     uint8_t flag_buffer[6]; // Buffer for registers 0x22 to 0x27
 
-    // Read all 6 flag registers in one I2C transaction
     if (readBytes(0x22, flag_buffer, 6)) {
-        // Charger Flag 0 (0x22) -> flag_buffer[0]
-        if (flag_buffer[0] != 0) {
-            if (flag_buffer[0] & 0b10000000) reason += "IINDPM event. ";
-            if (flag_buffer[0] & 0b01000000) reason += "VINDPM event. ";
-            if (flag_buffer[0] & 0b00100000) reason += "Watchdog expired. ";
-            if (flag_buffer[0] & 0b00010000) reason += "Poor source detected. ";
-            if (flag_buffer[0] & 0b00001000) reason += "Power Good status changed. ";
-            if (flag_buffer[0] & 0b00000100) reason += "AC2 present status changed. ";
-            if (flag_buffer[0] & 0b00000010) reason += "AC1 present status changed. ";
-            if (flag_buffer[0] & 0b00000001) reason += "VBUS present status changed. ";
-        }
+        // Charger Flag 0 (0x22)
+        if (flag_buffer[0] & 0b10000000) reason += "IINDPM event. ";
+        if (flag_buffer[0] & 0b01000000) reason += "VINDPM event. ";
+        if (flag_buffer[0] & 0b00100000) reason += "Watchdog expired. ";
+        if (flag_buffer[0] & 0b00010000) reason += "Poor source detected. ";
+        if (flag_buffer[0] & 0b00001000) reason += "Power Good status changed. ";
+        if (flag_buffer[0] & 0b00000100) reason += "AC2 present status changed. ";
+        if (flag_buffer[0] & 0b00000010) reason += "AC1 present status changed. ";
+        if (flag_buffer[0] & 0b00000001) reason += "VBUS present status changed. ";
         
-        // Charger Flag 1 (0x23) -> flag_buffer[1]
-        if (flag_buffer[1] != 0) {
-            if (flag_buffer[1] & 0b10000000) reason += "Charge status changed. ";
-            if (flag_buffer[1] & 0b01000000) reason += "ICO status changed. ";
-            if (flag_buffer[1] & 0b00010000) reason += "VBUS status changed. ";
-            if (flag_buffer[1] & 0b00000100) reason += "Thermal regulation. ";
-            if (flag_buffer[1] & 0b00000010) reason += "VBAT present status changed. ";
-            if (flag_buffer[1] & 0b00000001) reason += "BC1.2 detection done. ";
-        }
+        // Charger Flag 1 (0x23)
+        if (flag_buffer[1] & 0b10000000) reason += "Charge status changed. ";
+        if (flag_buffer[1] & 0b01000000) reason += "ICO status changed. ";
+        if (flag_buffer[1] & 0b00010000) reason += "VBUS status changed. ";
+        if (flag_buffer[1] & 0b00000100) reason += "Thermal regulation. ";
+        if (flag_buffer[1] & 0b00000010) reason += "VBAT present status changed. ";
+        if (flag_buffer[1] & 0b00000001) reason += "BC1.2 detection done. ";
 
-        // Charger Flag 2 (0x24) -> flag_buffer[2]
-        if (flag_buffer[2] != 0) {
-            if (flag_buffer[2] & 0b01000000) reason += "DPDM detection done. ";
-            if (flag_buffer[2] & 0b00100000) reason += "ADC conversion done. ";
-            if (flag_buffer[2] & 0b00010000) reason += "VSYS regulation status changed. ";
-            if (flag_buffer[2] & 0b00001000) reason += "Fast charge timer expired. ";
-            if (flag_buffer[2] & 0b00000100) reason += "Trickle charge timer expired. ";
-            if (flag_buffer[2] & 0b00000010) reason += "Pre-charge timer expired. ";
-            if (flag_buffer[2] & 0b00000001) reason += "Top-off timer expired. ";
-        }
+        // Charger Flag 2 (0x24)
+        if (flag_buffer[2] & 0b01000000) reason += "DPDM detection done. ";
+        if (flag_buffer[2] & 0b00100000) reason += "ADC conversion done. ";
+        if (flag_buffer[2] & 0b00010000) reason += "VSYS regulation status changed. ";
+        if (flag_buffer[2] & 0b00001000) reason += "Fast charge timer expired. ";
+        if (flag_buffer[2] & 0b00000100) reason += "Trickle charge timer expired. ";
+        if (flag_buffer[2] & 0b00000010) reason += "Pre-charge timer expired. ";
+        if (flag_buffer[2] & 0b00000001) reason += "Top-off timer expired. ";
 
-        // Charger Flag 3 (0x25) -> flag_buffer[3]
-        if (flag_buffer[3] != 0) {
-            if (flag_buffer[3] & 0b00010000) reason += "VBAT too low for OTG. ";
-            if (flag_buffer[3] & 0b00001000) reason += "TS Cold event. ";
-            if (flag_buffer[3] & 0b00000100) reason += "TS Cool event. ";
-            if (flag_buffer[3] & 0b00000010) reason += "TS Warm event. ";
-            if (flag_buffer[3] & 0b00000001) reason += "TS Hot event. ";
-        }
+        // Charger Flag 3 (0x25)
+        if (flag_buffer[3] & 0b00010000) reason += "VBAT too low for OTG. ";
+        if (flag_buffer[3] & 0b00001000) reason += "TS Cold event. ";
+        if (flag_buffer[3] & 0b00000100) reason += "TS Cool event. ";
+        if (flag_buffer[3] & 0b00000010) reason += "TS Warm event. ";
+        if (flag_buffer[3] & 0b00000001) reason += "TS Hot event. ";
 
-        // FAULT Flag 0 (0x26) -> flag_buffer[4]
-        if (flag_buffer[4] != 0) {
-            if (flag_buffer[4] & 0b10000000) reason += "IBAT regulation. ";
-            if (flag_buffer[4] & 0b01000000) reason += "VBUS OVP Fault. ";
-            if (flag_buffer[4] & 0b00100000) reason += "VBAT OVP Fault. ";
-            if (flag_buffer[4] & 0b00010000) reason += "IBUS OCP Fault. ";
-            if (flag_buffer[4] & 0b00001000) reason += "IBAT OCP Fault. ";
-            if (flag_buffer[4] & 0b00000100) reason += "Converter OCP Fault. ";
-            if (flag_buffer[4] & 0b00000010) reason += "VAC2 OVP Fault. ";
-            if (flag_buffer[4] & 0b00000001) reason += "VAC1 OVP Fault. ";
-        }
+        // FAULT Flag 0 (0x26)
+        if (flag_buffer[4] & 0b10000000) reason += "IBAT regulation. ";
+        if (flag_buffer[4] & 0b01000000) reason += "VBUS OVP Fault. ";
+        if (flag_buffer[4] & 0b00100000) reason += "VBAT OVP Fault. ";
+        if (flag_buffer[4] & 0b00010000) reason += "IBUS OCP Fault. ";
+        if (flag_buffer[4] & 0b00001000) reason += "IBAT OCP Fault. ";
+        if (flag_buffer[4] & 0b00000100) reason += "Converter OCP Fault. ";
+        if (flag_buffer[4] & 0b00000010) reason += "VAC2 OVP Fault. ";
+        if (flag_buffer[4] & 0b00000001) reason += "VAC1 OVP Fault. ";
         
-        // FAULT Flag 1 (0x27) -> flag_buffer[5]
-        if (flag_buffer[5] != 0) {
-            if (flag_buffer[5] & 0b10000000) reason += "VSYS Short Fault. ";
-            if (flag_buffer[5] & 0b01000000) reason += "VSYS OVP Fault. ";
-            if (flag_buffer[5] & 0b00100000) reason += "OTG OVP Fault. ";
-            if (flag_buffer[5] & 0b00010000) reason += "OTG UVP Fault. ";
-            if (flag_buffer[5] & 0b00000100) reason += "Thermal Shutdown. ";
-        }
+        // FAULT Flag 1 (0x27)
+        if (flag_buffer[5] & 0b10000000) reason += "VSYS Short Fault. ";
+        if (flag_buffer[5] & 0b01000000) reason += "VSYS OVP Fault. ";
+        if (flag_buffer[5] & 0b00100000) reason += "OTG OVP Fault. ";
+        if (flag_buffer[5] & 0b00010000) reason += "OTG UVP Fault. ";
+        if (flag_buffer[5] & 0b00000100) reason += "Thermal Shutdown. ";
     } else {
         return "Failed to read flag registers.";
     }
@@ -145,19 +148,11 @@ void IRAM_ATTR handleInterrupt() {
 }
 
 // WebSocket event handler
-void onEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventType type,
-             void *arg, uint8_t *data, size_t len) {
-    switch (type) {
-        case WS_EVT_CONNECT:
-            Serial.printf("WebSocket client #%u connected from %s\n", client->id(), client->remoteIP().toString().c_str());
-            break;
-        case WS_EVT_DISCONNECT:
-            Serial.printf("WebSocket client #%u disconnected\n", client->id());
-            break;
-        case WS_EVT_DATA:
-        case WS_EVT_PONG:
-        case WS_EVT_ERROR:
-            break;
+void onEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventType type, void *arg, uint8_t *data, size_t len) {
+    if (type == WS_EVT_CONNECT) {
+        Serial.printf("WebSocket client #%u connected from %s\n", client->id(), client->remoteIP().toString().c_str());
+    } else if (type == WS_EVT_DISCONNECT) {
+        Serial.printf("WebSocket client #%u disconnected\n", client->id());
     }
 }
 
@@ -167,7 +162,6 @@ void handleApiData1(AsyncWebServerRequest *request) {
     StaticJsonDocument<1024> doc;
     uint16_t val16;
     uint8_t val8;
-
     if (readByte(0x00, val8)) { doc["VSYSMIN_5_0"] = 2500 + ((val8 & 0x3F) * 250); } else { doc["VSYSMIN_5_0"] = -1; }
     if (readByte(0x0A, val8)) { doc["CELL_1_0"] = ((val8 >> 6) & 0x03) + 1; } else { doc["CELL_1_0"] = -1; }
     if (readWord(0x0B, val16)) { doc["VOTG_10_0"] = 2800 + ((val16 & 0x7FF) * 10); } else { doc["VOTG_10_0"] = -1; }
@@ -177,34 +171,25 @@ void handleApiData1(AsyncWebServerRequest *request) {
     if (readByte(0x1C, val8)) {
         doc["CHG_STAT_2_0"] = (val8 >> 5) & 0x07;
         doc["VBUS_STAT_3_0"] = (val8 >> 1) & 0x0F;
-    } else {
-        doc["CHG_STAT_2_0"] = -1;
-        doc["VBUS_STAT_3_0"] = -1;
-    }
+    } else { doc["CHG_STAT_2_0"] = -1; doc["VBUS_STAT_3_0"] = -1; }
     if (readByte(0x1D, val8)) { doc["VBAT_PRESENT_STAT"] = val8 & 0x01; } else { doc["VBAT_PRESENT_STAT"] = -1; }
     if (readByte(0x1E, val8)) { doc["VSYS_STAT"] = (val8 >> 4) & 0x01; } else { doc["VSYS_STAT"] = -1; }
-    
-    // --- ADC Readings with correct signed/unsigned handling ---
-    if(readWord(0x31, val16)) { doc["IBUS_ADC_15_0"] = (int16_t)val16; } else { doc["IBUS_ADC_15_0"] = -1; } // Signed
-    if(readWord(0x33, val16)) { doc["IBAT_ADC_15_0"] = (int16_t)val16; } else { doc["IBAT_ADC_15_0"] = -1; } // Signed
-    if(readWord(0x35, val16)) { doc["VBUS_ADC_15_0"] = val16; } else { doc["VBUS_ADC_15_0"] = -1; } // Unsigned
-    if(readWord(0x37, val16)) { doc["VAC1_ADC_15_0"] = val16; } else { doc["VAC1_ADC_15_0"] = -1; } // Unsigned
-    if(readWord(0x39, val16)) { doc["VAC2_ADC_15_0"] = val16; } else { doc["VAC2_ADC_15_0"] = -1; } // Unsigned
-    if(readWord(0x3B, val16)) { doc["VBAT_ADC_15_0"] = val16; } else { doc["VBAT_ADC_15_0"] = -1; } // Unsigned
-    if(readWord(0x3D, val16)) { doc["VSYS_ADC_15_0"] = val16; } else { doc["VSYS_ADC_15_0"] = -1; } // Unsigned
-    if(readWord(0x3F, val16)) { doc["TS_ADC_15_0"] = (float)val16 * 0.0976563; } else { doc["TS_ADC_15_0"] = -1.0; } // Unsigned
-    if(readWord(0x41, val16)) { doc["TDIE_ADC_15_0"] = (float)((int16_t)val16) * 0.5; } else { doc["TDIE_ADC_15_0"] = -999.0; } // Signed
-
-    String output;
-    serializeJson(doc, output);
-    request->send(200, "application/json", output);
+    if(readWord(0x31, val16)) { doc["IBUS_ADC_15_0"] = (int16_t)val16; } else { doc["IBUS_ADC_15_0"] = -1; }
+    if(readWord(0x33, val16)) { doc["IBAT_ADC_15_0"] = (int16_t)val16; } else { doc["IBAT_ADC_15_0"] = -1; }
+    if(readWord(0x35, val16)) { doc["VBUS_ADC_15_0"] = val16; } else { doc["VBUS_ADC_15_0"] = -1; }
+    if(readWord(0x37, val16)) { doc["VAC1_ADC_15_0"] = val16; } else { doc["VAC1_ADC_15_0"] = -1; }
+    if(readWord(0x39, val16)) { doc["VAC2_ADC_15_0"] = val16; } else { doc["VAC2_ADC_15_0"] = -1; }
+    if(readWord(0x3B, val16)) { doc["VBAT_ADC_15_0"] = val16; } else { doc["VBAT_ADC_15_0"] = -1; }
+    if(readWord(0x3D, val16)) { doc["VSYS_ADC_15_0"] = val16; } else { doc["VSYS_ADC_15_0"] = -1; }
+    if(readWord(0x3F, val16)) { doc["TS_ADC_15_0"] = (float)val16 * 0.0976563; } else { doc["TS_ADC_15_0"] = -1.0; }
+    if(readWord(0x41, val16)) { doc["TDIE_ADC_15_0"] = (float)((int16_t)val16) * 0.5; } else { doc["TDIE_ADC_15_0"] = -999.0; }
+    String output; serializeJson(doc, output); request->send(200, "application/json", output);
 }
 
 void handleApiData2(AsyncWebServerRequest *request) {
     StaticJsonDocument<1536> doc;
     uint16_t val16;
     uint8_t val8;
-    
     if(readWord(0x01, val16)) { doc["VREG_10_0"] = (val16 & 0x7FF) * 10; } else { doc["VREG_10_0"] = -1; }
     if(readWord(0x03, val16)) { doc["ICHG_8_0"] = (val16 & 0x1FF) * 10; } else { doc["ICHG_8_0"] = -1; }
     if(readByte(0x05, val8)) { doc["VINDPM_7_0"] = val8 * 100 + 3600; } else { doc["VINDPM_7_0"] = -1; }
@@ -245,16 +230,12 @@ void handleApiData2(AsyncWebServerRequest *request) {
         doc["OTG_UVP_STAT"] = (val8 >> 4) & 0x01;
         doc["TSHUT_STAT"] = (val8 >> 2) & 0x01;
     } else { doc["VSYS_SHORT_STAT"] = -1; doc["VSYS_OVP_STAT"] = -1; doc["OTG_OVP_STAT"] = -1; doc["OTG_UVP_STAT"] = -1; doc["TSHUT_STAT"] = -1; }
-    
-    String output;
-    serializeJson(doc, output);
-    request->send(200, "application/json", output);
+    String output; serializeJson(doc, output); request->send(200, "application/json", output);
 }
 
 void handleApiData3(AsyncWebServerRequest *request) {
     StaticJsonDocument<1024> doc;
     uint8_t val8;
-
     if (readByte(0x08, val8)) {
         doc["VBAT_LOWV_1_0"] = (val8 >> 6) & 0x03;
         doc["IPRECHG_5_0"] = (val8 & 0x3F) * 40;
@@ -277,16 +258,12 @@ void handleApiData3(AsyncWebServerRequest *request) {
         doc["VAC1_OVP_STAT"] = val8 & 0x01;
     } else { doc["VAC2_OVP_STAT"] = -1; doc["VAC1_OVP_STAT"] = -1; }
     if (readByte(0x2E, val8)) { doc["ADC_SAMPLE_1_0"] = (val8 >> 4) & 0x03; } else { doc["ADC_SAMPLE_1_0"] = -1; }
-
-    String output;
-    serializeJson(doc, output);
-    request->send(200, "application/json", output);
+    String output; serializeJson(doc, output); request->send(200, "application/json", output);
 }
 
 void handleApiData4(AsyncWebServerRequest *request) {
     StaticJsonDocument<2048> doc;
     uint8_t val8;
-
     if(readByte(0x09, val8)) { doc["STOP_WD_CHG"] = (val8 >> 5) & 0x01; } else { doc["STOP_WD_CHG"] = -1; }
     if(readByte(0x0D, val8)) { doc["PRECHG_TMR"] = (val8 >> 7) & 0x01; } else { doc["PRECHG_TMR"] = -1; }
     if(readByte(0x0E, val8)) {
@@ -379,17 +356,13 @@ void handleApiData4(AsyncWebServerRequest *request) {
         doc["PN_2_0"] = (val8 >> 3) & 0x07;
         doc["DEV_REV_2_0"] = val8 & 0x07;
     } else { doc["PN_2_0"] = -1; doc["DEV_REV_2_0"] = -1; }
-
-    String output;
-    serializeJson(doc, output);
-    request->send(200, "application/json", output);
+    String output; serializeJson(doc, output); request->send(200, "application/json", output);
 }
 
 void handleApiData5(AsyncWebServerRequest *request) {
     StaticJsonDocument<1024> doc;
     uint8_t val8;
     uint16_t val16;
-
     if(readByte(0x1B, val8)) {
         doc["IINDPM_STAT"] = (val8 >> 7) & 0x01;
         doc["VINDPM_STAT"] = (val8 >> 6) & 0x01;
@@ -418,10 +391,38 @@ void handleApiData5(AsyncWebServerRequest *request) {
     if(readByte(0x20, val8)) { doc["IBAT_REG_STAT"] = (val8 >> 7) & 0x01; } else { doc["IBAT_REG_STAT"] = -1; }
     if(readWord(0x43, val16)) { doc["D_PLUS_ADC_15_0"] = val16; } else { doc["D_PLUS_ADC_15_0"] = -1; }
     if(readWord(0x45, val16)) { doc["D_MINUS_ADC_15_0"] = val16; } else { doc["D_MINUS_ADC_15_0"] = -1; }
+    String output; serializeJson(doc, output); request->send(200, "application/json", output);
+}
 
-    String output;
-    serializeJson(doc, output);
-    request->send(200, "application/json", output);
+void handleApiWrite(AsyncWebServerRequest *request) {
+    if (request->hasParam("reg", true) && request->hasParam("val", true)) {
+        String regName = request->getParam("reg", true)->value();
+        long val = request->getParam("val", true)->value().toInt();
+        bool success = false;
+
+        Serial.printf("Write request for %s with value %ld\n", regName.c_str(), val);
+
+        if (regName == "VSYSMIN_5_0") { uint8_t regVal = (val - 2500) / 250; success = modifyByte(0x00, regVal, 0x3F); }
+        else if (regName == "VREG_10_0") { uint16_t regVal = val / 10; success = writeWord(0x01, regVal); }
+        else if (regName == "ICHG_8_0") { uint16_t regVal = val / 10; success = writeWord(0x03, regVal); }
+        else if (regName == "VINDPM_7_0") { uint8_t regVal = (val - 3600) / 100; success = writeByte(0x05, regVal); }
+        else if (regName == "IINDPM_8_0") { uint16_t regVal = val / 10; success = writeWord(0x06, regVal); }
+        else if (regName == "IPRECHG_5_0") { uint8_t regVal = val / 40; success = modifyByte(0x08, regVal, 0x3F); }
+        else if (regName == "ITERM_4_0") { uint8_t regVal = val / 40; success = modifyByte(0x09, regVal, 0x1F); }
+        else if (regName == "VOTG_10_0") { uint16_t regVal = (val - 2800) / 10; success = writeWord(0x0B, regVal); }
+        else if (regName == "IOTG_6_0") { uint8_t regVal = val / 40; success = modifyByte(0x0D, regVal, 0x7F); }
+        else if (regName == "EN_CHG") { success = modifyByte(0x0F, (uint8_t)val << 5, 0b00100000); }
+        else if (regName == "EN_ICO") { success = modifyByte(0x0F, (uint8_t)val << 4, 0b00010000); }
+        else if (regName == "EN_HIZ") { success = modifyByte(0x0F, (uint8_t)val << 2, 0b00000100); }
+        else if (regName == "EN_TERM") { success = modifyByte(0x0F, (uint8_t)val << 1, 0b00000010); }
+        else if (regName == "WATCHDOG_2_0") { success = modifyByte(0x10, (uint8_t)val, 0b00000111); }
+        else if (regName == "EN_OTG") { success = modifyByte(0x12, (uint8_t)val << 6, 0b01000000); }
+        
+        if (success) { request->send(200, "text/plain", "OK"); } 
+        else { request->send(500, "text/plain", "Failed to write to register."); }
+    } else {
+        request->send(400, "text/plain", "Missing parameters.");
+    }
 }
 
 
@@ -429,23 +430,19 @@ void setup() {
     Serial.begin(115200);
     Wire.begin();
 
-    // Initialize LittleFS
     if (!LittleFS.begin(true)) {
         Serial.println("An Error has occurred while mounting LittleFS");
         return;
     }
 
-    // Setup Access Point
     WiFi.softAP(ssid, password);
     IPAddress IP = WiFi.softAPIP();
     Serial.print("AP IP address: ");
     Serial.println(IP);
 
-    // --- Setup Interrupt Pin ---
     pinMode(interruptPin, INPUT_PULLUP);
     attachInterrupt(digitalPinToInterrupt(interruptPin), handleInterrupt, FALLING);
 
-    // --- Setup WebSocket ---
     ws.onEvent(onEvent);
     server.addHandler(&ws);
 
@@ -458,13 +455,15 @@ void setup() {
     server.on("/page5.html", HTTP_GET, [](AsyncWebServerRequest *request){ request->send(LittleFS, "/page5.html", "text/html"); });
     server.on("/style.css", HTTP_GET, [](AsyncWebServerRequest *request) { request->send(LittleFS, "/style.css", "text/css"); });
     server.on("/script.js", HTTP_GET, [](AsyncWebServerRequest *request) { request->send(LittleFS, "/script.js", "text/javascript"); });
-
+    
     // API routes
     server.on("/api/data1", HTTP_GET, handleApiData1);
     server.on("/api/data2", HTTP_GET, handleApiData2);
     server.on("/api/data3", HTTP_GET, handleApiData3);
     server.on("/api/data4", HTTP_GET, handleApiData4);
     server.on("/api/data5", HTTP_GET, handleApiData5);
+
+    server.on("/api/write", HTTP_POST, handleApiWrite);
 
     server.onNotFound([](AsyncWebServerRequest *request) { request->send(404, "text/plain", "Not found"); });
 
@@ -474,16 +473,13 @@ void setup() {
 
 void loop() {
     if (interruptFired) {
-        interruptFired = false; // Reset the flag
-        Serial.println("Interrupt received!");
-        
+        interruptFired = false;
         String reason = getInterruptReason();
-        
         if (reason.length() > 0) {
             Serial.print("Reason: ");
             Serial.println(reason);
-            ws.textAll(reason); // Send reason to all connected web clients
+            ws.textAll(reason);
         }
     }
-    ws.cleanupClients(); // Handle disconnected clients
+    ws.cleanupClients();
 }

@@ -33,13 +33,12 @@ document.addEventListener('DOMContentLoaded', function() {
             toast.className = "show";
             setTimeout(function() {
                 toast.className = toast.className.replace("show", "");
-            }, 5000); // پاپ آپ بعد از ۵ ثانیه محو می شود
+            }, 5000); // Popup disappears after 5 seconds
         }
     }
 
     // Initialize WebSocket on page load
     initWebSocket();
-
 
     // --- Data Fetching & Interpretation Logic ---
     if (typeof window.API_ENDPOINT === 'undefined') {
@@ -68,46 +67,39 @@ document.addEventListener('DOMContentLoaded', function() {
         SDRV_DLY: v => v ? "No Delay" : "10s Delay",
         ADC_RATE: v => v ? "One Shot" : "Continuous",
         ADC_AVG_INIT: v => v ? "New ADC" : "Existing",
-        
-        // Simple boolean (0/1) interpreters
-        _default_bool: v => v ? "Enabled" : "Disabled",
-        _default_bool_rev: v => v ? "Disabled" : "Enabled",
-        _default_stat: v => v ? "Active" : "Inactive",
-        _default_fault: v => v ? "Fault" : "OK",
-        _default_present: v => v ? "Present" : "Not Present",
-        _default_done: v => v ? "Done" : "In Progress",
     };
     
+    // Map for simple boolean-like registers to avoid repetition
     const keyMap = {
-        EN_CHG: interpreters._default_bool, VBUS_PRESENT_STAT: interpreters._default_present, VBAT_PRESENT_STAT: interpreters._default_present,
-        VSYS_STAT: v => v ? "VSYSMIN Reg" : "Normal", EN_ICO: interpreters._default_bool, FORCE_ICO: interpreters._default_stat,
-        EN_HIZ: interpreters._default_bool, EN_OTG: interpreters._default_bool, EN_ACDRV2: interpreters._default_bool,
-        EN_ACDRV1: interpreters._default_bool, DIS_ACDRV: interpreters._default_bool_rev, SFET_PRESENT: v => v ? "Yes" : "No",
-        EN_MPPT: interpreters._default_bool, VBATOTG_LOW_STAT: v => v ? "Low" : "OK", ADC_EN: interpreters._default_bool,
-        VBUS_OVP_STAT: interpreters._default_fault, VBAT_OVP_STAT: interpreters._default_fault, IBUS_OCP_STAT: interpreters._default_fault,
-        IBAT_OCP_STAT: interpreters._default_fault, CONV_OCP_STAT: interpreters._default_fault, VSYS_SHORT_STAT: interpreters._default_fault,
-        VSYS_OVP_STAT: interpreters._default_fault, OTG_OVP_STAT: interpreters._default_fault, OTG_UVP_STAT: interpreters._default_fault,
-        TSHUT_STAT: interpreters._default_fault, EN_IBAT: interpreters._default_bool, EN_IINDPM: interpreters._default_bool,
-        EN_EXTILIM: interpreters._default_bool, VAC2_OVP_STAT: interpreters._default_fault, VAC1_OVP_STAT: interpreters._default_fault,
-        STOP_WD_CHG: v => v ? "Yes" : "No", EN_TRICHG_TMR: interpreters._default_bool, EN_PRECHG_TMR: interpreters._default_bool,
-        EN_CHG_TMR: interpreters._default_bool, TMR2X_EN: interpreters._default_bool, EN_AUTO_IBATDIS: interpreters._default_bool,
-        FORCE_IBATDIS: interpreters._default_stat, EN_TERM: interpreters._default_bool, FORCE_INDET: interpreters._default_stat,
-        AUTO_INDET_EN: interpreters._default_bool, EN_12V: interpreters._default_bool, EN_9V: interpreters._default_bool,
-        HVDCP_EN: interpreters._default_bool, PFM_OTG_DIS: interpreters._default_bool_rev, PFM_FWD_DIS: interpreters._default_bool_rev,
-        DIS_LDO: interpreters._default_bool_rev, DIS_OTG_OOA: interpreters._default_bool_rev, DIS_FWD_OOA: interpreters._default_bool_rev,
-        DIS_STAT: interpreters._default_bool_rev, DIS_VSYS_SHORT: interpreters._default_bool_rev, DIS_VOTG_UVP: interpreters._default_bool_rev,
-        EN_IBUS_OCP: interpreters._default_bool, EN_BATOC: interpreters._default_bool, VBUS_PD_EN: interpreters._default_bool,
-        VAC1_PD_EN: interpreters._default_bool, VAC2_PD_EN: interpreters._default_bool, TS_IGNORE: v => v ? "Yes" : "No",
-        ADC_AVG: interpreters._default_bool, IBUS_ADC_DIS: interpreters._default_bool_rev, IBAT_ADC_DIS: interpreters._default_bool_rev,
-        VBUS_ADC_DIS: interpreters._default_bool_rev, VBAT_ADC_DIS: interpreters._default_bool_rev, VSYS_ADC_DIS: interpreters._default_bool_rev,
-        TS_ADC_DIS: interpreters._default_bool_rev, TDIE_ADC_DIS: interpreters._default_bool_rev, DP_ADC_DIS: interpreters._default_bool_rev,
-        DM_ADC_DIS: interpreters._default_bool_rev, VAC2_ADC_DIS: interpreters._default_bool_rev, VAC1_ADC_DIS: interpreters._default_bool_rev,
-        IINDPM_STAT: interpreters._default_stat, VINDPM_STAT: interpreters._default_stat, WD_STAT: v => v ? "Expired" : "OK",
-        PG_STAT: v => v ? "Power Good" : "Not Good", BC1_2_DONE_STAT: interpreters._default_done, TREG_STAT: interpreters._default_stat,
-        DPDM_STAT: interpreters._default_done, ACRB2_STAT: interpreters._default_present, ACRB1_STAT: interpreters._default_present,
-        ADC_DONE_STAT: interpreters._default_done, CHG_TMR_STAT: v => v ? "Expired" : "OK", TRICHG_TMR_STAT: v => v ? "Expired" : "OK",
-        PRECHG_TMR_STAT: v => v ? "Expired" : "OK", TS_COLD_STAT: interpreters._default_fault, TS_COOL_STAT: interpreters._default_stat,
-        TS_WARM_STAT: interpreters._default_stat, TS_HOT_STAT: interpreters._default_fault, IBAT_REG_STAT: interpreters._default_stat,
+        EN_CHG: v => v ? "Enabled" : "Disabled", VBUS_PRESENT_STAT: v => v ? "Present" : "Not Present", VBAT_PRESENT_STAT: v => v ? "Present" : "Not Present",
+        VSYS_STAT: v => v ? "VSYSMIN Reg" : "Normal", EN_ICO: v => v ? "Enabled" : "Disabled", FORCE_ICO: v => v ? "Active" : "Inactive",
+        EN_HIZ: v => v ? "Enabled" : "Disabled", EN_OTG: v => v ? "Enabled" : "Disabled", EN_ACDRV2: v => v ? "Enabled" : "Disabled",
+        EN_ACDRV1: v => v ? "Enabled" : "Disabled", DIS_ACDRV: v => v ? "Disabled" : "Enabled", SFET_PRESENT: v => v ? "Yes" : "No",
+        EN_MPPT: v => v ? "Enabled" : "Disabled", VBATOTG_LOW_STAT: v => v ? "Low" : "OK", ADC_EN: v => v ? "Enabled" : "Disabled",
+        VBUS_OVP_STAT: v => v ? "Fault" : "OK", VBAT_OVP_STAT: v => v ? "Fault" : "OK", IBUS_OCP_STAT: v => v ? "Fault" : "OK",
+        IBAT_OCP_STAT: v => v ? "Fault" : "OK", CONV_OCP_STAT: v => v ? "Fault" : "OK", VSYS_SHORT_STAT: v => v ? "Fault" : "OK",
+        VSYS_OVP_STAT: v => v ? "Fault" : "OK", OTG_OVP_STAT: v => v ? "Fault" : "OK", OTG_UVP_STAT: v => v ? "Fault" : "OK",
+        TSHUT_STAT: v => v ? "Fault" : "OK", EN_IBAT: v => v ? "Enabled" : "Disabled", EN_IINDPM: v => v ? "Enabled" : "Disabled",
+        EN_EXTILIM: v => v ? "Enabled" : "Disabled", VAC2_OVP_STAT: v => v ? "Fault" : "OK", VAC1_OVP_STAT: v => v ? "Fault" : "OK",
+        STOP_WD_CHG: v => v ? "Yes" : "No", EN_TRICHG_TMR: v => v ? "Enabled" : "Disabled", EN_PRECHG_TMR: v => v ? "Enabled" : "Disabled",
+        EN_CHG_TMR: v => v ? "Enabled" : "Disabled", TMR2X_EN: v => v ? "Enabled" : "Disabled", EN_AUTO_IBATDIS: v => v ? "Enabled" : "Disabled",
+        FORCE_IBATDIS: v => v ? "Active" : "Inactive", EN_TERM: v => v ? "Enabled" : "Disabled", FORCE_INDET: v => v ? "Active" : "Inactive",
+        AUTO_INDET_EN: v => v ? "Enabled" : "Disabled", EN_12V: v => v ? "Enabled" : "Disabled", EN_9V: v => v ? "Enabled" : "Disabled",
+        HVDCP_EN: v => v ? "Enabled" : "Disabled", PFM_OTG_DIS: v => v ? "Disabled" : "Enabled", PFM_FWD_DIS: v => v ? "Disabled" : "Enabled",
+        DIS_LDO: v => v ? "Disabled" : "Enabled", DIS_OTG_OOA: v => v ? "Disabled" : "Enabled", DIS_FWD_OOA: v => v ? "Disabled" : "Enabled",
+        DIS_STAT: v => v ? "Disabled" : "Enabled", DIS_VSYS_SHORT: v => v ? "Disabled" : "Enabled", DIS_VOTG_UVP: v => v ? "Disabled" : "Enabled",
+        EN_IBUS_OCP: v => v ? "Enabled" : "Disabled", EN_BATOC: v => v ? "Enabled" : "Disabled", VBUS_PD_EN: v => v ? "Enabled" : "Disabled",
+        VAC1_PD_EN: v => v ? "Enabled" : "Disabled", VAC2_PD_EN: v => v ? "Enabled" : "Disabled", TS_IGNORE: v => v ? "Yes" : "No",
+        ADC_AVG: v => v ? "Enabled" : "Disabled", IBUS_ADC_DIS: v => v ? "Disabled" : "Enabled", IBAT_ADC_DIS: v => v ? "Disabled" : "Enabled",
+        VBUS_ADC_DIS: v => v ? "Disabled" : "Enabled", VBAT_ADC_DIS: v => v ? "Disabled" : "Enabled", VSYS_ADC_DIS: v => v ? "Disabled" : "Enabled",
+        TS_ADC_DIS: v => v ? "Disabled" : "Enabled", TDIE_ADC_DIS: v => v ? "Disabled" : "Enabled", DP_ADC_DIS: v => v ? "Disabled" : "Enabled",
+        DM_ADC_DIS: v => v ? "Disabled" : "Enabled", VAC2_ADC_DIS: v => v ? "Disabled" : "Enabled", VAC1_ADC_DIS: v => v ? "Disabled" : "Enabled",
+        IINDPM_STAT: v => v ? "Active" : "Inactive", VINDPM_STAT: v => v ? "Active" : "Inactive", WD_STAT: v => v ? "Expired" : "OK",
+        PG_STAT: v => v ? "Power Good" : "Not Good", BC1_2_DONE_STAT: v => v ? "Done" : "In Progress", TREG_STAT: v => v ? "Active" : "Inactive",
+        DPDM_STAT: v => v ? "In Progress" : "Done", ACRB2_STAT: v => v ? "Present" : "Not Present", ACRB1_STAT: v => v ? "Present" : "Not Present",
+        ADC_DONE_STAT: v => v ? "Done" : "In Progress", CHG_TMR_STAT: v => v ? "Expired" : "OK", TRICHG_TMR_STAT: v => v ? "Expired" : "OK",
+        PRECHG_TMR_STAT: v => v ? "Expired" : "OK", TS_COLD_STAT: v => v ? "Fault" : "OK", TS_COOL_STAT: v => v ? "Active" : "Inactive",
+        TS_WARM_STAT: v => v ? "Active" : "Inactive", TS_HOT_STAT: v => v ? "Fault" : "OK", IBAT_REG_STAT: v => v ? "Active" : "Inactive",
     };
 
     const fetchData = async () => {
@@ -145,4 +137,57 @@ document.addEventListener('DOMContentLoaded', function() {
 
     fetchData();
     setInterval(fetchData, 10000);
+
+    // --- Click Event Handler for Writable Registers ---
+    document.getElementById('data-container').addEventListener('click', function(event) {
+        const card = event.target.closest('.data-card.writable');
+        if (!card) return;
+
+        const regName = card.dataset.reg;
+        const currentValueSpan = card.querySelector('.value');
+        const currentValue = currentValueSpan.textContent;
+
+        let newValue;
+        // For boolean-like registers, just toggle the value
+        if (currentValue === "Enabled" || currentValue === "Disabled" || currentValue === "Yes" || currentValue === "No") {
+            newValue = (currentValue === "Enabled" || currentValue === "Yes") ? 0 : 1;
+        } else {
+            // For numeric values, show a prompt
+            let promptValue = currentValue.replace(/[^\d.-]/g, ''); // Remove units like 'mV', 'mA' for prompt
+            newValue = prompt(`مقدار جدید را برای ${regName} وارد کنید:\n(مقدار فعلی: ${currentValue})`, promptValue);
+        }
+        
+        if (newValue === null || newValue.trim() === "") {
+            console.log('Write operation cancelled.');
+            return; // User cancelled or entered empty value
+        }
+
+        // Send the new value to the server
+        sendWriteRequest(regName, newValue);
+    });
+
+    async function sendWriteRequest(reg, val) {
+        try {
+            const response = await fetch('/api/write', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: `reg=${encodeURIComponent(reg)}&val=${encodeURIComponent(val)}`
+            });
+
+            if (response.ok) {
+                console.log(`Successfully wrote ${val} to ${reg}`);
+                showToast(`مقدار ${reg} با موفقیت به ${val} تغییر یافت.`);
+                // Refresh data immediately to show the change
+                fetchData(); 
+            } else {
+                const errorText = await response.text();
+                alert(`Error writing to register: ${errorText}`);
+            }
+        } catch (error) {
+            console.error('Failed to send write request:', error);
+            alert('Failed to send write request. Check connection.');
+        }
+    }
 });
