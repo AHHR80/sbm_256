@@ -165,6 +165,35 @@ document.addEventListener('DOMContentLoaded', function() {
         // Send the new value to the server
         sendWriteRequest(regName, newValue);
     });
+    
+    // --- Modal and Reset Button Logic ---
+    const resetButton = document.getElementById('reset-button');
+    const confirmModal = document.getElementById('confirm-modal');
+    const confirmYes = document.getElementById('confirm-yes');
+    const confirmNo = document.getElementById('confirm-no');
+
+    if (resetButton && confirmModal && confirmYes && confirmNo) {
+        resetButton.addEventListener('click', () => {
+            confirmModal.style.display = 'flex';
+        });
+
+        confirmNo.addEventListener('click', () => {
+            confirmModal.style.display = 'none';
+        });
+
+        confirmYes.addEventListener('click', () => {
+            console.log('Sending REG_RST command...');
+            sendWriteRequest('REG_RST', 1);
+            confirmModal.style.display = 'none';
+        });
+
+        // Also close modal if clicking outside of it
+        window.addEventListener('click', (event) => {
+            if (event.target == confirmModal) {
+                confirmModal.style.display = 'none';
+            }
+        });
+    }
 
     async function sendWriteRequest(reg, val) {
         try {
@@ -180,14 +209,14 @@ document.addEventListener('DOMContentLoaded', function() {
                 console.log(`Successfully wrote ${val} to ${reg}`);
                 showToast(`مقدار ${reg} با موفقیت به ${val} تغییر یافت.`);
                 // Refresh data immediately to show the change
-                fetchData(); 
+                setTimeout(fetchData, 500); // Wait a bit for the device to process the reset
             } else {
                 const errorText = await response.text();
-                alert(`Error writing to register: ${errorText}`);
+                showToast(`خطا در نوشتن: ${errorText}`);
             }
         } catch (error) {
             console.error('Failed to send write request:', error);
-            alert('Failed to send write request. Check connection.');
+            showToast('خطا در ارسال درخواست. اتصال را بررسی کنید.');
         }
     }
 });

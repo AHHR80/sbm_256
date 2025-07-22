@@ -413,9 +413,15 @@ void handleApiWrite(AsyncWebServerRequest *request) {
         bool success = false;
 
         Serial.printf("Write request for %s with value %ld\n", regName.c_str(), val);
-
+        
+        // Handle REG_RST command
+        if (regName == "REG_RST") {
+            // This bit is self-clearing, so we just write 1 to it.
+            // It's in REG0x09, bit 6
+            success = modifyByte(0x09, 0b01000000, 0b01000000);
+        }
         // Page 1
-        if (regName == "VSYSMIN_5_0") { uint8_t regVal = (val - 2500) / 250; success = modifyByte(0x00, regVal, 0x3F); }
+        else if (regName == "VSYSMIN_5_0") { uint8_t regVal = (val - 2500) / 250; success = modifyByte(0x00, regVal, 0x3F); }
         else if (regName == "CELL_1_0") { if (val >= 1 && val <= 4) { uint8_t regVal = (val - 1); success = modifyByte(0x0A, regVal << 6, 0b11000000); } }
         else if (regName == "VOTG_10_0") { uint16_t regVal = (val - 2800) / 10; success = writeWord(0x0B, regVal); }
         else if (regName == "IOTG_6_0") { uint8_t regVal = val / 40; success = modifyByte(0x0D, regVal, 0x7F); }

@@ -36,9 +36,28 @@
             <div class="data-card"><span class="label">VSYS_ADC (mV)</span><span id="VSYS_ADC_15_0" class="value">--</span></div>
             <div class="data-card"><span class="label">TS_ADC (%)</span><span id="TS_ADC_15_0" class="value">--</span></div>
             <div class="data-card"><span class="label">TDIE_ADC (°C)</span><span id="TDIE_ADC_15_0" class="value">--</span></div>
+
+            <!-- Reset Button Container -->
+            <div class="reset-container">
+                <button id="reset-button" class="action-button">بازگردانی به تنظیمات اولیه (REG_RST)</button>
+            </div>
         </main>
     </div>
+    
+    <!-- Toast Notification -->
     <div id="toast"></div>
+
+    <!-- Confirmation Modal -->
+    <div id="confirm-modal" class="modal">
+        <div class="modal-content">
+            <p>آیا مطمئن هستید که می‌خواهید تمام تنظیمات را به حالت اولیه بازگردانید؟</p>
+            <div class="modal-buttons">
+                <button id="confirm-yes">بله</button>
+                <button id="confirm-no">خیر</button>
+            </div>
+        </div>
+    </div>
+
     <script> window.API_ENDPOINT = '/api/data1'; </script>
     <script src="script.js"></script>
 </body>
