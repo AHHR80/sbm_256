@@ -18,6 +18,7 @@ AsyncWebSocket ws("/ws"); // WebSocket endpoint
 volatile bool interruptFired = false; // Flag for interrupt detection
 
 // --- I2C Communication Functions ---
+// Reads a 16-bit word (two bytes) from a register
 bool readWord(uint8_t reg, uint16_t& value) {
     Wire.beginTransmission(BQ25672_I2C_ADDR);
     Wire.write(reg);
@@ -29,13 +30,15 @@ bool readWord(uint8_t reg, uint16_t& value) {
     return true;
 }
 
+// Reads an 8-bit byte from a register (BQ25672 registers are 16-bit, so we read a word and take the LSB)
 bool readByte(uint8_t reg, uint8_t& value) {
     uint16_t wordValue;
     if (!readWord(reg, wordValue)) { return false; }
-    value = (uint8_t)wordValue;
+    value = (uint8_t)wordValue; // The actual data is in the LSB
     return true;
 }
 
+// Writes a 16-bit word to a register
 bool writeWord(uint8_t reg, uint16_t value) {
     Wire.beginTransmission(BQ25672_I2C_ADDR);
     Wire.write(reg);
@@ -48,26 +51,29 @@ bool writeWord(uint8_t reg, uint16_t value) {
     return true;
 }
 
-// BQ25672 uses a 16-bit architecture. To write an 8-bit value, we write it as the LSB and 0x00 as the MSB.
+// Writes an 8-bit byte to a register
 bool writeByte(uint8_t reg, uint8_t value) {
+    // For BQ25672, writing a byte means writing a 16-bit word with MSB=0
     return writeWord(reg, (uint16_t)value);
 }
 
-// Helper function to read-modify-write an 8-bit register
+// Helper function to read, modify, and then write back a byte register
 bool modifyByte(uint8_t reg, uint8_t value, uint8_t mask) {
     uint8_t currentValue;
     if (!readByte(reg, currentValue)) {
+        Serial.printf("Failed to read reg 0x%02X for modification\n", reg);
         return false;
     }
     uint8_t newValue = (currentValue & ~mask) | (value & mask);
     return writeByte(reg, newValue);
 }
 
-// Helper function to read a block of consecutive 8-bit registers using multi-read
+// Reads a block of consecutive 8-bit registers
 bool readBytes(uint8_t startReg, uint8_t* buffer, uint8_t count) {
     Wire.beginTransmission(BQ25672_I2C_ADDR);
     Wire.write(startReg);
     if (Wire.endTransmission(false) != 0) { return false; }
+    // BQ25672 increments address pointer, so we can read multiple bytes
     if (Wire.requestFrom((uint8_t)BQ25672_I2C_ADDR, count) != count) { return false; }
     for (int i = 0; i < count; i++) { buffer[i] = Wire.read(); }
     return true;
@@ -75,6 +81,7 @@ bool readBytes(uint8_t startReg, uint8_t* buffer, uint8_t count) {
 
 
 // --- Interrupt Logic ---
+// Decodes the reason for an interrupt by reading the flag registers
 String getInterruptReason() {
     String reason = "";
     uint8_t flag_buffer[6]; // Buffer for registers 0x22 to 0x27
@@ -164,7 +171,7 @@ void handleApiData1(AsyncWebServerRequest *request) {
     uint8_t val8;
     if (readByte(0x00, val8)) { doc["VSYSMIN_5_0"] = 2500 + ((val8 & 0x3F) * 250); } else { doc["VSYSMIN_5_0"] = -1; }
     if (readByte(0x0A, val8)) { doc["CELL_1_0"] = ((val8 >> 6) & 0x03) + 1; } else { doc["CELL_1_0"] = -1; }
-    if (readWord(0x0B, val16)) { doc["VOTG_1_0"] = 2800 + ((val16 & 0x7FF) * 10); } else { doc["VOTG_10_0"] = -1; }
+    if (readWord(0x0B, val16)) { doc["VOTG_10_0"] = 2800 + ((val16 & 0x7FF) * 10); } else { doc["VOTG_10_0"] = -1; }
     if (readByte(0x0D, val8)) { doc["IOTG_6_0"] = (val8 & 0x7F) * 40; } else { doc["IOTG_6_0"] = -1; }
     if (readByte(0x0F, val8)) { doc["EN_CHG"] = (val8 >> 5) & 0x01; } else { doc["EN_CHG"] = -1; }
     if (readByte(0x1B, val8)) { doc["VBUS_PRESENT_STAT"] = val8 & 0x01; } else { doc["VBUS_PRESENT_STAT"] = -1; }
@@ -394,6 +401,7 @@ void handleApiData5(AsyncWebServerRequest *request) {
     String output; serializeJson(doc, output); request->send(200, "application/json", output);
 }
 
+// --- UPDATED API WRITE HANDLER ---
 void handleApiWrite(AsyncWebServerRequest *request) {
     if (request->hasParam("reg", true) && request->hasParam("val", true)) {
         String regName = request->getParam("reg", true)->value();
@@ -402,25 +410,104 @@ void handleApiWrite(AsyncWebServerRequest *request) {
 
         Serial.printf("Write request for %s with value %ld\n", regName.c_str(), val);
 
+        // Page 1
         if (regName == "VSYSMIN_5_0") { uint8_t regVal = (val - 2500) / 250; success = modifyByte(0x00, regVal, 0x3F); }
+        else if (regName == "CELL_1_0") { if (val >= 1 && val <= 4) { uint8_t regVal = (val - 1); success = modifyByte(0x0A, regVal << 6, 0b11000000); } }
+        else if (regName == "VOTG_10_0") { uint16_t regVal = (val - 2800) / 10; success = writeWord(0x0B, regVal); }
+        else if (regName == "IOTG_6_0") { uint8_t regVal = val / 40; success = modifyByte(0x0D, regVal, 0x7F); }
+        else if (regName == "EN_CHG") { success = modifyByte(0x0F, (uint8_t)val << 5, 0b00100000); }
+        
+        // Page 2
         else if (regName == "VREG_10_0") { uint16_t regVal = val / 10; success = writeWord(0x01, regVal); }
         else if (regName == "ICHG_8_0") { uint16_t regVal = val / 10; success = writeWord(0x03, regVal); }
         else if (regName == "VINDPM_7_0") { uint8_t regVal = (val - 3600) / 100; success = writeByte(0x05, regVal); }
         else if (regName == "IINDPM_8_0") { uint16_t regVal = val / 10; success = writeWord(0x06, regVal); }
-        else if (regName == "IPRECHG_5_0") { uint8_t regVal = val / 40; success = modifyByte(0x08, regVal, 0x3F); }
-        else if (regName == "ITERM_4_0") { uint8_t regVal = val / 40; success = modifyByte(0x09, regVal, 0x1F); }
-        else if (regName == "VOTG_10_0") { uint16_t regVal = (val - 2800) / 10; success = writeWord(0x0B, regVal); }
-        else if (regName == "IOTG_6_0") { uint8_t regVal = val / 40; success = modifyByte(0x0D, regVal, 0x7F); }
-        else if (regName == "EN_CHG") { success = modifyByte(0x0F, (uint8_t)val << 5, 0b00100000); }
         else if (regName == "EN_ICO") { success = modifyByte(0x0F, (uint8_t)val << 4, 0b00010000); }
         else if (regName == "EN_HIZ") { success = modifyByte(0x0F, (uint8_t)val << 2, 0b00000100); }
-        else if (regName == "EN_TERM") { success = modifyByte(0x0F, (uint8_t)val << 1, 0b00000010); }
-        else if (regName == "WATCHDOG_2_0") { success = modifyByte(0x10, (uint8_t)val, 0b00000111); }
+        else if (regName == "SDRV_CTRL_1_0") { success = modifyByte(0x11, (uint8_t)val << 1, 0b00000110); }
         else if (regName == "EN_OTG") { success = modifyByte(0x12, (uint8_t)val << 6, 0b01000000); }
-        else if (regName == "CELL_1_0") { if (val >= 1 && val <= 4) { uint8_t regVal = (val - 1); success = modifyByte(0x0A, regVal << 6, 0b11000000); } }
+        else if (regName == "EN_ACDRV2") { success = modifyByte(0x13, (uint8_t)val << 7, 0b10000000); }
+        else if (regName == "EN_ACDRV1") { success = modifyByte(0x13, (uint8_t)val << 6, 0b01000000); }
+        else if (regName == "EN_MPPT") { success = modifyByte(0x15, (uint8_t)val, 0b00000001); }
+        else if (regName == "ADC_EN") { success = modifyByte(0x2E, (uint8_t)val << 7, 0b10000000); }
+
+        // Page 3
+        else if (regName == "VBAT_LOWV_1_0") { success = modifyByte(0x08, (uint8_t)val << 6, 0b11000000); }
+        else if (regName == "IPRECHG_5_0") { uint8_t regVal = val / 40; success = modifyByte(0x08, regVal, 0x3F); }
+        else if (regName == "ITERM_4_0") { uint8_t regVal = val / 40; success = modifyByte(0x09, regVal, 0x1F); }
+        else if (regName == "TRECHG_1_0") { success = modifyByte(0x0A, (uint8_t)val << 4, 0b00110000); }
+        else if (regName == "VRECHG_3_0") { uint8_t regVal = (val - 50) / 50; success = modifyByte(0x0A, regVal, 0x0F); }
+        else if (regName == "VAC_OVP_1_0") { success = modifyByte(0x10, (uint8_t)val << 4, 0b00110000); }
+        else if (regName == "EN_IBAT") { success = modifyByte(0x14, (uint8_t)val << 5, 0b00100000); }
+        else if (regName == "IBAT_REG_1_0") { success = modifyByte(0x14, (uint8_t)val << 3, 0b00011000); }
+        else if (regName == "EN_IINDPM") { success = modifyByte(0x14, (uint8_t)val << 2, 0b00000100); }
+        else if (regName == "EN_EXTILIM") { success = modifyByte(0x14, (uint8_t)val << 1, 0b00000010); }
+        else if (regName == "ADC_SAMPLE_1_0") { success = modifyByte(0x2E, (uint8_t)val << 4, 0b00110000); }
+
+        // Page 4 (A large number of registers)
+        else if (regName == "STOP_WD_CHG") { success = modifyByte(0x09, (uint8_t)val << 5, 0b00100000); }
+        else if (regName == "PRECHG_TMR") { success = modifyByte(0x0D, (uint8_t)val << 7, 0b10000000); }
+        else if (regName == "TOPOFF_TMR_1_0") { success = modifyByte(0x0E, (uint8_t)val << 6, 0b11000000); }
+        else if (regName == "EN_TRICHG_TMR") { success = modifyByte(0x0E, (uint8_t)val << 5, 0b00100000); }
+        else if (regName == "EN_PRECHG_TMR") { success = modifyByte(0x0E, (uint8_t)val << 4, 0b00010000); }
+        else if (regName == "EN_CHG_TMR") { success = modifyByte(0x0E, (uint8_t)val << 3, 0b00001000); }
+        else if (regName == "CHG_TMR_1_0") { success = modifyByte(0x0E, (uint8_t)val << 1, 0b00000110); }
+        else if (regName == "TMR2X_EN") { success = modifyByte(0x0E, (uint8_t)val, 0b00000001); }
+        else if (regName == "EN_AUTO_IBATDIS") { success = modifyByte(0x0F, (uint8_t)val << 7, 0b10000000); }
+        else if (regName == "EN_TERM") { success = modifyByte(0x0F, (uint8_t)val << 1, 0b00000010); }
+        else if (regName == "WATCHDOG_2_0") { success = modifyByte(0x10, (uint8_t)val, 0x07); }
+        else if (regName == "AUTO_INDET_EN") { success = modifyByte(0x11, (uint8_t)val << 6, 0b01000000); }
+        else if (regName == "EN_12V") { success = modifyByte(0x11, (uint8_t)val << 5, 0b00100000); }
+        else if (regName == "EN_9V") { success = modifyByte(0x11, (uint8_t)val << 4, 0b00010000); }
+        else if (regName == "HVDCP_EN") { success = modifyByte(0x11, (uint8_t)val << 3, 0b00001000); }
+        else if (regName == "SDRV_DLY") { success = modifyByte(0x11, (uint8_t)val, 0b00000001); }
+        else if (regName == "PFM_OTG_DIS") { success = modifyByte(0x12, (uint8_t)val << 5, 0b00100000); }
+        else if (regName == "PFM_FWD_DIS") { success = modifyByte(0x12, (uint8_t)val << 4, 0b00010000); }
+        else if (regName == "WKUP_DLY") { success = modifyByte(0x12, (uint8_t)val << 3, 0b00001000); }
+        else if (regName == "DIS_LDO") { success = modifyByte(0x12, (uint8_t)val << 2, 0b00000100); }
+        else if (regName == "DIS_OTG_OOA") { success = modifyByte(0x12, (uint8_t)val << 1, 0b00000010); }
+        else if (regName == "DIS_FWD_OOA") { success = modifyByte(0x12, (uint8_t)val, 0b00000001); }
+        else if (regName == "PWM_FREQ") { success = modifyByte(0x13, (uint8_t)val << 5, 0b00100000); }
+        else if (regName == "DIS_STAT") { success = modifyByte(0x13, (uint8_t)val << 4, 0b00010000); }
+        else if (regName == "DIS_VSYS_SHORT") { success = modifyByte(0x13, (uint8_t)val << 3, 0b00001000); }
+        else if (regName == "DIS_VOTG_UVP") { success = modifyByte(0x13, (uint8_t)val << 2, 0b00000100); }
+        else if (regName == "EN_IBUS_OCP") { success = modifyByte(0x13, (uint8_t)val, 0b00000001); }
+        else if (regName == "EN_BATOC") { success = modifyByte(0x14, (uint8_t)val, 0b00000001); }
+        else if (regName == "VOC_PCT_2_0") { success = modifyByte(0x15, (uint8_t)val << 5, 0b11100000); }
+        else if (regName == "VOC_DLY_1_0") { success = modifyByte(0x15, (uint8_t)val << 3, 0b00011000); }
+        else if (regName == "VOC_RATE_1_0") { success = modifyByte(0x15, (uint8_t)val << 1, 0b00000110); }
+        else if (regName == "TREG_1_0") { success = modifyByte(0x16, (uint8_t)val << 6, 0b11000000); }
+        else if (regName == "TSHUT_1_0") { success = modifyByte(0x16, (uint8_t)val << 4, 0b00110000); }
+        else if (regName == "VBUS_PD_EN") { success = modifyByte(0x16, (uint8_t)val << 3, 0b00001000); }
+        else if (regName == "VAC1_PD_EN") { success = modifyByte(0x16, (uint8_t)val << 2, 0b00000100); }
+        else if (regName == "VAC2_PD_EN") { success = modifyByte(0x16, (uint8_t)val << 1, 0b00000010); }
+        else if (regName == "JEITA_VSET_2_0") { success = modifyByte(0x17, (uint8_t)val << 5, 0b11100000); }
+        else if (regName == "JEITA_ISETH_1_0") { success = modifyByte(0x17, (uint8_t)val << 3, 0b00011000); }
+        else if (regName == "JEITA_ISETC_1_0") { success = modifyByte(0x17, (uint8_t)val << 1, 0b00000110); }
+        else if (regName == "TS_COOL_1_0") { success = modifyByte(0x18, (uint8_t)val << 6, 0b11000000); }
+        else if (regName == "TS_WARM_1_0") { success = modifyByte(0x18, (uint8_t)val << 4, 0b00110000); }
+        else if (regName == "BHOT_1_0") { success = modifyByte(0x18, (uint8_t)val << 2, 0b00001100); }
+        else if (regName == "BCOLD") { success = modifyByte(0x18, (uint8_t)val << 1, 0b00000010); }
+        else if (regName == "TS_IGNORE") { success = modifyByte(0x18, (uint8_t)val, 0b00000001); }
+        else if (regName == "ADC_RATE") { success = modifyByte(0x2E, (uint8_t)val << 6, 0b01000000); }
+        else if (regName == "ADC_AVG") { success = modifyByte(0x2E, (uint8_t)val << 3, 0b00001000); }
+        else if (regName == "ADC_AVG_INIT") { success = modifyByte(0x2E, (uint8_t)val << 2, 0b00000100); }
+        else if (regName == "IBUS_ADC_DIS") { success = modifyByte(0x2F, (uint8_t)val << 7, 0b10000000); }
+        else if (regName == "IBAT_ADC_DIS") { success = modifyByte(0x2F, (uint8_t)val << 6, 0b01000000); }
+        else if (regName == "VBUS_ADC_DIS") { success = modifyByte(0x2F, (uint8_t)val << 5, 0b00100000); }
+        else if (regName == "VBAT_ADC_DIS") { success = modifyByte(0x2F, (uint8_t)val << 4, 0b00010000); }
+        else if (regName == "VSYS_ADC_DIS") { success = modifyByte(0x2F, (uint8_t)val << 3, 0b00001000); }
+        else if (regName == "TS_ADC_DIS") { success = modifyByte(0x2F, (uint8_t)val << 2, 0b00000100); }
+        else if (regName == "TDIE_ADC_DIS") { success = modifyByte(0x2F, (uint8_t)val << 1, 0b00000010); }
+        else if (regName == "DP_ADC_DIS") { success = modifyByte(0x30, (uint8_t)val << 7, 0b10000000); }
+        else if (regName == "DM_ADC_DIS") { success = modifyByte(0x30, (uint8_t)val << 6, 0b01000000); }
+        else if (regName == "VAC2_ADC_DIS") { success = modifyByte(0x30, (uint8_t)val << 5, 0b00100000); }
+        else if (regName == "VAC1_ADC_DIS") { success = modifyByte(0x30, (uint8_t)val << 4, 0b00010000); }
+        else if (regName == "DPLUS_DAC_2_0") { success = modifyByte(0x47, (uint8_t)val << 5, 0b11100000); }
+        else if (regName == "DMINUS_DAC_2_0") { success = modifyByte(0x47, (uint8_t)val << 2, 0b00011100); }
         
         if (success) { request->send(200, "text/plain", "OK"); } 
-        else { request->send(500, "text/plain", "Failed to write to register."); }
+        else { request->send(500, "text/plain", "Failed to write to register or unknown register name."); }
     } else {
         request->send(400, "text/plain", "Missing parameters.");
     }
@@ -477,8 +564,9 @@ void loop() {
         interruptFired = false;
         String reason = getInterruptReason();
         if (reason.length() > 0) {
-            Serial.print("Reason: ");
+            Serial.print("Interrupt Reason: ");
             Serial.println(reason);
+            // Send interrupt reason to all connected WebSocket clients
             ws.textAll(reason);
         }
     }
