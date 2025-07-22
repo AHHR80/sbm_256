@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>صفحه ۲ - کنترل شارژ</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <a href="/" class="back-button">&larr; بازگشت به صفحه اصلی</a>
+            <h1>صفحه ۲: کنترل شارژ و وضعیت‌ها</h1>
+            <p>این مقادیر هر ۱۰ ثانیه به‌روزرسانی می‌شوند.</p>
+        </header>
+        <main class="data-grid" id="data-container">
+            <div class="data-card"><span class="label">VREG (mV)</span><span id="VREG_10_0" class="value">--</span></div>
+            <div class="data-card"><span class="label">ICHG (mA)</span><span id="ICHG_8_0" class="value">--</span></div>
+            <div class="data-card"><span class="label">VINDPM (mV)</span><span id="VINDPM_7_0" class="value">--</span></div>
+            <div class="data-card"><span class="label">IINDPM (mA)</span><span id="IINDPM_8_0" class="value">--</span></div>
+            <div class="data-card"><span class="label">EN_ICO</span><span id="EN_ICO" class="value">--</span></div>
+            <div class="data-card"><span class="label">FORCE_ICO</span><span id="FORCE_ICO" class="value">--</span></div>
+            <div class="data-card"><span class="label">EN_HIZ</span><span id="EN_HIZ" class="value">--</span></div>
+            <div class="data-card"><span class="label">SDRV_CTRL</span><span id="SDRV_CTRL_1_0" class="value">--</span></div>
+            <div class="data-card"><span class="label">EN_OTG</span><span id="EN_OTG" class="value">--</span></div>
+            <div class="data-card"><span class="label">EN_ACDRV2</span><span id="EN_ACDRV2" class="value">--</span></div>
+            <div class="data-card"><span class="label">EN_ACDRV1</span><span id="EN_ACDRV1" class="value">--</span></div>
+            <div class="data-card"><span class="label">DIS_ACDRV</span><span id="DIS_ACDRV" class="value">--</span></div>
+            <div class="data-card"><span class="label">FORCE_VINDPM_DET</span><span id="FORCE_VINDPM_DET" class="value">--</span></div>
+            <div class="data-card"><span class="label">SFET_PRESENT</span><span id="SFET_PRESENT" class="value">--</span></div>
+            <div class="data-card"><span class="label">EN_MPPT</span><span id="EN_MPPT" class="value">--</span></div>
+            <div class="data-card"><span class="label">ICO_ILIM (mA)</span><span id="ICO_ILIM_8_0" class="value">--</span></div>
+            <div class="data-card"><span class="label">AC2_PRESENT_STAT</span><span id="AC2_PRESENT_STAT" class="value">--</span></div>
+            <div class="data-card"><span class="label">AC1_PRESENT_STAT</span><span id="AC1_PRESENT_STAT" class="value">--</span></div>
+            <div class="data-card"><span class="label">VBATOTG_LOW_STAT</span><span id="VBATOTG_LOW_STAT" class="value">--</span></div>
+            <div class="data-card"><span class="label">ADC_EN</span><span id="ADC_EN" class="value">--</span></div>
+            <div class="data-card"><span class="label">VBUS_OVP_STAT</span><span id="VBUS_OVP_STAT" class="value">--</span></div>
+            <div class="data-card"><span class="label">VBAT_OVP_STAT</span><span id="VBAT_OVP_STAT" class="value">--</span></div>
+            <div class="data-card"><span class="label">IBUS_OCP_STAT</span><span id="IBUS_OCP_STAT" class="value">--</span></div>
+            <div class="data-card"><span class="label">IBAT_OCP_STAT</span><span id="IBAT_OCP_STAT" class="value">--</span></div>
+            <div class="data-card"><span class="label">CONV_OCP_STAT</span><span id="CONV_OCP_STAT" class="value">--</span></div>
+            <div class="data-card"><span class="label">VSYS_SHORT_STAT</span><span id="VSYS_SHORT_STAT" class="value">--</span></div>
+            <div class="data-card"><span class="label">VSYS_OVP_STAT</span><span id="VSYS_OVP_STAT" class="value">--</span></div>
+            <div class="data-card"><span class="label">OTG_OVP_STAT</span><span id="OTG_OVP_STAT" class="value">--</span></div>
+            <div class="data-card"><span class="label">OTG_UVP_STAT</span><span id="OTG_UVP_STAT" class="value">--</span></div>
+            <div class="data-card"><span class="label">TSHUT_STAT</span><span id="TSHUT_STAT" class="value">--</span></div>
+        </main>
+    </div>
+    <script>
+        window.API_ENDPOINT = '/api/data2';
+    </script>
+    <script src="script.js"></script>
+</body>
+</html>

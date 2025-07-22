@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>صفحه ۴ - کنترل‌های پیشرفته</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <a href="/" class="back-button">&larr; بازگشت به صفحه اصلی</a>
+            <h1>صفحه ۴: کنترل‌های پیشرفته و تایمرها</h1>
+            <p>این مقادیر هر ۱۰ ثانیه به‌روزرسانی می‌شوند.</p>
+        </header>
+        <main class="data-grid" id="data-container">
+            <div class="data-card"><span class="label">STOP_WD_CHG</span><span id="STOP_WD_CHG" class="value">--</span></div>
+            <div class="data-card"><span class="label">PRECHG_TMR</span><span id="PRECHG_TMR" class="value">--</span></div>
+            <div class="data-card"><span class="label">TOPOFF_TMR</span><span id="TOPOFF_TMR_1_0" class="value">--</span></div>
+            <div class="data-card"><span class="label">EN_TRICHG_TMR</span><span id="EN_TRICHG_TMR" class="value">--</span></div>
+            <div class="data-card"><span class="label">EN_PRECHG_TMR</span><span id="EN_PRECHG_TMR" class="value">--</span></div>
+            <div class="data-card"><span class="label">EN_CHG_TMR</span><span id="EN_CHG_TMR" class="value">--</span></div>
+            <div class="data-card"><span class="label">CHG_TMR</span><span id="CHG_TMR_1_0" class="value">--</span></div>
+            <div class="data-card"><span class="label">TMR2X_EN</span><span id="TMR2X_EN" class="value">--</span></div>
+            <div class="data-card"><span class="label">EN_AUTO_IBATDIS</span><span id="EN_AUTO_IBATDIS" class="value">--</span></div>
+            <div class="data-card"><span class="label">FORCE_IBATDIS</span><span id="FORCE_IBATDIS" class="value">--</span></div>
+            <div class="data-card"><span class="label">EN_TERM</span><span id="EN_TERM" class="value">--</span></div>
+            <div class="data-card"><span class="label">WATCHDOG</span><span id="WATCHDOG_2_0" class="value">--</span></div>
+            <div class="data-card"><span class="label">FORCE_INDET</span><span id="FORCE_INDET" class="value">--</span></div>
+            <div class="data-card"><span class="label">AUTO_INDET_EN</span><span id="AUTO_INDET_EN" class="value">--</span></div>
+            <div class="data-card"><span class="label">EN_12V</span><span id="EN_12V" class="value">--</span></div>
+            <div class="data-card"><span class="label">EN_9V</span><span id="EN_9V" class="value">--</span></div>
+            <div class="data-card"><span class="label">HVDCP_EN</span><span id="HVDCP_EN" class="value">--</span></div>
+            <div class="data-card"><span class="label">SDRV_DLY</span><span id="SDRV_DLY" class="value">--</span></div>
+            <div class="data-card"><span class="label">PFM_OTG_DIS</span><span id="PFM_OTG_DIS" class="value">--</span></div>
+            <div class="data-card"><span class="label">PFM_FWD_DIS</span><span id="PFM_FWD_DIS" class="value">--</span></div>
+            <div class="data-card"><span class="label">WKUP_DLY</span><span id="WKUP_DLY" class="value">--</span></div>
+            <div class="data-card"><span class="label">DIS_LDO</span><span id="DIS_LDO" class="value">--</span></div>
+            <div class="data-card"><span class="label">DIS_OTG_OOA</span><span id="DIS_OTG_OOA" class="value">--</span></div>
+            <div class="data-card"><span class="label">DIS_FWD_OOA</span><span id="DIS_FWD_OOA" class="value">--</span></div>
+            <div class="data-card"><span class="label">PWM_FREQ</span><span id="PWM_FREQ" class="value">--</span></div>
+            <div class="data-card"><span class="label">DIS_STAT</span><span id="DIS_STAT" class="value">--</span></div>
+            <div class="data-card"><span class="label">DIS_VSYS_SHORT</span><span id="DIS_VSYS_SHORT" class="value">--</span></div>
+            <div class="data-card"><span class="label">DIS_VOTG_UVP</span><span id="DIS_VOTG_UVP" class="value">--</span></div>
+            <div class="data-card"><span class="label">EN_IBUS_OCP</span><span id="EN_IBUS_OCP" class="value">--</span></div>
+            <div class="data-card"><span class="label">EN_BATOC</span><span id="EN_BATOC" class="value">--</span></div>
+            <div class="data-card"><span class="label">VOC_PCT</span><span id="VOC_PCT_2_0" class="value">--</span></div>
+            <div class="data-card"><span class="label">VOC_DLY</span><span id="VOC_DLY_1_0" class="value">--</span></div>
+            <div class="data-card"><span class="label">VOC_RATE</span><span id="VOC_RATE_1_0" class="value">--</span></div>
+            <div class="data-card"><span class="label">TREG</span><span id="TREG_1_0" class="value">--</span></div>
+            <div class="data-card"><span class="label">TSHUT</span><span id="TSHUT_1_0" class="value">--</span></div>
+            <div class="data-card"><span class="label">VBUS_PD_EN</span><span id="VBUS_PD_EN" class="value">--</span></div>
+            <div class="data-card"><span class="label">VAC1_PD_EN</span><span id="VAC1_PD_EN" class="value">--</span></div>
+            <div class="data-card"><span class="label">VAC2_PD_EN</span><span id="VAC2_PD_EN" class="value">--</span></div>
+            <div class="data-card"><span class="label">JEITA_VSET</span><span id="JEITA_VSET_2_0" class="value">--</span></div>
+            <div class="data-card"><span class="label">JEITA_ISETH</span><span id="JEITA_ISETH_1_0" class="value">--</span></div>
+            <div class="data-card"><span class="label">JEITA_ISETC</span><span id="JEITA_ISETC_1_0" class="value">--</span></div>
+            <div class="data-card"><span class="label">TS_COOL</span><span id="TS_COOL_1_0" class="value">--</span></div>
+            <div class="data-card"><span class="label">TS_WARM</span><span id="TS_WARM_1_0" class="value">--</span></div>
+            <div class="data-card"><span class="label">BHOT</span><span id="BHOT_1_0" class="value">--</span></div>
+            <div class="data-card"><span class="label">BCOLD</span><span id="BCOLD" class="value">--</span></div>
+            <div class="data-card"><span class="label">TS_IGNORE</span><span id="TS_IGNORE" class="value">--</span></div>
+            <div class="data-card"><span class="label">ADC_RATE</span><span id="ADC_RATE" class="value">--</span></div>
+            <div class="data-card"><span class="label">ADC_AVG</span><span id="ADC_AVG" class="value">--</span></div>
+            <div class="data-card"><span class="label">ADC_AVG_INIT</span><span id="ADC_AVG_INIT" class="value">--</span></div>
+            <div class="data-card"><span class="label">IBUS_ADC_DIS</span><span id="IBUS_ADC_DIS" class="value">--</span></div>
+            <div class="data-card"><span class="label">IBAT_ADC_DIS</span><span id="IBAT_ADC_DIS" class="value">--</span></div>
+            <div class="data-card"><span class="label">VBUS_ADC_DIS</span><span id="VBUS_ADC_DIS" class="value">--</span></div>
+            <div class="data-card"><span class="label">VBAT_ADC_DIS</span><span id="VBAT_ADC_DIS" class="value">--</span></div>
+            <div class="data-card"><span class="label">VSYS_ADC_DIS</span><span id="VSYS_ADC_DIS" class="value">--</span></div>
+            <div class="data-card"><span class="label">TS_ADC_DIS</span><span id="TS_ADC_DIS" class="value">--</span></div>
+            <div class="data-card"><span class="label">TDIE_ADC_DIS</span><span id="TDIE_ADC_DIS" class="value">--</span></div>
+            <div class="data-card"><span class="label">DP_ADC_DIS</span><span id="DP_ADC_DIS" class="value">--</span></div>
+            <div class="data-card"><span class="label">DM_ADC_DIS</span><span id="DM_ADC_DIS" class="value">--</span></div>
+            <div class="data-card"><span class="label">VAC2_ADC_DIS</span><span id="VAC2_ADC_DIS" class="value">--</span></div>
+            <div class="data-card"><span class="label">VAC1_ADC_DIS</span><span id="VAC1_ADC_DIS" class="value">--</span></div>
+            <div class="data-card"><span class="label">DPLUS_DAC</span><span id="DPLUS_DAC_2_0" class="value">--</span></div>
+            <div class="data-card"><span class="label">DMINUS_DAC</span><span id="DMINUS_DAC_2_0" class="value">--</span></div>
+            <div class="data-card"><span class="label">PART_NUMBER</span><span id="PN_2_0" class="value">--</span></div>
+            <div class="data-card"><span class="label">DEVICE_REVISION</span><span id="DEV_REV_2_0" class="value">--</span></div>
+        </main>
+    </div>
+     <script>
+        window.API_ENDPOINT = '/api/data4';
+    </script>
+    <script src="script.js"></script>
+</body>
+</html>

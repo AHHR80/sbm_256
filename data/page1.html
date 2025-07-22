@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>صفحه ۱ - وضعیت اصلی</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <a href="/" class="back-button">&larr; بازگشت به صفحه اصلی</a>
+            <h1>صفحه ۱: وضعیت اصلی و ADC</h1>
+            <p>این مقادیر هر ۱۰ ثانیه به‌روزرسانی می‌شوند.</p>
+        </header>
+        <main class="data-grid" id="data-container">
+            <!-- Data will be populated by JavaScript -->
+            <div class="data-card"><span class="label">VSYSMIN (mV)</span><span id="VSYSMIN_5_0" class="value">--</span></div>
+            <div class="data-card"><span class="label">CELL_COUNT</span><span id="CELL_1_0" class="value">--</span></div>
+            <div class="data-card"><span class="label">VOTG (mV)</span><span id="VOTG_10_0" class="value">--</span></div>
+            <div class="data-card"><span class="label">IOTG (mA)</span><span id="IOTG_6_0" class="value">--</span></div>
+            <div class="data-card"><span class="label">EN_CHG</span><span id="EN_CHG" class="value">--</span></div>
+            <div class="data-card"><span class="label">VBUS_PRESENT_STAT</span><span id="VBUS_PRESENT_STAT" class="value">--</span></div>
+            <div class="data-card"><span class="label">CHG_STAT</span><span id="CHG_STAT_2_0" class="value">--</span></div>
+            <div class="data-card"><span class="label">VBUS_STAT</span><span id="VBUS_STAT_3_0" class="value">--</span></div>
+            <div class="data-card"><span class="label">VBAT_PRESENT_STAT</span><span id="VBAT_PRESENT_STAT" class="value">--</span></div>
+            <div class="data-card"><span class="label">VSYS_STAT</span><span id="VSYS_STAT" class="value">--</span></div>
+            <div class="data-card"><span class="label">IBUS_ADC (mA)</span><span id="IBUS_ADC_15_0" class="value">--</span></div>
+            <div class="data-card"><span class="label">IBAT_ADC (mA)</span><span id="IBAT_ADC_15_0" class="value">--</span></div>
+            <div class="data-card"><span class="label">VBUS_ADC (mV)</span><span id="VBUS_ADC_15_0" class="value">--</span></div>
+            <div class="data-card"><span class="label">VAC1_ADC (mV)</span><span id="VAC1_ADC_15_0" class="value">--</span></div>
+            <div class="data-card"><span class="label">VAC2_ADC (mV)</span><span id="VAC2_ADC_15_0" class="value">--</span></div>
+            <div class="data-card"><span class="label">VBAT_ADC (mV)</span><span id="VBAT_ADC_15_0" class="value">--</span></div>
+            <div class="data-card"><span class="label">VSYS_ADC (mV)</span><span id="VSYS_ADC_15_0" class="value">--</span></div>
+            <div class="data-card"><span class="label">TS_ADC (%)</span><span id="TS_ADC_15_0" class="value">--</span></div>
+            <div class="data-card"><span class="label">TDIE_ADC (°C)</span><span id="TDIE_ADC_15_0" class="value">--</span></div>
+        </main>
+    </div>
+    <script>
+        // Set the API endpoint for this specific page
+        window.API_ENDPOINT = '/api/data1';
+    </script>
+    <script src="script.js"></script>
+</body>
+</html>

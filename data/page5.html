@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>صفحه ۵ - وضعیت‌های خطا</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <a href="/" class="back-button">&larr; بازگشت به صفحه اصلی</a>
+            <h1>صفحه ۵: وضعیت‌های خطا و تکمیلی</h1>
+            <p>این مقادیر هر ۱۰ ثانیه به‌روزرسانی می‌شوند.</p>
+        </header>
+        <main class="data-grid" id="data-container">
+            <div class="data-card"><span class="label">IINDPM_STAT</span><span id="IINDPM_STAT" class="value">--</span></div>
+            <div class="data-card"><span class="label">VINDPM_STAT</span><span id="VINDPM_STAT" class="value">--</span></div>
+            <div class="data-card"><span class="label">WD_STAT</span><span id="WD_STAT" class="value">--</span></div>
+            <div class="data-card"><span class="label">PG_STAT</span><span id="PG_STAT" class="value">--</span></div>
+            <div class="data-card"><span class="label">BC1.2_DONE_STAT</span><span id="BC1_2_DONE_STAT" class="value">--</span></div>
+            <div class="data-card"><span class="label">TREG_STAT</span><span id="TREG_STAT" class="value">--</span></div>
+            <div class="data-card"><span class="label">DPDM_STAT</span><span id="DPDM_STAT" class="value">--</span></div>
+            <div class="data-card"><span class="label">ACRB2_STAT</span><span id="ACRB2_STAT" class="value">--</span></div>
+            <div class="data-card"><span class="label">ACRB1_STAT</span><span id="ACRB1_STAT" class="value">--</span></div>
+            <div class="data-card"><span class="label">ADC_DONE_STAT</span><span id="ADC_DONE_STAT" class="value">--</span></div>
+            <div class="data-card"><span class="label">CHG_TMR_STAT</span><span id="CHG_TMR_STAT" class="value">--</span></div>
+            <div class="data-card"><span class="label">TRICHG_TMR_STAT</span><span id="TRICHG_TMR_STAT" class="value">--</span></div>
+            <div class="data-card"><span class="label">PRECHG_TMR_STAT</span><span id="PRECHG_TMR_STAT" class="value">--</span></div>
+            <div class="data-card"><span class="label">TS_COLD_STAT</span><span id="TS_COLD_STAT" class="value">--</span></div>
+            <div class="data-card"><span class="label">TS_COOL_STAT</span><span id="TS_COOL_STAT" class="value">--</span></div>
+            <div class="data-card"><span class="label">TS_WARM_STAT</span><span id="TS_WARM_STAT" class="value">--</span></div>
+            <div class="data-card"><span class="label">TS_HOT_STAT</span><span id="TS_HOT_STAT" class="value">--</span></div>
+            <div class="data-card"><span class="label">IBAT_REG_STAT</span><span id="IBAT_REG_STAT" class="value">--</span></div>
+            <div class="data-card"><span class="label">D+_ADC (mV)</span><span id="D_PLUS_ADC_15_0" class="value">--</span></div>
+            <div class="data-card"><span class="label">D-_ADC (mV)</span><span id="D_MINUS_ADC_15_0" class="value">--</span></div>
+        </main>
+    </div>
+     <script>
+        window.API_ENDPOINT = '/api/data5';
+    </script>
+    <script src="script.js"></script>
+</body>
+</html>

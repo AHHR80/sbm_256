@@ -1,0 +1,121 @@
+:root {
+    --bg-color: #1a1a2e;
+    --card-bg-color: #16213e;
+    --primary-color: #0f3460;
+    --secondary-color: #e94560;
+    --font-color: #e0e0e0;
+    --font-color-label: #a0a0c0;
+    --font-family: 'Vazirmatn', sans-serif;
+}
+
+@import url('https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;700&display=swap');
+
+body {
+    font-family: var(--font-family);
+    background-color: var(--bg-color);
+    color: var(--font-color);
+    margin: 0;
+    padding: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    min-height: 100vh;
+}
+
+.container {
+    width: 100%;
+    max-width: 900px;
+    padding: 20px;
+    background-color: var(--primary-color);
+    border-radius: 15px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
+
+header {
+    text-align: center;
+    margin-bottom: 30px;
+    border-bottom: 1px solid var(--card-bg-color);
+    padding-bottom: 20px;
+}
+
+header h1 {
+    color: #fff;
+    margin-bottom: 5px;
+}
+
+header p {
+    color: var(--font-color-label);
+}
+
+/* Navigation Grid */
+.nav-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+}
+
+.nav-button {
+    display: block;
+    padding: 20px;
+    background-color: var(--card-bg-color);
+    color: var(--font-color);
+    text-decoration: none;
+    border-radius: 10px;
+    text-align: center;
+    font-size: 1.1em;
+    transition: transform 0.2s ease, background-color 0.2s ease;
+    border: 2px solid transparent;
+}
+
+.nav-button:hover {
+    transform: translateY(-5px);
+    background-color: var(--secondary-color);
+    border-color: #fff;
+}
+
+/* Data Display Grid */
+.data-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+}
+
+.data-card {
+    background-color: var(--card-bg-color);
+    padding: 15px;
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+}
+
+.data-card .label {
+    font-size: 0.9em;
+    color: var(--font-color-label);
+    margin-bottom: 8px;
+}
+
+.data-card .value {
+    font-size: 1.4em;
+    font-weight: bold;
+    color: #fff;
+}
+
+/* Back Button */
+.back-button {
+    display: inline-block;
+    margin-bottom: 20px;
+    padding: 8px 15px;
+    background-color: var(--secondary-color);
+    color: #fff;
+    text-decoration: none;
+    border-radius: 5px;
+    transition: background-color 0.2s ease;
+    float: right;
+}
+
+.back-button:hover {
+    background-color: #c43a52;
+}
