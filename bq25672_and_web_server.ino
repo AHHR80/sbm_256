@@ -12,10 +12,10 @@ const char* ssid = "ESP32_BQ25672_Monitor";
 const char* password = "password123";
 
 // --- Interrupt & WebSocket Setup ---
-const int interruptPin = 4; // پین INT چیپ به این پین GPIO وصل شود
+const int interruptPin = 4; // Connect INT pin to this GPIO
 AsyncWebServer server(80);
 AsyncWebSocket ws("/ws"); // WebSocket endpoint
-volatile bool interruptFired = false; // فلگ برای تشخیص وقفه
+volatile bool interruptFired = false; // Flag for interrupt detection
 
 // --- I2C Communication Functions ---
 bool readWord(uint8_t reg, uint16_t& value) {
@@ -36,72 +36,109 @@ bool readByte(uint8_t reg, uint8_t& value) {
     return true;
 }
 
-// --- Interrupt Logic ---
+// *** CORRECTED AND FINAL OPTIMIZED FUNCTION ***
+// Helper function to read a block of consecutive 8-bit registers using multi-read
+bool readBytes(uint8_t startReg, uint8_t* buffer, uint8_t count) {
+    Wire.beginTransmission(BQ25672_I2C_ADDR);
+    Wire.write(startReg);
+    if (Wire.endTransmission(false) != 0) {
+        Serial.printf("I2C multi-read write error for reg 0x%02X\n", startReg);
+        return false;
+    }
 
-// این تابع رجیسترهای Flag را می خواند تا دلیل وقفه را پیدا کند
-// خواندن این رجیسترها به صورت خودکار آنها را پاک می کند
+    // For these sequential 8-bit registers, we read exactly 'count' bytes.
+    if (Wire.requestFrom((uint8_t)BQ25672_I2C_ADDR, count) != count) {
+        Serial.printf("I2C multi-read read error for reg 0x%02X\n", startReg);
+        return false;
+    }
+
+    for (int i = 0; i < count; i++) {
+        buffer[i] = Wire.read(); // Read and store each byte.
+    }
+    return true;
+}
+
+
+// --- Interrupt Logic (Using Corrected Multi-Read) ---
 String getInterruptReason() {
     String reason = "";
-    uint8_t flag_reg;
+    uint8_t flag_buffer[6]; // Buffer for registers 0x22 to 0x27
 
-    // Charger Flag 0 (0x22)
-    if (readByte(0x22, flag_reg) && flag_reg != 0) {
-        if (flag_reg & 0b10000000) reason += "IINDPM event. ";
-        if (flag_reg & 0b01000000) reason += "VINDPM event. ";
-        if (flag_reg & 0b00100000) reason += "Watchdog expired. ";
-        if (flag_reg & 0b00010000) reason += "Poor source detected. ";
-        if (flag_reg & 0b00001000) reason += "Power Good status changed. ";
-    }
-    
-    // Charger Flag 1 (0x23)
-    if (readByte(0x23, flag_reg) && flag_reg != 0) {
-        if (flag_reg & 0b10000000) reason += "Charge status changed. ";
-        if (flag_reg & 0b01000000) reason += "ICO status changed. ";
-        if (flag_reg & 0b00010000) reason += "VBUS status changed. ";
-        if (flag_reg & 0b00000100) reason += "Thermal regulation. ";
+    // Read all 6 flag registers in one I2C transaction
+    if (readBytes(0x22, flag_buffer, 6)) {
+        // Charger Flag 0 (0x22) -> flag_buffer[0]
+        if (flag_buffer[0] != 0) {
+            if (flag_buffer[0] & 0b10000000) reason += "IINDPM event. ";
+            if (flag_buffer[0] & 0b01000000) reason += "VINDPM event. ";
+            if (flag_buffer[0] & 0b00100000) reason += "Watchdog expired. ";
+            if (flag_buffer[0] & 0b00010000) reason += "Poor source detected. ";
+            if (flag_buffer[0] & 0b00001000) reason += "Power Good status changed. ";
+            if (flag_buffer[0] & 0b00000100) reason += "AC2 present status changed. ";
+            if (flag_buffer[0] & 0b00000010) reason += "AC1 present status changed. ";
+            if (flag_buffer[0] & 0b00000001) reason += "VBUS present status changed. ";
+        }
+        
+        // Charger Flag 1 (0x23) -> flag_buffer[1]
+        if (flag_buffer[1] != 0) {
+            if (flag_buffer[1] & 0b10000000) reason += "Charge status changed. ";
+            if (flag_buffer[1] & 0b01000000) reason += "ICO status changed. ";
+            if (flag_buffer[1] & 0b00010000) reason += "VBUS status changed. ";
+            if (flag_buffer[1] & 0b00000100) reason += "Thermal regulation. ";
+            if (flag_buffer[1] & 0b00000010) reason += "VBAT present status changed. ";
+            if (flag_buffer[1] & 0b00000001) reason += "BC1.2 detection done. ";
+        }
+
+        // Charger Flag 2 (0x24) -> flag_buffer[2]
+        if (flag_buffer[2] != 0) {
+            if (flag_buffer[2] & 0b01000000) reason += "DPDM detection done. ";
+            if (flag_buffer[2] & 0b00100000) reason += "ADC conversion done. ";
+            if (flag_buffer[2] & 0b00010000) reason += "VSYS regulation status changed. ";
+            if (flag_buffer[2] & 0b00001000) reason += "Fast charge timer expired. ";
+            if (flag_buffer[2] & 0b00000100) reason += "Trickle charge timer expired. ";
+            if (flag_buffer[2] & 0b00000010) reason += "Pre-charge timer expired. ";
+            if (flag_buffer[2] & 0b00000001) reason += "Top-off timer expired. ";
+        }
+
+        // Charger Flag 3 (0x25) -> flag_buffer[3]
+        if (flag_buffer[3] != 0) {
+            if (flag_buffer[3] & 0b00010000) reason += "VBAT too low for OTG. ";
+            if (flag_buffer[3] & 0b00001000) reason += "TS Cold event. ";
+            if (flag_buffer[3] & 0b00000100) reason += "TS Cool event. ";
+            if (flag_buffer[3] & 0b00000010) reason += "TS Warm event. ";
+            if (flag_buffer[3] & 0b00000001) reason += "TS Hot event. ";
+        }
+
+        // FAULT Flag 0 (0x26) -> flag_buffer[4]
+        if (flag_buffer[4] != 0) {
+            if (flag_buffer[4] & 0b10000000) reason += "IBAT regulation. ";
+            if (flag_buffer[4] & 0b01000000) reason += "VBUS OVP Fault. ";
+            if (flag_buffer[4] & 0b00100000) reason += "VBAT OVP Fault. ";
+            if (flag_buffer[4] & 0b00010000) reason += "IBUS OCP Fault. ";
+            if (flag_buffer[4] & 0b00001000) reason += "IBAT OCP Fault. ";
+            if (flag_buffer[4] & 0b00000100) reason += "Converter OCP Fault. ";
+            if (flag_buffer[4] & 0b00000010) reason += "VAC2 OVP Fault. ";
+            if (flag_buffer[4] & 0b00000001) reason += "VAC1 OVP Fault. ";
+        }
+        
+        // FAULT Flag 1 (0x27) -> flag_buffer[5]
+        if (flag_buffer[5] != 0) {
+            if (flag_buffer[5] & 0b10000000) reason += "VSYS Short Fault. ";
+            if (flag_buffer[5] & 0b01000000) reason += "VSYS OVP Fault. ";
+            if (flag_buffer[5] & 0b00100000) reason += "OTG OVP Fault. ";
+            if (flag_buffer[5] & 0b00010000) reason += "OTG UVP Fault. ";
+            if (flag_buffer[5] & 0b00000100) reason += "Thermal Shutdown. ";
+        }
+    } else {
+        return "Failed to read flag registers.";
     }
 
-    // Charger Flag 2 (0x24)
-    if (readByte(0x24, flag_reg) && flag_reg != 0) {
-        if (flag_reg & 0b01000000) reason += "DPDM detection done. ";
-        if (flag_reg & 0b00100000) reason += "ADC conversion done. ";
-        if (flag_reg & 0b00010000) reason += "VSYS regulation status changed. ";
-        if (flag_reg & 0b00001000) reason += "Fast charge timer expired. ";
-        if (flag_reg & 0b00000100) reason += "Trickle charge timer expired. ";
-        if (flag_reg & 0b00000010) reason += "Pre-charge timer expired. ";
-        if (flag_reg & 0b00000001) reason += "Top-off timer expired. ";
-    }
-
-    // Charger Flag 3 (0x25)
-    if (readByte(0x25, flag_reg) && flag_reg != 0) {
-        if (flag_reg & 0b00010000) reason += "VBAT too low for OTG. ";
-        if (flag_reg & 0b00001000) reason += "TS Cold event. ";
-        if (flag_reg & 0b00000100) reason += "TS Cool event. ";
-        if (flag_reg & 0b00000010) reason += "TS Warm event. ";
-        if (flag_reg & 0b00000001) reason += "TS Hot event. ";
-    }
-
-    // FAULT Flag 0 (0x26)
-    if (readByte(0x26, flag_reg) && flag_reg != 0) {
-        if (flag_reg & 0b10000000) reason += "IBAT regulation. ";
-        if (flag_reg & 0b01000000) reason += "VBUS OVP Fault. ";
-        if (flag_reg & 0b00100000) reason += "VBAT OVP Fault. ";
-        if (flag_reg & 0b00010000) reason += "IBUS OCP Fault. ";
-        if (flag_reg & 0b00001000) reason += "IBAT OCP Fault. ";
-        if (flag_reg & 0b00000100) reason += "Converter OCP Fault. ";
-    }
-    
-    // FAULT Flag 1 (0x27)
-    if (readByte(0x27, flag_reg) && flag_reg != 0) {
-        if (flag_reg & 0b10000000) reason += "VSYS Short Fault. ";
-        if (flag_reg & 0b01000000) reason += "VSYS OVP Fault. ";
-        if (flag_reg & 0b00100000) reason += "OTG OVP Fault. ";
-        if (flag_reg & 0b00010000) reason += "OTG UVP Fault. ";
-        if (flag_reg & 0b00000100) reason += "Thermal Shutdown. ";
+    if (reason.length() == 0) {
+        return "Unknown interrupt reason.";
     }
 
     return reason;
 }
+
 
 // Interrupt Service Routine
 void IRAM_ATTR handleInterrupt() {
@@ -126,7 +163,7 @@ void onEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventType 
 }
 
 
-// --- API Handlers ---
+// --- API Handlers (Unchanged) ---
 void handleApiData1(AsyncWebServerRequest *request) {
     StaticJsonDocument<1024> doc;
     uint16_t val16;
@@ -397,10 +434,8 @@ void setup() {
         Serial.println("An Error has occurred while mounting LittleFS");
         return;
     }
-    Serial.println("LittleFS mounted successfully");
 
     // Setup Access Point
-    Serial.print("Setting AP (Access Point)...");
     WiFi.softAP(ssid, password);
     IPAddress IP = WiFi.softAPIP();
     Serial.print("AP IP address: ");
