@@ -164,7 +164,7 @@ void handleApiData1(AsyncWebServerRequest *request) {
     uint8_t val8;
     if (readByte(0x00, val8)) { doc["VSYSMIN_5_0"] = 2500 + ((val8 & 0x3F) * 250); } else { doc["VSYSMIN_5_0"] = -1; }
     if (readByte(0x0A, val8)) { doc["CELL_1_0"] = ((val8 >> 6) & 0x03) + 1; } else { doc["CELL_1_0"] = -1; }
-    if (readWord(0x0B, val16)) { doc["VOTG_10_0"] = 2800 + ((val16 & 0x7FF) * 10); } else { doc["VOTG_10_0"] = -1; }
+    if (readWord(0x0B, val16)) { doc["VOTG_1_0"] = 2800 + ((val16 & 0x7FF) * 10); } else { doc["VOTG_10_0"] = -1; }
     if (readByte(0x0D, val8)) { doc["IOTG_6_0"] = (val8 & 0x7F) * 40; } else { doc["IOTG_6_0"] = -1; }
     if (readByte(0x0F, val8)) { doc["EN_CHG"] = (val8 >> 5) & 0x01; } else { doc["EN_CHG"] = -1; }
     if (readByte(0x1B, val8)) { doc["VBUS_PRESENT_STAT"] = val8 & 0x01; } else { doc["VBUS_PRESENT_STAT"] = -1; }
@@ -417,6 +417,7 @@ void handleApiWrite(AsyncWebServerRequest *request) {
         else if (regName == "EN_TERM") { success = modifyByte(0x0F, (uint8_t)val << 1, 0b00000010); }
         else if (regName == "WATCHDOG_2_0") { success = modifyByte(0x10, (uint8_t)val, 0b00000111); }
         else if (regName == "EN_OTG") { success = modifyByte(0x12, (uint8_t)val << 6, 0b01000000); }
+        else if (regName == "CELL_1_0") { if (val >= 1 && val <= 4) { uint8_t regVal = (val - 1); success = modifyByte(0x0A, regVal << 6, 0b11000000); } }
         
         if (success) { request->send(200, "text/plain", "OK"); } 
         else { request->send(500, "text/plain", "Failed to write to register."); }
