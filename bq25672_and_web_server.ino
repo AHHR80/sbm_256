@@ -21,8 +21,139 @@ volatile bool interruptFired = false; // Flag for interrupt detection
 unsigned long lastWatchdogReset = 0;
 const long watchdogInterval = 30000; // 30 seconds (less than the default 40s timeout)
 
+
+// ===================================================================================
+// بخش اعتبارسنجی ورودی در سمت سرور
+// ===================================================================================
+
+// یک ساختار برای نگهداری قوانین اعتبارسنجی هر رجیستر
+struct ValidationRule {
+    const char* regName; // نام رجیستر که از رابط وب ارسال می‌شود
+    long min;            // حداقل مقدار مجاز
+    long max;            // حداکثر مقدار مجاز
+};
+
+// نقشه اعتبارسنجی شامل تمام رجیسترهای قابل نوشتن با محدودیت‌هایشان
+const ValidationRule validationMap[] = {
+    // Page 1
+    {"VSYSMIN_5_0", 2500, 16000},
+    {"CELL_1_0", 1, 4},
+    {"VOTG_10_0", 2800, 22000},
+    {"IOTG_6_0", 160, 3360},
+    {"EN_CHG", 0, 1},
+    // Page 2
+    {"VREG_10_0", 3000, 18800},
+    {"ICHG_8_0", 50, 3000},
+    {"VINDPM_7_0", 3600, 22000},
+    {"IINDPM_8_0", 100, 3300},
+    {"EN_ICO", 0, 1},
+    {"EN_HIZ", 0, 1},
+    {"SDRV_CTRL_1_0", 0, 3},
+    {"EN_OTG", 0, 1},
+    {"EN_ACDRV2", 0, 1},
+    {"EN_ACDRV1", 0, 1},
+    {"DIS_ACDRV", 0, 1},
+    {"SFET_PRESENT", 0, 1},
+    {"EN_MPPT", 0, 1},
+    {"ADC_EN", 0, 1},
+    // Page 3
+    {"VBAT_LOWV_1_0", 0, 3},
+    {"IPRECHG_5_0", 40, 2000},
+    {"ITERM_4_0", 40, 1000},
+    {"TRECHG_1_0", 0, 3},
+    {"VRECHG_3_0", 50, 800},
+    {"VAC_OVP_1_0", 0, 3},
+    {"EN_IBAT", 0, 1},
+    {"IBAT_REG_1_0", 0, 3},
+    {"EN_IINDPM", 0, 1},
+    {"EN_EXTILIM", 0, 1},
+    {"ADC_SAMPLE_1_0", 0, 3},
+    // Page 4
+    {"STOP_WD_CHG", 0, 1},
+    {"PRECHG_TMR", 0, 1},
+    {"TOPOFF_TMR_1_0", 0, 3},
+    {"EN_TRICHG_TMR", 0, 1},
+    {"EN_PRECHG_TMR", 0, 1},
+    {"EN_CHG_TMR", 0, 1},
+    {"CHG_TMR_1_0", 0, 3},
+    {"TMR2X_EN", 0, 1},
+    {"EN_AUTO_IBATDIS", 0, 1},
+    {"EN_TERM", 0, 1},
+    {"WATCHDOG_2_0", 0, 7},
+    {"AUTO_INDET_EN", 0, 1},
+    {"EN_12V", 0, 1},
+    {"EN_9V", 0, 1},
+    {"HVDCP_EN", 0, 1},
+    {"SDRV_DLY", 0, 1},
+    {"PFM_OTG_DIS", 0, 1},
+    {"PFM_FWD_DIS", 0, 1},
+    {"WKUP_DLY", 0, 1},
+    {"DIS_LDO", 0, 1},
+    {"DIS_OTG_OOA", 0, 1},
+    {"DIS_FWD_OOA", 0, 1},
+    {"PWM_FREQ", 0, 1},
+    {"DIS_STAT", 0, 1},
+    {"DIS_VSYS_SHORT", 0, 1},
+    {"DIS_VOTG_UVP", 0, 1},
+    {"EN_IBUS_OCP", 0, 1},
+    {"EN_BATOC", 0, 1},
+    {"VOC_PCT_2_0", 0, 7},
+    {"VOC_DLY_1_0", 0, 3},
+    {"VOC_RATE_1_0", 0, 3},
+    {"TREG_1_0", 0, 3},
+    {"TSHUT_1_0", 0, 3},
+    {"VBUS_PD_EN", 0, 1},
+    {"VAC1_PD_EN", 0, 1},
+    {"VAC2_PD_EN", 0, 1},
+    {"JEITA_VSET_2_0", 0, 7},
+    {"JEITA_ISETH_1_0", 0, 3},
+    {"JEITA_ISETC_1_0", 0, 3},
+    {"TS_COOL_1_0", 0, 3},
+    {"TS_WARM_1_0", 0, 3},
+    {"BHOT_1_0", 0, 3},
+    {"BCOLD", 0, 1},
+    {"TS_IGNORE", 0, 1},
+    {"ADC_RATE", 0, 1},
+    {"ADC_AVG", 0, 1},
+    {"ADC_AVG_INIT", 0, 1},
+    {"IBUS_ADC_DIS", 0, 1},
+    {"IBAT_ADC_DIS", 0, 1},
+    {"VBUS_ADC_DIS", 0, 1},
+    {"VBAT_ADC_DIS", 0, 1},
+    {"VSYS_ADC_DIS", 0, 1},
+    {"TS_ADC_DIS", 0, 1},
+    {"TDIE_ADC_DIS", 0, 1},
+    {"DP_ADC_DIS", 0, 1},
+    {"DM_ADC_DIS", 0, 1},
+    {"VAC2_ADC_DIS", 0, 1},
+    {"VAC1_ADC_DIS", 0, 1},
+    {"DPLUS_DAC_2_0", 0, 7},
+    {"DMINUS_DAC_2_0", 0, 7}
+};
+
+/**
+ * بررسی می‌کند که آیا مقدار ورودی برای یک رجیستر خاص معتبر است یا خیر.
+ * @param regName نام رجیستر برای بررسی.
+ * @param value مقدار دریافت شده از کاربر.
+ * @return true اگر مقدار معتبر باشد، در غیر این صورت false.
+ */
+bool isValueValid(const String& regName, long value) {
+    for (const auto& rule : validationMap) {
+        if (regName.equals(rule.regName)) {
+            if (value >= rule.min && value <= rule.max) {
+                return true;
+            } else {
+                Serial.printf("Validation FAILED for %s: Value %ld is out of range [%ld, %ld]\n", 
+                              regName.c_str(), value, rule.min, rule.max);
+                return false;
+            }
+        }
+    }
+    return true;
+}
+
+
 // --- I2C Communication Functions ---
-// Reads a 16-bit word (two bytes) from a register
 bool readWord(uint8_t reg, uint16_t& value) {
     Wire.beginTransmission(BQ25672_I2C_ADDR);
     Wire.write(reg);
@@ -34,20 +165,18 @@ bool readWord(uint8_t reg, uint16_t& value) {
     return true;
 }
 
-// Reads an 8-bit byte from a register (BQ25672 registers are 16-bit, so we read a word and take the LSB)
 bool readByte(uint8_t reg, uint8_t& value) {
     uint16_t wordValue;
     if (!readWord(reg, wordValue)) { return false; }
-    value = (uint8_t)wordValue; // The actual data is in the LSB
+    value = (uint8_t)wordValue;
     return true;
 }
 
-// Writes a 16-bit word to a register
 bool writeWord(uint8_t reg, uint16_t value) {
     Wire.beginTransmission(BQ25672_I2C_ADDR);
     Wire.write(reg);
-    Wire.write(value & 0xFF); // LSB
-    Wire.write(value >> 8);   // MSB
+    Wire.write(value & 0xFF);
+    Wire.write(value >> 8);
     if (Wire.endTransmission() != 0) {
         Serial.printf("I2C writeWord error for reg 0x%02X\n", reg);
         return false;
@@ -55,13 +184,10 @@ bool writeWord(uint8_t reg, uint16_t value) {
     return true;
 }
 
-// Writes an 8-bit byte to a register
 bool writeByte(uint8_t reg, uint8_t value) {
-    // For BQ25672, writing a byte means writing a 16-bit word with MSB=0
     return writeWord(reg, (uint16_t)value);
 }
 
-// Helper function to read, modify, and then write back a byte register
 bool modifyByte(uint8_t reg, uint8_t value, uint8_t mask) {
     uint8_t currentValue;
     if (!readByte(reg, currentValue)) {
@@ -72,12 +198,10 @@ bool modifyByte(uint8_t reg, uint8_t value, uint8_t mask) {
     return writeByte(reg, newValue);
 }
 
-// Reads a block of consecutive 8-bit registers
 bool readBytes(uint8_t startReg, uint8_t* buffer, uint8_t count) {
     Wire.beginTransmission(BQ25672_I2C_ADDR);
     Wire.write(startReg);
     if (Wire.endTransmission(false) != 0) { return false; }
-    // BQ25672 increments address pointer, so we can read multiple bytes
     if (Wire.requestFrom((uint8_t)BQ25672_I2C_ADDR, count) != count) { return false; }
     for (int i = 0; i < count; i++) { buffer[i] = Wire.read(); }
     return true;
@@ -85,13 +209,10 @@ bool readBytes(uint8_t startReg, uint8_t* buffer, uint8_t count) {
 
 
 // --- Interrupt Logic ---
-// Decodes the reason for an interrupt by reading the flag registers
 String getInterruptReason() {
     String reason = "";
-    uint8_t flag_buffer[6]; // Buffer for registers 0x22 to 0x27
-
+    uint8_t flag_buffer[6];
     if (readBytes(0x22, flag_buffer, 6)) {
-        // Charger Flag 0 (0x22)
         if (flag_buffer[0] & 0b10000000) reason += "IINDPM event. ";
         if (flag_buffer[0] & 0b01000000) reason += "VINDPM event. ";
         if (flag_buffer[0] & 0b00100000) reason += "Watchdog expired. ";
@@ -100,16 +221,12 @@ String getInterruptReason() {
         if (flag_buffer[0] & 0b00000100) reason += "AC2 present status changed. ";
         if (flag_buffer[0] & 0b00000010) reason += "AC1 present status changed. ";
         if (flag_buffer[0] & 0b00000001) reason += "VBUS present status changed. ";
-        
-        // Charger Flag 1 (0x23)
         if (flag_buffer[1] & 0b10000000) reason += "Charge status changed. ";
         if (flag_buffer[1] & 0b01000000) reason += "ICO status changed. ";
         if (flag_buffer[1] & 0b00010000) reason += "VBUS status changed. ";
         if (flag_buffer[1] & 0b00000100) reason += "Thermal regulation. ";
         if (flag_buffer[1] & 0b00000010) reason += "VBAT present status changed. ";
         if (flag_buffer[1] & 0b00000001) reason += "BC1.2 detection done. ";
-
-        // Charger Flag 2 (0x24)
         if (flag_buffer[2] & 0b01000000) reason += "DPDM detection done. ";
         if (flag_buffer[2] & 0b00100000) reason += "ADC conversion done. ";
         if (flag_buffer[2] & 0b00010000) reason += "VSYS regulation status changed. ";
@@ -117,15 +234,11 @@ String getInterruptReason() {
         if (flag_buffer[2] & 0b00000100) reason += "Trickle charge timer expired. ";
         if (flag_buffer[2] & 0b00000010) reason += "Pre-charge timer expired. ";
         if (flag_buffer[2] & 0b00000001) reason += "Top-off timer expired. ";
-
-        // Charger Flag 3 (0x25)
         if (flag_buffer[3] & 0b00010000) reason += "VBAT too low for OTG. ";
         if (flag_buffer[3] & 0b00001000) reason += "TS Cold event. ";
         if (flag_buffer[3] & 0b00000100) reason += "TS Cool event. ";
         if (flag_buffer[3] & 0b00000010) reason += "TS Warm event. ";
         if (flag_buffer[3] & 0b00000001) reason += "TS Hot event. ";
-
-        // FAULT Flag 0 (0x26)
         if (flag_buffer[4] & 0b10000000) reason += "IBAT regulation. ";
         if (flag_buffer[4] & 0b01000000) reason += "VBUS OVP Fault. ";
         if (flag_buffer[4] & 0b00100000) reason += "VBAT OVP Fault. ";
@@ -134,8 +247,6 @@ String getInterruptReason() {
         if (flag_buffer[4] & 0b00000100) reason += "Converter OCP Fault. ";
         if (flag_buffer[4] & 0b00000010) reason += "VAC2 OVP Fault. ";
         if (flag_buffer[4] & 0b00000001) reason += "VAC1 OVP Fault. ";
-        
-        // FAULT Flag 1 (0x27)
         if (flag_buffer[5] & 0b10000000) reason += "VSYS Short Fault. ";
         if (flag_buffer[5] & 0b01000000) reason += "VSYS OVP Fault. ";
         if (flag_buffer[5] & 0b00100000) reason += "OTG OVP Fault. ";
@@ -144,21 +255,16 @@ String getInterruptReason() {
     } else {
         return "Failed to read flag registers.";
     }
-
     if (reason.length() == 0) {
         return "Unknown interrupt reason.";
     }
-
     return reason;
 }
 
-
-// Interrupt Service Routine
 void IRAM_ATTR handleInterrupt() {
     interruptFired = true;
 }
 
-// WebSocket event handler
 void onEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventType type, void *arg, uint8_t *data, size_t len) {
     if (type == WS_EVT_CONNECT) {
         Serial.printf("WebSocket client #%u connected from %s\n", client->id(), client->remoteIP().toString().c_str());
@@ -407,27 +513,40 @@ void handleApiData5(AsyncWebServerRequest *request) {
     String output; serializeJson(doc, output); request->send(200, "application/json", output);
 }
 
-// --- UPDATED API WRITE HANDLER ---
+// --- UPDATED API WRITE HANDLER with Server-Side Validation ---
 void handleApiWrite(AsyncWebServerRequest *request) {
     if (request->hasParam("reg", true) && request->hasParam("val", true)) {
         String regName = request->getParam("reg", true)->value();
-        long val = request->getParam("val", true)->value().toInt();
-        bool success = false;
-
-        Serial.printf("Write request for %s with value %ld\n", regName.c_str(), val);
+        String valStr = request->getParam("val", true)->value();
         
-        // Handle REG_RST command
+        // --- لایه اعتبارسنجی جدید و بهبود یافته ---
+        long val = valStr.toInt();
+        
+        // ۱. بررسی می‌کند که آیا رشته ورودی یک عدد معتبر بوده یا خیر
+        // اگر toInt() صفر برگرداند، چک می‌کنیم که آیا رشته اصلی هم "0" بوده یا یک متن نامعتبر
+        if (val == 0 && valStr != "0") {
+            request->send(400, "text/plain", "مقدار ورودی باید یک عدد صحیح معتبر باشد.");
+            return;
+        }
+
+        // ۲. بررسی می‌کند که آیا مقدار در محدوده مجاز برای آن رجیستر خاص است یا خیر
+        if (!isValueValid(regName, val)) {
+            request->send(400, "text/plain", "مقدار ارسال شده خارج از محدوده مجاز برای این رجیستر است.");
+            return;
+        }
+        // --- پایان لایه اعتبارسنجی ---
+
+        bool success = false;
+        Serial.printf("Write request for %s with value %ld (Validated)\n", regName.c_str(), val);
+        
         if (regName == "REG_RST") {
             success = modifyByte(0x09, 0b01000000, 0b01000000);
         }
-        // Page 1
         else if (regName == "VSYSMIN_5_0") { uint8_t regVal = (val - 2500) / 250; success = modifyByte(0x00, regVal, 0x3F); }
         else if (regName == "CELL_1_0") { if (val >= 1 && val <= 4) { uint8_t regVal = (val - 1); success = modifyByte(0x0A, regVal << 6, 0b11000000); } }
         else if (regName == "VOTG_10_0") { uint16_t regVal = (val - 2800) / 10; success = writeWord(0x0B, regVal); }
         else if (regName == "IOTG_6_0") { uint8_t regVal = val / 40; success = modifyByte(0x0D, regVal, 0x7F); }
         else if (regName == "EN_CHG") { success = modifyByte(0x0F, (uint8_t)val << 5, 0b00100000); }
-        
-        // Page 2
         else if (regName == "VREG_10_0") { uint16_t regVal = val / 10; success = writeWord(0x01, regVal); }
         else if (regName == "ICHG_8_0") { uint16_t regVal = val / 10; success = writeWord(0x03, regVal); }
         else if (regName == "VINDPM_7_0") { uint8_t regVal = (val - 3600) / 100; success = writeByte(0x05, regVal); }
@@ -444,8 +563,6 @@ void handleApiWrite(AsyncWebServerRequest *request) {
         else if (regName == "SFET_PRESENT") { success = modifyByte(0x14, (uint8_t)val << 7, 0b10000000); }
         else if (regName == "EN_MPPT") { success = modifyByte(0x15, (uint8_t)val, 0b00000001); }
         else if (regName == "ADC_EN") { success = modifyByte(0x2E, (uint8_t)val << 7, 0b10000000); }
-
-        // Page 3
         else if (regName == "VBAT_LOWV_1_0") { success = modifyByte(0x08, (uint8_t)val << 6, 0b11000000); }
         else if (regName == "IPRECHG_5_0") { uint8_t regVal = val / 40; success = modifyByte(0x08, regVal, 0x3F); }
         else if (regName == "ITERM_4_0") { uint8_t regVal = val / 40; success = modifyByte(0x09, regVal, 0x1F); }
@@ -457,8 +574,6 @@ void handleApiWrite(AsyncWebServerRequest *request) {
         else if (regName == "EN_IINDPM") { success = modifyByte(0x14, (uint8_t)val << 2, 0b00000100); }
         else if (regName == "EN_EXTILIM") { success = modifyByte(0x14, (uint8_t)val << 1, 0b00000010); }
         else if (regName == "ADC_SAMPLE_1_0") { success = modifyByte(0x2E, (uint8_t)val << 4, 0b00110000); }
-
-        // Page 4
         else if (regName == "STOP_WD_CHG") { success = modifyByte(0x09, (uint8_t)val << 5, 0b00100000); }
         else if (regName == "PRECHG_TMR") { success = modifyByte(0x0D, (uint8_t)val << 7, 0b10000000); }
         else if (regName == "TOPOFF_TMR_1_0") { success = modifyByte(0x0E, (uint8_t)val << 6, 0b11000000); }
@@ -535,10 +650,8 @@ void setup() {
     Wire.begin();
 
     // --- NEW: Configure ADC on startup ---
-    // REG0x2E: ADC_EN=1, ADC_RATE=1 (One-shot), keep other defaults (ADC_SAMPLE=11b)
-    // This corresponds to the value 0b11110000 = 0xF0
     Serial.println("Setting initial ADC state to: Enabled, One-Shot mode.");
-    if (writeByte(0x2E, 0xF0)) {
+    if (writeByte(0x2E, 0xC0)) { // 0b11000000: ADC_EN=1, ADC_RATE=1 (One-shot)
         Serial.println("Initial ADC configuration successful.");
     } else {
         Serial.println("FAILED to set initial ADC configuration.");
@@ -593,15 +706,12 @@ void loop() {
         if (reason.length() > 0) {
             Serial.print("Interrupt Reason: ");
             Serial.println(reason);
-            // Send interrupt reason to all connected WebSocket clients
             ws.textAll(reason);
         }
     }
 
-    // Automatic Watchdog Reset
     if (millis() - lastWatchdogReset > watchdogInterval) {
         lastWatchdogReset = millis();
-        // Reset the watchdog timer by writing 1 to WD_RST bit (REG0x10[3])
         Serial.println("Resetting BQ25672 watchdog timer...");
         if (modifyByte(0x10, 0b00001000, 0b00001000)) {
             Serial.println("Watchdog reset successful.");
