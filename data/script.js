@@ -1,6 +1,180 @@
+// صبر می‌کند تا تمام محتوای HTML صفحه بارگذاری شود و سپس کد را اجرا می‌کند
 document.addEventListener('DOMContentLoaded', function() {
-    // --- Register Configuration Object ---
-    // This is the "brain" of the UI. It defines how each writable register behaves.
+
+    // ===================================================================================
+    // بخش ۱: توضیحات و پیکربندی رجیسترها
+    // در این بخش، دو آبجکت اصلی برای مدیریت رابط کاربری تعریف شده‌اند.
+    // ===================================================================================
+
+    /**
+     * @const {Object} registerExplanations
+     * این آبجکت حاوی توضیحات راهنما (Tooltip) برای تمام رجیسترهای نمایش داده شده در UI است.
+     * این توضیحات مستقیماً از دیتاشیت استخراج شده و به کاربر در درک عملکرد هر گزینه کمک می‌کند.
+     */
+    const registerExplanations = {
+        // --- صفحه ۱ ---
+        VSYSMIN_5_0: "این یکی از مهم‌ترین تنظیمات حفاظتی است. این رجیستر حداقل ولتاژی را که سیستم (SYS) مجاز است به آن افت کند، تعیین می‌کند. حتی اگر باتری کاملاً خالی یا جدا شده باشد، چیپ تلاش می‌کند تا ولتاژ سیستم را بالاتر از این مقدار نگه دارد تا از خاموش شدن یا ریست شدن میکروکنترلر و سایر قطعات جلوگیری کند. مقدار آن باید متناسب با نیاز سیستم شما تنظیم شود.",
+        CELL_1_0: "این رجیستر به چیپ می‌گوید که باتری شما از چند سلول سری تشکیل شده است (از ۱ تا ۴ سلول). تنظیم صحیح این مقدار حیاتی است، زیرا مقادیر پیش‌فرض ولتاژ شارژ (VREG) و حداقل ولتاژ سیستم (VSYSMIN) بر اساس آن تعیین می‌شود. تغییر این مقدار، رجیسترهای مرتبط را به حالت پیش‌فرض بازنشانی می‌کند.",
+        VOTG_10_0: "این رجیستر ولتاژ خروجی روی پین VBUS را زمانی که دستگاه در حالت On-The-Go (OTG) یا 'پاوربانک' قرار دارد، تنظیم می‌کند. شما می‌توانید ولتاژ خروجی را برای تغذیه دستگاه‌های دیگر در محدوده وسیعی (مثلاً ۵ تا ۱۲ ولت) تنظیم کنید.",
+        IOTG_6_0: "این رجیستر حداکثر جریانی را که دستگاه در حالت OTG می‌تواند به خروجی بدهد، محدود می‌کند. این یک ویژگی حفاظتی برای جلوگیری از کشیدن جریان بیش از حد از باتری و آسیب به آن است.",
+        EN_CHG: "این بیت، کلید اصلی فعال یا غیرفعال کردن کل فرآیند شارژ باتری است. اگر این بیت ۰ باشد، چیپ تحت هیچ شرایطی باتری را شارژ نخواهد کرد، حتی اگر منبع تغذیه متصل باشد.",
+        VBUS_PRESENT_STAT: "یک نشانگر فقط-خواندنی که نشان می‌دهد آیا ولتاژ معتبری روی ورودی VBUS (ورودی اصلی آداپتور) وجود دارد یا خیر.",
+        CHG_STAT_2_0: "این رجیستر فقط-خواندنی، مرحله فعلی فرآیند شارژ را نشان می‌دهد (مثلاً: عدم شارژ، پیش‌شارژ، شارژ سریع با جریان ثابت، شارژ با ولتاژ ثابت، اتمام شارژ).",
+        VBUS_STAT_3_0: "یک رجیستر فقط-خواندنی بسیار مهم که نوع منبع تغذیه متصل شده را بر اساس تشخیص پین‌های D+/D- نشان می‌دهد (مثلاً: پورت استاندارد USB، شارژر دیواری، شارژر سریع و...).",
+        VBAT_PRESENT_STAT: "یک نشانگر فقط-خواندنی که نشان می‌دهد آیا باتری به درستی به سیستم متصل است و ولتاژ قابل قبولی دارد یا خیر.",
+        VSYS_STAT: "یک نشانگر فقط-خواندنی که نشان می‌دهد آیا سیستم در حالت رگولاسیون حداقل ولتاژ (VSYSMIN) کار می‌کند (یعنی ولتاژ باتری کمتر از حد تنظیم شده است) یا خیر.",
+        IBUS_ADC_15_0: "مقدار لحظه‌ای جریان ورودی از VBUS که توسط ADC داخلی اندازه‌گیری شده است.",
+        IBAT_ADC_15_0: "مقدار لحظه‌ای جریان شارژ (مثبت) یا دشارژ (منفی) باتری که توسط ADC داخلی اندازه‌گیری شده است.",
+        VBUS_ADC_15_0: "مقدار لحظه‌ای ولتاژ ورودی VBUS که توسط ADC داخلی اندازه‌گیری شده است.",
+        VAC1_ADC_15_0: "مقدار لحظه‌ای ولتاژ ورودی VAC1 (قبل از ماسفت) که توسط ADC داخلی اندازه‌گیری شده است.",
+        VAC2_ADC_15_0: "مقدار لحظه‌ای ولتاژ ورودی VAC2 (قبل از ماسفت) که توسط ADC داخلی اندازه‌گیری شده است.",
+        VBAT_ADC_15_0: "مقدار لحظه‌ای ولتاژ باتری که توسط ADC داخلی اندازه‌گیری شده است.",
+        VSYS_ADC_15_0: "مقدار لحظه‌ای ولتاژ سیستم (SYS) که توسط ADC داخلی اندازه‌گیری شده است.",
+        TS_ADC_15_0: "مقدار ولتاژ روی پین ترمیستور (TS) به صورت درصدی از ولتاژ REGN که توسط ADC اندازه‌گیری شده است.",
+        TDIE_ADC_15_0: "دمای داخلی خود چیپ که توسط سنسور دمای داخلی و ADC اندازه‌گیری شده است.",
+        
+        // --- صفحه ۲ ---
+        VREG_10_0: "این رجیستر، ولتاژ نهایی را که باتری باید تا آن مقدار شارژ شود (Constant Voltage)، تنظیم می‌کند. این مقدار باید با دقت بسیار و بر اساس مشخصات شیمیایی باتری (مثلاً 4.2V برای هر سلول لیتیوم-یون) تنظیم شود. تنظیم مقدار بالاتر از حد مجاز می‌تواند خطرناک باشد.",
+        ICHG_8_0: "این رجیستر، جریان شارژ در مرحله اصلی (Constant Current) را تعیین می‌کند. مقدار آن باید بر اساس ظرفیت و حداکثر جریان شارژ مجاز باتری (C-rate) تنظیم شود تا عمر باتری حفظ شود.",
+        VINDPM_7_0: "یک ویژگی هوشمند برای جلوگیری از افت ولتاژ آداپتور. اگر ولتاژ ورودی (VBUS) به دلیل بار زیاد به این آستانه برسد، چیپ به طور خودکار جریان شارژ را کاهش می‌دهد تا ولتاژ ورودی ثابت بماند و آداپتور دچار مشکل نشود.",
+        IINDPM_8_0: "حداکثر جریانی که چیپ مجاز است از منبع ورودی (آداپتور) بکشد را تعیین می‌کند. این مقدار معمولاً به صورت خودکار توسط چیپ تشخیص داده می‌شود، اما شما می‌توانید آن را به صورت دستی برای سازگاری با آداپتورهای خاص، محدود کنید.",
+        EN_ICO: "با فعال کردن این گزینه، چیپ به صورت خودکار تلاش می‌کند تا حداکثر جریان قابل ارائه توسط یک آداپتور ناشناس را پیدا کند و IINDPM را بر اساس آن تنظیم کند. این ویژگی برای آداپتورهایی که استاندارد مشخصی ندارند بسیار مفید است.",
+        FORCE_ICO: "یک دستور لحظه‌ای که الگوریتم ICO را مجبور به اجرا می‌کند، صرف‌نظر از اینکه قبلاً اجرا شده باشد یا نه.",
+        EN_HIZ: "با فعال کردن این گزینه، چیپ ارتباط خود را با ورودی VBUS قطع کرده و به یک حالت کم‌مصرف می‌رود. این حالت برای زمانی که می‌خواهید سیستم فقط از باتری تغذیه کند در حالی که آداپتور متصل است، مفید است.",
+        SDRV_CTRL_1_0: "این رجیستر حالت‌های مربوط به یک ماسفت خارجی (Ship FET) را کنترل می‌کند که می‌تواند باتری را به طور کامل از سیستم جدا کند. گزینه‌ها شامل حالت IDLE (عادی)، Shutdown (خاموشی کامل)، Ship Mode (حالت حمل با حداقل مصرف) و Reset (ریست کردن سخت‌افزاری سیستم) است.",
+        EN_OTG: "این بیت حالت پاوربانک را فعال یا غیرفعال می‌کند.",
+        EN_ACDRV1: "اگر از قابلیت دو ورودی چیپ استفاده می‌کنید، این بیت ماسفت مربوط به ورودی ۱ را فعال یا غیرفعال می‌کند تا منبع تغذیه انتخاب شود.",
+        EN_ACDRV2: "اگر از قابلیت دو ورودی چیپ استفاده می‌کنید، این بیت ماسفت مربوط به ورودی ۲ را فعال یا غیرفعال می‌کند تا منبع تغذیه انتخاب شود.",
+        DIS_ACDRV: "یک دستور برای غیرفعال کردن فوری هر دو ورودی و قطع ارتباط با منابع تغذیه خارجی.",
+        FORCE_VINDPM_DET: "یک دستور لحظه‌ای که چیپ را مجبور می‌کند ولتاژ ورودی را در حالت بی‌باری مجدداً اندازه‌گیری کرده و آستانه VINDPM را به‌روز کند.",
+        SFET_PRESENT: "این بیت یک پیکربندی سخت‌افزاری است. شما باید به چیپ اطلاع دهید که آیا ماسفت خارجی Ship FET در مدار شما وجود دارد یا خیر تا منطق مربوط به آن به درستی کار کند.",
+        EN_MPPT: "با فعال کردن این گزینه، الگوریتم MPPT برای دریافت حداکثر انرژی از پنل خورشیدی فعال می‌شود.",
+        ICO_ILIM_8_0: "یک رجیستر فقط-خواندنی که محدودیت جریان ورودی بهینه را پس از اجرای الگوریتم ICO نمایش می‌دهد.",
+        AC1_PRESENT_STAT: "نشانگر فقط-خواندنی که وضعیت اتصال منبع تغذیه به ورودی اول (VAC1) را نشان می‌دهد.",
+        AC2_PRESENT_STAT: "نشانگر فقط-خواندنی که وضعیت اتصال منبع تغذیه به ورودی دوم (VAC2) را نشان می‌دهد.",
+        VBATOTG_LOW_STAT: "نشان می‌دهد که آیا ولتاژ باتری برای فعال کردن حالت OTG (پاوربانک) بیش از حد پایین است یا خیر.",
+        ADC_EN: "کلید اصلی برای فعال یا غیرفعال کردن مبدل آنالوگ به دیجیتال (ADC). برای کاهش مصرف انرژی می‌توان آن را غیرفعال کرد.",
+        VBUS_OVP_STAT: "وضعیت خطای ازدیاد ولتاژ در ورودی VBUS را نشان می‌دهد.",
+        VBAT_OVP_STAT: "وضعیت خطای ازدیاد ولتاژ باتری را نشان می‌دهد.",
+        IBUS_OCP_STAT: "وضعیت خطای جریان کشی بیش از حد از منبع ورودی را نشان می‌دهد.",
+        IBAT_OCP_STAT: "وضعیت خطای جریان کشی بیش از حد از باتری (در حالت دشارژ) را نشان می‌دهد.",
+        CONV_OCP_STAT: "وضعیت خطای جریان کشی بیش از حد در مبدل داخلی چیپ را نشان می‌دهد.",
+        VSYS_SHORT_STAT: "وضعیت خطای اتصال کوتاه در خروجی سیستم (SYS) را نشان می‌دهد.",
+        VSYS_OVP_STAT: "وضعیت خطای ازدیاد ولتاژ در خروجی سیستم (SYS) را نشان می‌دهد.",
+        OTG_OVP_STAT: "وضعیت خطای ازدیاد ولتاژ خروجی در حالت OTG را نشان می‌دهد.",
+        OTG_UVP_STAT: "وضعیت خطای افت ولتاژ خروجی در حالت OTG را نشان می‌دهد.",
+        TSHUT_STAT: "وضعیت خطای خاموشی حرارتی را نشان می‌دهد. این خطا زمانی رخ می‌دهد که دمای چیپ به حداکثر مقدار بحرانی خود برسد.",
+
+        // --- صفحه ۳ ---
+        VBAT_LOWV_1_0: "این رجیستر آستانه ولتاژی را تعیین می‌کند که در آن، فرآیند شارژ از مرحله 'پیش‌شارژ' (جریان کم) به 'شارژ سریع' (جریان اصلی) تغییر می‌کند. این مقدار به صورت درصدی از ولتاژ نهایی شارژ (VREG) تعریف می‌شود.",
+        IPRECHG_5_0: "جریان شارژ را برای باتری‌هایی که ولتاژ بسیار پایینی دارند (عمیقاً دشارژ شده‌اند) تنظیم می‌کند. شارژ با جریان کم در این مرحله، از آسیب به سلول‌های باتری جلوگیری می‌کند.",
+        ITERM_4_0: "وقتی جریان شارژ در مرحله ولتاژ-ثابت به این مقدار کاهش یابد، چیپ فرآیند شارژ را پایان یافته تلقی کرده و آن را متوقف می‌کند.",
+        TRECHG_1_0: "یک زمان فیلتر (deglitch) که از شروع ناخواسته یک سیکل شارژ جدید به دلیل نوسانات لحظه‌ای ولتاژ باتری جلوگیری می‌کند.",
+        VRECHG_3_0: "اگر پس از اتمام شارژ، ولتاژ باتری به دلیل مصرف داخلی یا بار، به اندازه‌ی این مقدار از ولتاژ نهایی (VREG) کمتر شود، یک سیکل شارژ جدید به صورت خودکار آغاز می‌شود.",
+        VAC_OVP_1_0: "آستانه ولتاژی را برای ورودی‌های VAC1/VAC2 (قبل از ماسفت‌ها) تعیین می‌کند که در صورت عبور از آن، ورودی برای حفاظت قطع می‌شود.",
+        EN_IBAT: "برای کاهش مصرف انرژی، مدار اندازه‌گیری جریان دشارژ باتری در حالت عادی خاموش است. برای خواندن جریان دشارژ از طریق ADC، باید این بیت را فعال کنید.",
+        IBAT_REG_1_0: "یک حد حفاظتی برای حداکثر جریان دشارژ باتری در حالت OTG. اگر جریان کشیده شده از باتری به این حد برسد، چیپ ولتاژ خروجی را کاهش می‌دهد تا از باتری محافظت کند.",
+        EN_IINDPM: "این بیت مشخص می‌کند که آیا محدودیت جریان ورودی باید از طریق رجیستر داخلی (IINDPM) کنترل شود یا خیر.",
+        EN_EXTILIM: "این بیت مشخص می‌کند که آیا محدودیت جریان ورودی باید از طریق ولتاژ آنالوگ روی پین ILIM_HIZ کنترل شود یا خیر.",
+        ICO_STAT_1_0: "وضعیت فعلی الگوریتم بهینه‌ساز جریان ورودی (ICO) را نشان می‌دهد: غیرفعال، در حال اجرا، یا پایان یافته.",
+        VAC1_OVP_STAT: "وضعیت خطای ازدیاد ولتاژ در ورودی VAC1 را نشان می‌دهد.",
+        VAC2_OVP_STAT: "وضعیت خطای ازدیاد ولتاژ در ورودی VAC2 را نشان می‌دهد.",
+        ADC_SAMPLE_1_0: "این گزینه، دقت و سرعت مبدل ADC را تنظیم می‌کند. رزولوشن بالاتر (مثلاً 15-bit) زمان تبدیل بیشتری نیاز دارد، در حالی که رزولوشن پایین‌تر (مثلاً 12-bit) سریع‌تر است.",
+        
+        // --- صفحه ۴ ---
+        STOP_WD_CHG: "تعیین می‌کند که آیا منقضی شدن تایمر Watchdog باید باعث توقف فرآیند شارژ شود یا خیر.",
+        PRECHG_TMR: "تایمر ایمنی برای مرحله پیش‌شارژ را تنظیم می‌کند.",
+        TOPOFF_TMR_1_0: "یک تایمر اختیاری که پس از خاتمه شارژ، به مدت کوتاهی شارژ را با ولتاژ ثابت ادامه می‌دهد تا از شارژ کامل باتری اطمینان حاصل شود.",
+        EN_TRICHG_TMR: "تایمر ایمنی برای مرحله شارژ قطره‌ای (Trickle Charge) را فعال یا غیرفعال می‌کند.",
+        EN_PRECHG_TMR: "تایمر ایمنی برای مرحله پیش‌شارژ را فعال یا غیرفعال می‌کند.",
+        EN_CHG_TMR: "تایمر ایمنی برای مرحله شارژ سریع را فعال یا غیرفعال می‌کند.",
+        CHG_TMR_1_0: "مدت زمان تایمر ایمنی برای مرحله شارژ سریع را انتخاب می‌کند.",
+        TMR2X_EN: "باعث می‌شود تایمرهای ایمنی در شرایط خاص (مانند محدودیت حرارتی) با نصف سرعت کار کنند تا زمان بیشتری برای شارژ ایمن فراهم شود.",
+        EN_AUTO_IBATDIS: "در صورت وقوع خطای ازدیاد ولتاژ باتری (BATOVP)، به طور خودکار یک جریان دشارژ کوچک برای کاهش ولتاژ اعمال می‌کند.",
+        FORCE_IBATDIS: "یک دستور لحظه‌ای برای اعمال اجباری جریان دشارژ روی باتری، صرف‌نظر از وضعیت خطا.",
+        EN_TERM: "قابلیت خاتمه خودکار شارژ را فعال یا غیرفعال می‌کند. اگر غیرفعال باشد، شارژ تا زمان توقف دستی ادامه می‌یابد.",
+        WATCHDOG_2_0: "یک تایمر ایمنی که باید به طور متناوب توسط میکروکنترلر ریست شود. اگر ریست نشود، چیپ به تنظیمات پیش‌فرض بازمی‌گردد تا از هنگ کردن سیستم جلوگیری کند.",
+        FORCE_INDET: "یک دستور لحظه‌ای که چیپ را مجبور می‌کند فرآیند تشخیص نوع آداپتور از طریق پین‌های D+/D- را مجدداً اجرا کند.",
+        AUTO_INDET_EN: "تشخیص خودکار نوع آداپتور هنگام اتصال را فعال یا غیرفعال می‌کند.",
+        EN_12V: "به چیپ اجازه می‌دهد تا از شارژرهای سریع (HVDCP) درخواست ولتاژ ۱۲ ولت کند.",
+        EN_9V: "به چیپ اجازه می‌دهد تا از شارژرهای سریع (HVDCP) درخواست ولتاژ ۹ ولت کند.",
+        HVDCP_EN: "پروتکل ارتباط با شارژرهای سریع (High Voltage Dedicated Charging Port) را فعال می‌کند.",
+        SDRV_DLY: "یک تأخیر زمانی برای اجرای دستورات مربوط به Ship FET (SDRV_CTRL) اضافه می‌کند.",
+        PFM_OTG_DIS: "حالت PFM (Pulse Frequency Modulation) را در مد OTG غیرفعال می‌کند. این کار بازدهی در بار کم را کاهش می‌دهد اما ممکن است نویز را کم کند.",
+        PFM_FWD_DIS: "حالت PFM را در مد شارژ (Forward) غیرفعال می‌کند.",
+        WKUP_DLY: "مدت زمانی که پین QON باید پایین نگه داشته شود تا دستگاه از حالت Ship Mode خارج شود را تنظیم می‌کند.",
+        DIS_LDO: "حالت LDO ماسفت باتری در مرحله پیش‌شارژ را غیرفعال می‌کند.",
+        DIS_OTG_OOA: "حالت Out-of-Audio را برای جلوگیری از نویز صوتی در مد OTG غیرفعال می‌کند.",
+        DIS_FWD_OOA: "حالت Out-of-Audio را برای جلوگیری از نویز صوتی در مد شارژ غیرفعال می‌کند.",
+        PWM_FREQ: "فرکانس سوئیچینگ اصلی مبدل را بین 1.5MHz (قطعات کوچکتر) و 750kHz (بازدهی بالاتر) انتخاب می‌کند.",
+        DIS_STAT: "عملکرد پین خروجی STAT را غیرفعال می‌کند.",
+        DIS_VSYS_SHORT: "حفاظت داخلی در برابر اتصال کوتاه شدن خروجی سیستم (SYS) را غیرفعال می‌کند.",
+        DIS_VOTG_UVP: "حفاظت داخلی در برابر افت ولتاژ خروجی در حالت OTG را غیرفعال می‌کند.",
+        EN_IBUS_OCP: "حفاظت در برابر جریان کشی بیش از حد از منبع ورودی (IBUS OCP) را فعال می‌کند.",
+        EN_BATOC: "حفاظت در برابر جریان کشی بیش از حد از باتری (IBAT OCP) را فعال می‌کند.",
+        VOC_PCT_2_0: "در حالت MPPT، نقطه حداکثر توان را به صورت درصدی از ولتاژ مدار باز (Open-Circuit Voltage) پنل خورشیدی تنظیم می‌کند.",
+        VOC_DLY_1_0: "در حالت MPPT، مدت زمان تأخیر قبل از اندازه‌گیری ولتاژ مدار باز پنل را تنظیم می‌کند.",
+        VOC_RATE_1_0: "در حالت MPPT، فاصله زمانی بین هر بار اندازه‌گیری ولتاژ مدار باز پنل را تعیین می‌کند.",
+        TREG_1_0: "آستانه دمای داخلی چیپ را برای محدودیت حرارتی (Thermal Regulation) تنظیم می‌کند. اگر دما به این حد برسد، جریان شارژ کاهش می‌یابد.",
+        TSHUT_1_0: "آستانه دمای داخلی چیپ را برای خاموشی کامل (Thermal Shutdown) تنظیم می‌کند. این یک حفاظت حیاتی در برابر گرمای بیش از حد است.",
+        VBUS_PD_EN: "یک مقاومت Pull-down داخلی را روی خط VBUS فعال می‌کند.",
+        VAC1_PD_EN: "یک مقاومت Pull-down داخلی را روی خط VAC1 فعال می‌کند.",
+        VAC2_PD_EN: "یک مقاومت Pull-down داخلی را روی خط VAC2 فعال می‌کند.",
+        JEITA_VSET_2_0: "در محدوده دمای گرم، ولتاژ شارژ را طبق استاندارد JEITA کاهش می‌دهد تا از باتری محافظت کند.",
+        JEITA_ISETH_1_0: "در محدوده دمای گرم، جریان شارژ را طبق استاندارد JEITA کاهش می‌دهد.",
+        JEITA_ISETC_1_0: "در محدوده دمای سرد، جریان شارژ را طبق استاندارد JEITA کاهش می‌دهد.",
+        TS_COOL_1_0: "آستانه دمایی بین حالت 'سرد' و 'خنک' را طبق پروفایل JEITA تنظیم می‌کند.",
+        TS_WARM_1_0: "آستانه دمایی بین حالت 'عادی' و 'گرم' را طبق پروفایل JEITA تنظیم می‌کند.",
+        BHOT_1_0: "آستانه دمای بالا را برای عملکرد ایمن در حالت OTG تنظیم می‌کند.",
+        BCOLD: "آستانه دمای پایین را برای عملکرد ایمن در حالت OTG تنظیم می‌کند.",
+        TS_IGNORE: "مانیتورینگ دمای باتری از طریق پین TS را به طور کامل نادیده می‌گیرد (استفاده از این گزینه توصیه نمی‌شود).",
+        ADC_RATE: "نرخ تبدیل ADC را بین حالت 'پیوسته' و 'تک نمونه‌ای' (One-shot) انتخاب می‌کند.",
+        ADC_AVG: "قابلیت میانگین‌گیری از نتایج ADC را برای کاهش نویز و افزایش دقت فعال می‌کند.",
+        ADC_AVG_INIT: "تعیین می‌کند که فرآیند میانگین‌گیری با مقدار فعلی رجیستر شروع شود یا با یک تبدیل ADC جدید.",
+        IBUS_ADC_DIS: "کانال ADC مربوط به جریان ورودی را غیرفعال می‌کند.",
+        IBAT_ADC_DIS: "کانال ADC مربوط به جریان باتری را غیرفعال می‌کند.",
+        VBUS_ADC_DIS: "کانال ADC مربوط به ولتاژ ورودی را غیرفعال می‌کند.",
+        VBAT_ADC_DIS: "کانال ADC مربوط به ولتاژ باتری را غیرفعال می‌کند.",
+        VSYS_ADC_DIS: "کانال ADC مربوط به ولتاژ سیستم را غیرفعال می‌کند.",
+        TS_ADC_DIS: "کانال ADC مربوط به پین دما (TS) را غیرفعال می‌کند.",
+        TDIE_ADC_DIS: "کانال ADC مربوط به دمای داخلی چیپ را غیرفعال می‌کند.",
+        DP_ADC_DIS: "کانال ADC مربوط به پین D+ را غیرفعال می‌کند.",
+        DM_ADC_DIS: "کانال ADC مربوط به پین D- را غیرفعال می‌کند.",
+        VAC1_ADC_DIS: "کانال ADC مربوط به ورودی VAC1 را غیرفعال می‌کند.",
+        VAC2_ADC_DIS: "کانال ADC مربوط به ورودی VAC2 را غیرفعال می‌کند.",
+        DPLUS_DAC_2_0: "یک ولتاژ یا وضعیت خاص را روی پین D+ قرار می‌دهد. برای شبیه‌سازی انواع شارژر یا تست استفاده می‌شود.",
+        DMINUS_DAC_2_0: "یک ولتاژ یا وضعیت خاص را روی پین D- قرار می‌دهد.",
+        PN_2_0: "یک مقدار فقط-خواندنی که شماره قطعه (Part Number) را مشخص می‌کند.",
+        DEV_REV_2_0: "یک مقدار فقط-خواندنی که نسخه بازبینی (Device Revision) سخت‌افزار چیپ را مشخص می‌کند.",
+
+        // --- صفحه ۵ ---
+        IINDPM_STAT: "نشان می‌دهد آیا چیپ در حال محدود کردن جریان ورودی است.",
+        VINDPM_STAT: "نشان می‌دهد آیا چیپ در حال محدود کردن ولتاژ ورودی است.",
+        WD_STAT: "نشان می‌دهد آیا تایمر Watchdog منقضی شده و رجیسترها به حالت پیش‌فرض بازگشته‌اند.",
+        PG_STAT: "نشان می‌دهد آیا منبع تغذیه ورودی 'خوب' و پایدار است.",
+        BC1_2_DONE_STAT: "نشان می‌دهد که فرآیند تشخیص نوع آداپتور BC1.2 به پایان رسیده است.",
+        TREG_STAT: "نشان می‌دهد آیا چیپ به دلیل دمای بالا، جریان شارژ را کاهش داده است.",
+        DPDM_STAT: "نشان می‌دهد که فرآیند تشخیص D+/D- در حال انجام است یا خیر.",
+        ACRB2_STAT: "نشان می‌دهد آیا چیپ در هنگام راه‌اندازی، وجود ماسفت‌ها را روی ورودی ۲ تشخیص داده است.",
+        ACRB1_STAT: "نشان می‌دهد آیا چیپ در هنگام راه‌اندازی، وجود ماسفت‌ها را روی ورودی ۱ تشخیص داده است.",
+        ADC_DONE_STAT: "در حالت تک-نمونه‌ای، نشان می‌دهد که تبدیل ADC به پایان رسیده است.",
+        CHG_TMR_STAT: "نشان می‌دهد آیا تایمر ایمنی شارژ سریع منقضی شده است.",
+        TRICHG_TMR_STAT: "نشان می‌دهد آیا تایمر ایمنی شارژ قطره‌ای منقضی شده است.",
+        PRECHG_TMR_STAT: "نشان می‌دهد آیا تایمر ایمنی پیش‌شارژ منقضی شده است.",
+        TS_COLD_STAT: "گزارش می‌دهد که دمای باتری در محدوده 'سرد' قرار دارد.",
+        TS_COOL_STAT: "گزارش می‌دهد که دمای باتری در محدوده 'خنک' قرار دارد.",
+        TS_WARM_STAT: "گزارش می‌دهد که دمای باتری در محدوده 'گرم' قرار دارد.",
+        TS_HOT_STAT: "گزارش می‌دهد که دمای باتری در محدوده 'داغ' قرار دارد.",
+        IBAT_REG_STAT: "نشان می‌دهد آیا چیپ در حال محدود کردن جریان دشارژ باتری در حالت OTG است.",
+        D_PLUS_ADC_15_0: "ولتاژ لحظه‌ای پین D+ را برای دیباگ کردن نمایش می‌دهد.",
+        D_MINUS_ADC_15_0: "ولتاژ لحظه‌ای پین D- را برای دیباگ کردن نمایش می‌دهد."
+    };
+
+    /**
+     * @const {Object} registerConfig
+     * این آبجکت "مغز" رابط کاربری برای رجیسترهای قابل نوشتن است.
+     * برای هر رجیستر، نوع کنترل (boolean, select, number, command) و گزینه‌های مربوطه را تعریف می‌کند.
+     */
     const registerConfig = {
         // Page 1
         VSYSMIN_5_0: { type: 'number', range: { min: 2500, max: 16000, step: 250 }, unit: 'mV' },
@@ -102,18 +276,43 @@ document.addEventListener('DOMContentLoaded', function() {
         DMINUS_DAC_2_0: { type: 'select', options: { '0': 'HIZ', '1': '0V', '2': '0.6V', '3': '1.2V', '4': '2.0V', '5': '2.7V', '6': '3.3V', '7': 'Reserved' } },
     };
 
-    // --- WebSocket Initialization ---
+    // ===================================================================================
+    // بخش ۲: مدیریت وب‌سوکت و وضعیت اتصال
+    // این بخش ارتباط لحظه‌ای با ESP32 را برای دریافت وقفه‌ها و نمایش وضعیت اتصال مدیریت می‌کند.
+    // ===================================================================================
+
+    const statusIndicator = document.getElementById('status-indicator');
     let gateway = `ws://${window.location.hostname}/ws`;
     let websocket;
 
+    function updateStatusIndicator(status) {
+        if (!statusIndicator) return;
+        statusIndicator.className = 'status-indicator'; // Reset classes
+        statusIndicator.classList.add(status);
+        const textMap = {
+            connecting: 'در حال اتصال...',
+            connected: 'متصل',
+            disconnected: 'قطع'
+        };
+        statusIndicator.textContent = textMap[status];
+    }
+
     function initWebSocket() {
         console.log('Trying to open a WebSocket connection...');
+        updateStatusIndicator('connecting');
         websocket = new WebSocket(gateway);
-        websocket.onopen = () => console.log('Connection opened');
+        
+        websocket.onopen = () => {
+            console.log('Connection opened');
+            updateStatusIndicator('connected');
+        };
+        
         websocket.onclose = () => {
             console.log('Connection closed');
-            setTimeout(initWebSocket, 2000);
+            updateStatusIndicator('disconnected');
+            setTimeout(initWebSocket, 2000); // تلاش برای اتصال مجدد پس از ۲ ثانیه
         };
+        
         websocket.onmessage = (event) => {
             console.log('Message from server: ', event.data);
             showToast(event.data);
@@ -121,7 +320,15 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     initWebSocket();
 
-    // --- Toast Notification Logic ---
+    // ===================================================================================
+    // بخش ۳: مدیریت UI (رابط کاربری)
+    // این بخش شامل توابع مربوط به نمایش پاپ‌آپ‌ها، مقداردهی اولیه Tooltipها و بارگذاری داده‌ها است.
+    // ===================================================================================
+
+    /**
+     * نمایش یک پیام موقت (Toast) در پایین صفحه.
+     * @param {string} message - پیامی که باید نمایش داده شود.
+     */
     function showToast(message) {
         const toast = document.getElementById("toast");
         if (toast) {
@@ -131,53 +338,113 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // --- Data Fetching & Display Logic ---
+    /**
+     * یک بار در ابتدای بارگذاری صفحه اجرا می‌شود.
+     * آیکون‌های راهنما (?) و متن توضیحات آن‌ها را به صورت داینامیک به هر کارت اضافه می‌کند.
+     */
+    function initializeUI() {
+        document.querySelectorAll('.data-card').forEach(card => {
+            const regName = card.dataset.reg;
+            const explanation = registerExplanations[regName];
+            if (explanation) {
+                const labelSpan = card.querySelector('.label');
+                if (labelSpan) {
+                    const labelContainer = document.createElement('div');
+                    labelContainer.className = 'label-container';
+
+                    const tooltipIcon = document.createElement('span');
+                    tooltipIcon.className = 'tooltip-icon';
+                    tooltipIcon.textContent = '?';
+
+                    const tooltipText = document.createElement('div');
+                    tooltipText.className = 'tooltip-text';
+                    tooltipText.textContent = explanation;
+
+                    // برای جلوگیری از تکرار، ابتدا محتوای قبلی را پاک می‌کنیم
+                    const existingLabel = labelSpan.cloneNode(true);
+                    labelSpan.innerHTML = '';
+                    
+                    labelContainer.appendChild(existingLabel);
+                    labelContainer.appendChild(tooltipIcon);
+                    labelContainer.appendChild(tooltipText);
+                    
+                    labelSpan.replaceWith(labelContainer);
+                }
+            }
+        });
+    }
+    initializeUI();
+
+
+    // ===================================================================================
+    // بخش ۴: دریافت و نمایش داده‌ها
+    // این بخش مسئول دریافت دوره‌ای داده‌ها از ESP32 و نمایش آن‌ها در کارت‌های مربوطه است.
+    // ===================================================================================
+
     if (typeof window.API_ENDPOINT === 'undefined') return;
 
     const dataContainer = document.getElementById('data-container');
+    const loadingOverlay = document.getElementById('loading-overlay');
     if (!dataContainer) return;
 
-    // This object holds functions to convert raw status codes to meaningful strings for READ-ONLY values.
+    // آبجکت کمکی برای تفسیر مقادیر فقط-خواندنی که چندین حالت دارند.
     const statusInterpreters = {
         CHG_STAT_2_0: v => ["Not Charging", "Trickle", "Pre-charge", "Fast Charge", "Taper", "Reserved", "Top-off", "Done"][v] || "Unknown",
         VBUS_STAT_3_0: v => ({0:"No Input",1:"SDP",2:"CDP",3:"DCP",4:"HVDCP",5:"Unknown",6:"Non-Standard",7:"OTG",8:"Not Qualified"})[v]||"Reserved",
         ICO_STAT_1_0: v => ["Disabled", "In Progress", "Done", "Reserved"][v] || "Unknown",
     };
 
+    let isFirstLoad = true;
+
+    /**
+     * تابع اصلی برای دریافت داده‌ها از API و به‌روزرسانی UI.
+     */
     const fetchData = async () => {
         try {
             const response = await fetch(window.API_ENDPOINT);
             if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
             const data = await response.json();
             
+            // پس از اولین دریافت موفق داده، انیمیشن بارگذاری را محو کن
+            if (isFirstLoad && loadingOverlay) {
+                loadingOverlay.style.opacity = '0';
+                setTimeout(() => loadingOverlay.style.display = 'none', 500);
+                isFirstLoad = false;
+            }
+
             for (const key in data) {
                 const element = document.getElementById(key);
                 if (element) {
                     let rawValue = data[key];
+                    const cardElement = element.closest('.data-card');
+
+                    // ذخیره مقدار خام برای استفاده در هنگام ویرایش
+                    if (cardElement) {
+                        cardElement.dataset.currentValue = rawValue;
+                    }
+                    
                     if (rawValue === -1 || rawValue === -999.0) {
                         element.textContent = "Error";
-                        element.parentElement.dataset.currentValue = "Error";
                         continue;
                     }
-                    element.parentElement.dataset.currentValue = rawValue;
 
                     let displayValue;
                     const config = registerConfig[key];
-                    if (config) { // It's a writable register
+
+                    // تصمیم‌گیری برای نحوه نمایش مقدار بر اساس نوع رجیستر
+                    if (config) { // اگر رجیستر قابل نوشتن باشد
                         if (config.type === 'select' || config.type === 'boolean') {
-                            displayValue = config.options[rawValue] || `Raw: ${rawValue}`;
+                            displayValue = config.options[rawValue] || `خام: ${rawValue}`;
                         } else if (config.type === 'command') {
-                            displayValue = "اجرا"; // Text for the command button
+                            displayValue = "اجرا";
                         } else { // number
                             displayValue = `${rawValue}${config.unit || ''}`;
                         }
-                    } else if (statusInterpreters[key]) { // It's a read-only status register
+                    } else if (statusInterpreters[key]) { // اگر رجیستر فقط-خواندنی با چند حالت باشد
                         displayValue = statusInterpreters[key](rawValue);
-                    } else if (typeof rawValue === 'boolean') {
-                        displayValue = rawValue ? "Yes" : "No";
-                    } else if (typeof rawValue === 'number' && !Number.isInteger(rawValue)) {
+                    } else if (typeof rawValue === 'number' && !Number.isInteger(rawValue)) { // اگر عدد اعشاری باشد
                         displayValue = rawValue.toFixed(2);
-                    } else { // Default display for other read-only values
+                    } else { // حالت پیش‌فرض برای سایر مقادیر
                         displayValue = rawValue;
                     }
                     element.textContent = displayValue;
@@ -185,13 +452,20 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         } catch (error) {
             console.error("Failed to fetch data:", error);
+            if (isFirstLoad && loadingOverlay) {
+                loadingOverlay.textContent = 'خطا در اتصال';
+            }
         }
     };
 
     fetchData();
-    setInterval(fetchData, 5000);
+    setInterval(fetchData, 5000); // به‌روزرسانی داده‌ها هر ۵ ثانیه
 
-    // --- Modal and Interaction Logic ---
+    // ===================================================================================
+    // بخش ۵: مدیریت مودال و تعامل کاربر
+    // این بخش شامل منطق باز کردن مودال، ساختن کنترل‌های ورودی و ارسال درخواست نوشتن به سرور است.
+    // ===================================================================================
+
     const modal = document.getElementById('edit-modal');
     const modalTitle = document.getElementById('modal-title');
     const modalBody = document.getElementById('modal-body');
@@ -209,9 +483,11 @@ document.addEventListener('DOMContentLoaded', function() {
         if (!config) return;
 
         const rawValue = card.dataset.currentValue;
-        modalTitle.textContent = `ویرایش ${card.querySelector('.label').textContent}`;
-        modalBody.innerHTML = ''; // Clear previous content
+        const labelText = card.querySelector('.label-container .label').textContent;
+        modalTitle.textContent = `ویرایش ${labelText}`;
+        modalBody.innerHTML = ''; // پاک کردن محتوای قبلی مودال
 
+        // ساختن کنترل ورودی مناسب بر اساس نوع رجیستر
         if (config.type === 'boolean') {
             const btnGroup = document.createElement('div');
             btnGroup.className = 'modal-btn-group';
@@ -267,6 +543,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const config = registerConfig[currentEditingReg];
         let newValue;
 
+        // استخراج مقدار جدید از کنترل ورودی
         if (config.type === 'command') {
             newValue = 1;
         } else if (config.type === 'boolean') {
@@ -284,19 +561,19 @@ document.addEventListener('DOMContentLoaded', function() {
         modal.style.display = 'none';
     });
     
-    // Delegate click for boolean buttons inside modal
+    // مدیریت کلیک روی دکمه‌های boolean در مودال
     modalBody.addEventListener('click', (event) => {
         if(event.target.tagName === 'BUTTON') {
-            // Remove active class from sibling
             const parent = event.target.parentElement;
-            parent.querySelector('.active')?.classList.remove('active');
-            // Add active class to clicked button
-            event.target.classList.add('active');
+            if (parent.classList.contains('modal-btn-group')) {
+                parent.querySelector('.active')?.classList.remove('active');
+                event.target.classList.add('active');
+            }
         }
     });
 
 
-    // --- REG_RST Button Logic ---
+    // --- منطق دکمه ریست (REG_RST) ---
     const resetButton = document.getElementById('reset-button');
     const confirmModal = document.getElementById('confirm-modal');
     if(resetButton && confirmModal) {
@@ -314,7 +591,17 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
+    /**
+     * ارسال درخواست نوشتن (POST) به سرور ESP32.
+     * @param {string} reg - نام رجیستری که باید نوشته شود.
+     * @param {string|number} val - مقدار جدیدی که باید نوشته شود.
+     */
     async function sendWriteRequest(reg, val) {
+        const card = document.querySelector(`.data-card[data-reg="${reg}"]`);
+        if (card) {
+            card.classList.add('saving'); // افکت درخشان برای بازخورد
+        }
+
         try {
             const response = await fetch('/api/write', {
                 method: 'POST',
@@ -323,15 +610,8 @@ document.addEventListener('DOMContentLoaded', function() {
             });
 
             if (response.ok) {
-                const config = registerConfig[reg];
-                let displayVal = val;
-                if (config && (config.type === 'select' || config.type === 'boolean')) {
-                    displayVal = config.options[val];
-                } else if (config && config.type === 'command') {
-                    displayVal = 'اجرا شد';
-                }
                 showToast(`دستور ${reg} با موفقیت ارسال شد.`);
-                setTimeout(fetchData, 500);
+                setTimeout(fetchData, 500); // دریافت مجدد داده‌ها برای نمایش تغییر
             } else {
                 const errorText = await response.text();
                 showToast(`خطا در نوشتن: ${errorText}`);
@@ -339,6 +619,10 @@ document.addEventListener('DOMContentLoaded', function() {
         } catch (error) {
             console.error('Failed to send write request:', error);
             showToast('خطا در ارسال درخواست. اتصال را بررسی کنید.');
+        } finally {
+            if (card) {
+                setTimeout(() => card.classList.remove('saving'), 500); // حذف افکت پس از اتمام
+            }
         }
     }
 });

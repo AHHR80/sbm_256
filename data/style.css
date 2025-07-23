@@ -8,6 +8,10 @@
     --font-family: 'Vazirmatn', sans-serif;
     --success-color: #2ecc71;
     --command-color: #3498db;
+    --tooltip-bg: #4a5a7e;
+    --status-connected: #27ae60;
+    --status-connecting: #f39c12;
+    --status-disconnected: #c0392b;
 }
 
 @import url('https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;700&display=swap');
@@ -91,7 +95,9 @@ header p {
     align-items: center;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
     min-height: 80px;
-    transition: background-color 0.2s, transform 0.2s;
+    transition: background-color 0.2s, transform 0.2s, box-shadow 0.3s;
+    position: relative;
+    overflow: hidden;
 }
 
 .data-card.writable {
@@ -117,14 +123,6 @@ header p {
     background-color: transparent;
 }
 
-
-.data-card .label {
-    font-size: 0.9em;
-    color: var(--font-color-label);
-    margin-bottom: 8px;
-    text-align: center;
-}
-
 .data-card .value {
     font-size: 1.4em;
     font-weight: bold;
@@ -146,6 +144,73 @@ header p {
 
 .back-button:hover {
     background-color: #c43a52;
+}
+
+/* --- Tooltip Styles --- */
+.label-container {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+
+.label {
+    font-size: 0.9em;
+    color: var(--font-color-label);
+    text-align: center;
+}
+
+.tooltip-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 18px;
+    height: 18px;
+    background-color: var(--font-color-label);
+    color: var(--primary-color);
+    border-radius: 50%;
+    font-size: 12px;
+    font-weight: bold;
+    cursor: help;
+    user-select: none;
+}
+
+.tooltip-text {
+    visibility: hidden;
+    opacity: 0;
+    width: 250px;
+    background-color: var(--tooltip-bg);
+    color: #fff;
+    text-align: right;
+    border-radius: 6px;
+    padding: 10px;
+    position: absolute;
+    z-index: 10;
+    bottom: 125%; 
+    left: 50%;
+    margin-left: -125px; 
+    transition: opacity 0.3s;
+    font-size: 0.9em;
+    line-height: 1.6;
+    font-weight: normal;
+}
+
+.tooltip-text::after {
+    content: "";
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    margin-left: -5px;
+    border-width: 5px;
+    border-style: solid;
+    border-color: var(--tooltip-bg) transparent transparent transparent;
+}
+
+.label-container:hover .tooltip-text {
+    visibility: visible;
+    opacity: 1;
 }
 
 #toast {
@@ -304,7 +369,7 @@ header p {
     background-color: #6c7a7b;
 }
 
-/* Styles for Reset Button and Confirmation Modal */
+/* --- Reset Button & Confirmation Modal --- */
 .reset-container {
     grid-column: 1 / -1;
     margin-top: 20px;
@@ -357,4 +422,50 @@ header p {
 #confirm-no {
     background-color: #555;
     color: white;
+}
+
+/* --- New Styles for Completeness --- */
+
+/* Loading Overlay */
+.loading-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: var(--bg-color);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 2000;
+    color: var(--font-color);
+    font-size: 1.5em;
+    transition: opacity 0.5s ease;
+}
+
+/* Connection Status Indicator */
+.status-indicator {
+    position: fixed;
+    top: 15px;
+    left: 15px;
+    padding: 5px 12px;
+    border-radius: 15px;
+    color: white;
+    font-size: 0.9em;
+    z-index: 1002;
+    transition: background-color 0.5s ease;
+}
+.status-indicator.connected { background-color: var(--status-connected); }
+.status-indicator.connecting { background-color: var(--status-connecting); }
+.status-indicator.disconnected { background-color: var(--status-disconnected); }
+
+/* Saving Feedback Animation */
+.data-card.saving {
+    animation: saving-glow 1s ease-in-out;
+}
+
+@keyframes saving-glow {
+    0% { box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2); }
+    50% { box-shadow: 0 0 20px var(--success-color); }
+    100% { box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2); }
 }

@@ -7,37 +7,39 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
+    <div id="status-indicator">در حال اتصال...</div>
+    <div class="loading-overlay">در حال بارگذاری داده‌ها...</div>
+
     <div class="container">
         <header>
             <a href="/" class="back-button">&larr;</a>
             <h1>صفحه ۵: وضعیت‌های خطا و تکمیلی</h1>
-            <p>این مقادیر فقط خواندنی هستند.</p>
+            <p>این مقادیر فقط خواندنی هستند. برای راهنمایی، موس را روی (?) نگه دارید.</p>
         </header>
         <main class="data-grid" id="data-container">
-            <div class="data-card"><span class="label">IINDPM_STAT</span><span id="IINDPM_STAT" class="value">--</span></div>
-            <div class="data-card"><span class="label">VINDPM_STAT</span><span id="VINDPM_STAT" class="value">--</span></div>
-            <div class="data-card"><span class="label">WD_STAT</span><span id="WD_STAT" class="value">--</span></div>
-            <div class="data-card"><span class="label">PG_STAT</span><span id="PG_STAT" class="value">--</span></div>
-            <div class="data-card"><span class="label">BC1.2_DONE_STAT</span><span id="BC1_2_DONE_STAT" class="value">--</span></div>
-            <div class="data-card"><span class="label">TREG_STAT</span><span id="TREG_STAT" class="value">--</span></div>
-            <div class="data-card"><span class="label">DPDM_STAT</span><span id="DPDM_STAT" class="value">--</span></div>
-            <div class="data-card"><span class="label">ACRB2_STAT</span><span id="ACRB2_STAT" class="value">--</span></div>
-            <div class="data-card"><span class="label">ACRB1_STAT</span><span id="ACRB1_STAT" class="value">--</span></div>
-            <div class="data-card"><span class="label">ADC_DONE_STAT</span><span id="ADC_DONE_STAT" class="value">--</span></div>
-            <div class="data-card"><span class="label">CHG_TMR_STAT</span><span id="CHG_TMR_STAT" class="value">--</span></div>
-            <div class="data-card"><span class="label">TRICHG_TMR_STAT</span><span id="TRICHG_TMR_STAT" class="value">--</span></div>
-            <div class="data-card"><span class="label">PRECHG_TMR_STAT</span><span id="PRECHG_TMR_STAT" class="value">--</span></div>
-            <div class="data-card"><span class="label">TS_COLD_STAT</span><span id="TS_COLD_STAT" class="value">--</span></div>
-            <div class="data-card"><span class="label">TS_COOL_STAT</span><span id="TS_COOL_STAT" class="value">--</span></div>
-            <div class="data-card"><span class="label">TS_WARM_STAT</span><span id="TS_WARM_STAT" class="value">--</span></div>
-            <div class="data-card"><span class="label">TS_HOT_STAT</span><span id="TS_HOT_STAT" class="value">--</span></div>
-            <div class="data-card"><span class="label">IBAT_REG_STAT</span><span id="IBAT_REG_STAT" class="value">--</span></div>
-            <div class="data-card"><span class="label">D+_ADC (mV)</span><span id="D_PLUS_ADC_15_0" class="value">--</span></div>
-            <div class="data-card"><span class="label">D-_ADC (mV)</span><span id="D_MINUS_ADC_15_0" class="value">--</span></div>
+            <div class="data-card" data-reg="IINDPM_STAT"><span class="label">IINDPM_STAT</span><span id="IINDPM_STAT" class="value">--</span></div>
+            <div class="data-card" data-reg="VINDPM_STAT"><span class="label">VINDPM_STAT</span><span id="VINDPM_STAT" class="value">--</span></div>
+            <div class="data-card" data-reg="WD_STAT"><span class="label">WD_STAT</span><span id="WD_STAT" class="value">--</span></div>
+            <div class="data-card" data-reg="PG_STAT"><span class="label">PG_STAT</span><span id="PG_STAT" class="value">--</span></div>
+            <div class="data-card" data-reg="BC1_2_DONE_STAT"><span class="label">BC1.2_DONE_STAT</span><span id="BC1_2_DONE_STAT" class="value">--</span></div>
+            <div class="data-card" data-reg="TREG_STAT"><span class="label">TREG_STAT</span><span id="TREG_STAT" class="value">--</span></div>
+            <div class="data-card" data-reg="DPDM_STAT"><span class="label">DPDM_STAT</span><span id="DPDM_STAT" class="value">--</span></div>
+            <div class="data-card" data-reg="ACRB2_STAT"><span class="label">ACRB2_STAT</span><span id="ACRB2_STAT" class="value">--</span></div>
+            <div class="data-card" data-reg="ACRB1_STAT"><span class="label">ACRB1_STAT</span><span id="ACRB1_STAT" class="value">--</span></div>
+            <div class="data-card" data-reg="ADC_DONE_STAT"><span class="label">ADC_DONE_STAT</span><span id="ADC_DONE_STAT" class="value">--</span></div>
+            <div class="data-card" data-reg="CHG_TMR_STAT"><span class="label">CHG_TMR_STAT</span><span id="CHG_TMR_STAT" class="value">--</span></div>
+            <div class="data-card" data-reg="TRICHG_TMR_STAT"><span class="label">TRICHG_TMR_STAT</span><span id="TRICHG_TMR_STAT" class="value">--</span></div>
+            <div class="data-card" data-reg="PRECHG_TMR_STAT"><span class="label">PRECHG_TMR_STAT</span><span id="PRECHG_TMR_STAT" class="value">--</span></div>
+            <div class="data-card" data-reg="TS_COLD_STAT"><span class="label">TS_COLD_STAT</span><span id="TS_COLD_STAT" class="value">--</span></div>
+            <div class="data-card" data-reg="TS_COOL_STAT"><span class="label">TS_COOL_STAT</span><span id="TS_COOL_STAT" class="value">--</span></div>
+            <div class="data-card" data-reg="TS_WARM_STAT"><span class="label">TS_WARM_STAT</span><span id="TS_WARM_STAT" class="value">--</span></div>
+            <div class="data-card" data-reg="TS_HOT_STAT"><span class="label">TS_HOT_STAT</span><span id="TS_HOT_STAT" class="value">--</span></div>
+            <div class="data-card" data-reg="IBAT_REG_STAT"><span class="label">IBAT_REG_STAT</span><span id="IBAT_REG_STAT" class="value">--</span></div>
+            <div class="data-card" data-reg="D_PLUS_ADC_15_0"><span class="label">D+_ADC (mV)</span><span id="D_PLUS_ADC_15_0" class="value">--</span></div>
+            <div class="data-card" data-reg="D_MINUS_ADC_15_0"><span class="label">D-_ADC (mV)</span><span id="D_MINUS_ADC_15_0" class="value">--</span></div>
         </main>
     </div>
     <div id="toast"></div>
-    <!-- Edit Modal -->
     <div id="edit-modal" class="modal">
         <div class="modal-content">
             <h3 id="modal-title">ویرایش رجیستر</h3>

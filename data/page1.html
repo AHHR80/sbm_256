@@ -7,14 +7,17 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
+    <div id="status-indicator">در حال اتصال...</div>
+    <div class="loading-overlay">در حال بارگذاری داده‌ها...</div>
+
     <div class="container">
         <header>
             <a href="/" class="back-button">&larr;</a>
             <h1>صفحه ۱: وضعیت اصلی و ADC</h1>
-            <p>برای ویرایش، روی کارت‌های قابل نوشتن کلیک کنید.</p>
+            <p>برای ویرایش، روی کارت‌های قابل نوشتن کلیک کنید. برای راهنمایی، موس را روی (?) نگه دارید.</p>
         </header>
         <main class="data-grid" id="data-container">
-            <!-- Writable registers have the 'writable' class and a 'data-reg' attribute -->
+            <!-- Writable registers -->
             <div class="data-card writable" data-reg="VSYSMIN_5_0" data-current-value=""><span class="label">VSYSMIN (mV)</span><span id="VSYSMIN_5_0" class="value">--</span></div>
             <div class="data-card writable" data-reg="CELL_1_0" data-current-value=""><span class="label">CELL_COUNT</span><span id="CELL_1_0" class="value">--</span></div>
             <div class="data-card writable" data-reg="VOTG_10_0" data-current-value=""><span class="label">VOTG (mV)</span><span id="VOTG_10_0" class="value">--</span></div>
@@ -22,20 +25,20 @@
             <div class="data-card writable" data-reg="EN_CHG" data-current-value=""><span class="label">EN_CHG</span><span id="EN_CHG" class="value">--</span></div>
             
             <!-- Read-only registers -->
-            <div class="data-card"><span class="label">VBUS_PRESENT_STAT</span><span id="VBUS_PRESENT_STAT" class="value">--</span></div>
-            <div class="data-card"><span class="label">CHG_STAT</span><span id="CHG_STAT_2_0" class="value">--</span></div>
-            <div class="data-card"><span class="label">VBUS_STAT</span><span id="VBUS_STAT_3_0" class="value">--</span></div>
-            <div class="data-card"><span class="label">VBAT_PRESENT_STAT</span><span id="VBAT_PRESENT_STAT" class="value">--</span></div>
-            <div class="data-card"><span class="label">VSYS_STAT</span><span id="VSYS_STAT" class="value">--</span></div>
-            <div class="data-card"><span class="label">IBUS_ADC (mA)</span><span id="IBUS_ADC_15_0" class="value">--</span></div>
-            <div class="data-card"><span class="label">IBAT_ADC (mA)</span><span id="IBAT_ADC_15_0" class="value">--</span></div>
-            <div class="data-card"><span class="label">VBUS_ADC (mV)</span><span id="VBUS_ADC_15_0" class="value">--</span></div>
-            <div class="data-card"><span class="label">VAC1_ADC (mV)</span><span id="VAC1_ADC_15_0" class="value">--</span></div>
-            <div class="data-card"><span class="label">VAC2_ADC (mV)</span><span id="VAC2_ADC_15_0" class="value">--</span></div>
-            <div class="data-card"><span class="label">VBAT_ADC (mV)</span><span id="VBAT_ADC_15_0" class="value">--</span></div>
-            <div class="data-card"><span class="label">VSYS_ADC (mV)</span><span id="VSYS_ADC_15_0" class="value">--</span></div>
-            <div class="data-card"><span class="label">TS_ADC (%)</span><span id="TS_ADC_15_0" class="value">--</span></div>
-            <div class="data-card"><span class="label">TDIE_ADC (°C)</span><span id="TDIE_ADC_15_0" class="value">--</span></div>
+            <div class="data-card" data-reg="VBUS_PRESENT_STAT"><span class="label">VBUS_PRESENT_STAT</span><span id="VBUS_PRESENT_STAT" class="value">--</span></div>
+            <div class="data-card" data-reg="CHG_STAT_2_0"><span class="label">CHG_STAT</span><span id="CHG_STAT_2_0" class="value">--</span></div>
+            <div class="data-card" data-reg="VBUS_STAT_3_0"><span class="label">VBUS_STAT</span><span id="VBUS_STAT_3_0" class="value">--</span></div>
+            <div class="data-card" data-reg="VBAT_PRESENT_STAT"><span class="label">VBAT_PRESENT_STAT</span><span id="VBAT_PRESENT_STAT" class="value">--</span></div>
+            <div class="data-card" data-reg="VSYS_STAT"><span class="label">VSYS_STAT</span><span id="VSYS_STAT" class="value">--</span></div>
+            <div class="data-card" data-reg="IBUS_ADC_15_0"><span class="label">IBUS_ADC (mA)</span><span id="IBUS_ADC_15_0" class="value">--</span></div>
+            <div class="data-card" data-reg="IBAT_ADC_15_0"><span class="label">IBAT_ADC (mA)</span><span id="IBAT_ADC_15_0" class="value">--</span></div>
+            <div class="data-card" data-reg="VBUS_ADC_15_0"><span class="label">VBUS_ADC (mV)</span><span id="VBUS_ADC_15_0" class="value">--</span></div>
+            <div class="data-card" data-reg="VAC1_ADC_15_0"><span class="label">VAC1_ADC (mV)</span><span id="VAC1_ADC_15_0" class="value">--</span></div>
+            <div class="data-card" data-reg="VAC2_ADC_15_0"><span class="label">VAC2_ADC (mV)</span><span id="VAC2_ADC_15_0" class="value">--</span></div>
+            <div class="data-card" data-reg="VBAT_ADC_15_0"><span class="label">VBAT_ADC (mV)</span><span id="VBAT_ADC_15_0" class="value">--</span></div>
+            <div class="data-card" data-reg="VSYS_ADC_15_0"><span class="label">VSYS_ADC (mV)</span><span id="VSYS_ADC_15_0" class="value">--</span></div>
+            <div class="data-card" data-reg="TS_ADC_15_0"><span class="label">TS_ADC (%)</span><span id="TS_ADC_15_0" class="value">--</span></div>
+            <div class="data-card" data-reg="TDIE_ADC_15_0"><span class="label">TDIE_ADC (°C)</span><span id="TDIE_ADC_15_0" class="value">--</span></div>
 
             <!-- Reset Button Container -->
             <div class="reset-container">
@@ -44,24 +47,17 @@
         </main>
     </div>
     
-    <!-- Toast Notification -->
     <div id="toast"></div>
-
-    <!-- Edit Modal -->
     <div id="edit-modal" class="modal">
         <div class="modal-content">
             <h3 id="modal-title">ویرایش رجیستر</h3>
-            <div id="modal-body">
-                <!-- Content is generated by JavaScript -->
-            </div>
+            <div id="modal-body"></div>
             <div class="modal-footer">
                 <button id="modal-cancel" class="modal-button">لغو</button>
                 <button id="modal-save" class="modal-button">ذخیره</button>
             </div>
         </div>
     </div>
-
-    <!-- Confirmation Modal for Reset -->
     <div id="confirm-modal" class="modal">
         <div class="modal-content">
             <p>آیا مطمئن هستید که می‌خواهید تمام تنظیمات را به حالت اولیه بازگردانید؟</p>

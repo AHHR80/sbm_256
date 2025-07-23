@@ -7,11 +7,14 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
+    <div id="status-indicator">در حال اتصال...</div>
+    <div class="loading-overlay">در حال بارگذاری داده‌ها...</div>
+
     <div class="container">
         <header>
             <a href="/" class="back-button">&larr;</a>
             <h1>صفحه ۴: کنترل‌های پیشرفته و تایمرها</h1>
-            <p>برای ویرایش، روی کارت‌های قابل نوشتن کلیک کنید.</p>
+            <p>برای ویرایش، روی کارت‌های قابل نوشتن کلیک کنید. برای راهنمایی، موس را روی (?) نگه دارید.</p>
         </header>
         <main class="data-grid" id="data-container">
             <div class="data-card writable" data-reg="STOP_WD_CHG" data-current-value=""><span class="label">STOP_WD_CHG</span><span id="STOP_WD_CHG" class="value">--</span></div>
@@ -76,12 +79,11 @@
             <div class="data-card writable" data-reg="VAC1_ADC_DIS" data-current-value=""><span class="label">VAC1_ADC_DIS</span><span id="VAC1_ADC_DIS" class="value">--</span></div>
             <div class="data-card writable" data-reg="DPLUS_DAC_2_0" data-current-value=""><span class="label">DPLUS_DAC</span><span id="DPLUS_DAC_2_0" class="value">--</span></div>
             <div class="data-card writable" data-reg="DMINUS_DAC_2_0" data-current-value=""><span class="label">DMINUS_DAC</span><span id="DMINUS_DAC_2_0" class="value">--</span></div>
-            <div class="data-card"><span class="label">PART_NUMBER</span><span id="PN_2_0" class="value">--</span></div>
-            <div class="data-card"><span class="label">DEVICE_REVISION</span><span id="DEV_REV_2_0" class="value">--</span></div>
+            <div class="data-card" data-reg="PN_2_0"><span class="label">PART_NUMBER</span><span id="PN_2_0" class="value">--</span></div>
+            <div class="data-card" data-reg="DEV_REV_2_0"><span class="label">DEVICE_REVISION</span><span id="DEV_REV_2_0" class="value">--</span></div>
         </main>
     </div>
     <div id="toast"></div>
-    <!-- Edit Modal -->
     <div id="edit-modal" class="modal">
         <div class="modal-content">
             <h3 id="modal-title">ویرایش رجیستر</h3>
