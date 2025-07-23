@@ -534,6 +534,17 @@ void setup() {
     Serial.begin(115200);
     Wire.begin();
 
+    // --- NEW: Configure ADC on startup ---
+    // REG0x2E: ADC_EN=1, ADC_RATE=1 (One-shot), keep other defaults (ADC_SAMPLE=11b)
+    // This corresponds to the value 0b11110000 = 0xF0
+    Serial.println("Setting initial ADC state to: Enabled, One-Shot mode.");
+    if (writeByte(0x2E, 0xF0)) {
+        Serial.println("Initial ADC configuration successful.");
+    } else {
+        Serial.println("FAILED to set initial ADC configuration.");
+    }
+    // --- END NEW ---
+
     if (!LittleFS.begin(true)) {
         Serial.println("An Error has occurred while mounting LittleFS");
         return;
