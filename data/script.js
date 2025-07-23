@@ -2,14 +2,13 @@
 document.addEventListener('DOMContentLoaded', function() {
 
     // ===================================================================================
-    // بخش ۱: توضیحات و پیکربندی رجیسترها
-    // در این بخش، دو آبجکت اصلی برای مدیریت رابط کاربری تعریف شده‌اند.
+    // بخش ۱: توضیحات، پیکربندی و وابستگی‌های رجیسترها
+    // در این بخش، تمام منطق و داده‌های مربوط به رجیسترها تعریف شده‌اند.
     // ===================================================================================
 
     /**
      * @const {Object} registerExplanations
-     * این آبجکت حاوی توضیحات راهنما (Tooltip) برای تمام رجیسترهای نمایش داده شده در UI است.
-     * این توضیحات مستقیماً از دیتاشیت استخراج شده و به کاربر در درک عملکرد هر گزینه کمک می‌کند.
+     * حاوی توضیحات راهنما (Tooltip) برای هر رجیستر.
      */
     const registerExplanations = {
         // --- صفحه ۱ ---
@@ -32,8 +31,6 @@ document.addEventListener('DOMContentLoaded', function() {
         VSYS_ADC_15_0: "مقدار لحظه‌ای ولتاژ سیستم (SYS) که توسط ADC داخلی اندازه‌گیری شده است.",
         TS_ADC_15_0: "مقدار ولتاژ روی پین ترمیستور (TS) به صورت درصدی از ولتاژ REGN که توسط ADC اندازه‌گیری شده است.",
         TDIE_ADC_15_0: "دمای داخلی خود چیپ که توسط سنسور دمای داخلی و ADC اندازه‌گیری شده است.",
-        
-        // --- صفحه ۲ ---
         VREG_10_0: "این رجیستر، ولتاژ نهایی را که باتری باید تا آن مقدار شارژ شود (Constant Voltage)، تنظیم می‌کند. این مقدار باید با دقت بسیار و بر اساس مشخصات شیمیایی باتری (مثلاً 4.2V برای هر سلول لیتیوم-یون) تنظیم شود. تنظیم مقدار بالاتر از حد مجاز می‌تواند خطرناک باشد.",
         ICHG_8_0: "این رجیستر، جریان شارژ در مرحله اصلی (Constant Current) را تعیین می‌کند. مقدار آن باید بر اساس ظرفیت و حداکثر جریان شارژ مجاز باتری (C-rate) تنظیم شود تا عمر باتری حفظ شود.",
         VINDPM_7_0: "یک ویژگی هوشمند برای جلوگیری از افت ولتاژ آداپتور. اگر ولتاژ ورودی (VBUS) به دلیل بار زیاد به این آستانه برسد، چیپ به طور خودکار جریان شارژ را کاهش می‌دهد تا ولتاژ ورودی ثابت بماند و آداپتور دچار مشکل نشود.",
@@ -64,8 +61,6 @@ document.addEventListener('DOMContentLoaded', function() {
         OTG_OVP_STAT: "وضعیت خطای ازدیاد ولتاژ خروجی در حالت OTG را نشان می‌دهد.",
         OTG_UVP_STAT: "وضعیت خطای افت ولتاژ خروجی در حالت OTG را نشان می‌دهد.",
         TSHUT_STAT: "وضعیت خطای خاموشی حرارتی را نشان می‌دهد. این خطا زمانی رخ می‌دهد که دمای چیپ به حداکثر مقدار بحرانی خود برسد.",
-
-        // --- صفحه ۳ ---
         VBAT_LOWV_1_0: "این رجیستر آستانه ولتاژی را تعیین می‌کند که در آن، فرآیند شارژ از مرحله 'پیش‌شارژ' (جریان کم) به 'شارژ سریع' (جریان اصلی) تغییر می‌کند. این مقدار به صورت درصدی از ولتاژ نهایی شارژ (VREG) تعریف می‌شود.",
         IPRECHG_5_0: "جریان شارژ را برای باتری‌هایی که ولتاژ بسیار پایینی دارند (عمیقاً دشارژ شده‌اند) تنظیم می‌کند. شارژ با جریان کم در این مرحله، از آسیب به سلول‌های باتری جلوگیری می‌کند.",
         ITERM_4_0: "وقتی جریان شارژ در مرحله ولتاژ-ثابت به این مقدار کاهش یابد، چیپ فرآیند شارژ را پایان یافته تلقی کرده و آن را متوقف می‌کند.",
@@ -80,8 +75,6 @@ document.addEventListener('DOMContentLoaded', function() {
         VAC1_OVP_STAT: "وضعیت خطای ازدیاد ولتاژ در ورودی VAC1 را نشان می‌دهد.",
         VAC2_OVP_STAT: "وضعیت خطای ازدیاد ولتاژ در ورودی VAC2 را نشان می‌دهد.",
         ADC_SAMPLE_1_0: "این گزینه، دقت و سرعت مبدل ADC را تنظیم می‌کند. رزولوشن بالاتر (مثلاً 15-bit) زمان تبدیل بیشتری نیاز دارد، در حالی که رزولوشن پایین‌تر (مثلاً 12-bit) سریع‌تر است.",
-        
-        // --- صفحه ۴ ---
         STOP_WD_CHG: "تعیین می‌کند که آیا منقضی شدن تایمر Watchdog باید باعث توقف فرآیند شارژ شود یا خیر.",
         PRECHG_TMR: "تایمر ایمنی برای مرحله پیش‌شارژ را تنظیم می‌کند.",
         TOPOFF_TMR_1_0: "یک تایمر اختیاری که پس از خاتمه شارژ، به مدت کوتاهی شارژ را با ولتاژ ثابت ادامه می‌دهد تا از شارژ کامل باتری اطمینان حاصل شود.",
@@ -146,8 +139,6 @@ document.addEventListener('DOMContentLoaded', function() {
         DMINUS_DAC_2_0: "یک ولتاژ یا وضعیت خاص را روی پین D- قرار می‌دهد.",
         PN_2_0: "یک مقدار فقط-خواندنی که شماره قطعه (Part Number) را مشخص می‌کند.",
         DEV_REV_2_0: "یک مقدار فقط-خواندنی که نسخه بازبینی (Device Revision) سخت‌افزار چیپ را مشخص می‌کند.",
-
-        // --- صفحه ۵ ---
         IINDPM_STAT: "نشان می‌دهد آیا چیپ در حال محدود کردن جریان ورودی است.",
         VINDPM_STAT: "نشان می‌دهد آیا چیپ در حال محدود کردن ولتاژ ورودی است.",
         WD_STAT: "نشان می‌دهد آیا تایمر Watchdog منقضی شده و رجیسترها به حالت پیش‌فرض بازگشته‌اند.",
@@ -172,8 +163,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     /**
      * @const {Object} registerConfig
-     * این آبجکت "مغز" رابط کاربری برای رجیسترهای قابل نوشتن است.
-     * برای هر رجیستر، نوع کنترل (boolean, select, number, command) و گزینه‌های مربوطه را تعریف می‌کند.
+     * "مغز" رابط کاربری برای رجیسترهای قابل نوشتن.
      */
     const registerConfig = {
         // Page 1
@@ -276,9 +266,51 @@ document.addEventListener('DOMContentLoaded', function() {
         DMINUS_DAC_2_0: { type: 'select', options: { '0': 'HIZ', '1': '0V', '2': '0.6V', '3': '1.2V', '4': '2.0V', '5': '2.7V', '6': '3.3V', '7': 'Reserved' } },
     };
 
+    /**
+     * @const {Object} registerDependencies
+     * "نقشه وابستگی‌ها" برای بررسی پیش‌نیازها قبل از ویرایش.
+     */
+    const registerDependencies = {
+        'FORCE_ICO': { controller: 'EN_ICO', requiredValue: '1', message: 'برای اجرای این دستور، ابتدا باید EN_ICO فعال باشد.' },
+        'SDRV_CTRL_1_0': { controller: 'SFET_PRESENT', requiredValue: '1', message: 'برای کنترل Ship FET، ابتدا باید SFET_PRESENT فعال باشد.' },
+        'EN_BATOC': { controller: 'SFET_PRESENT', requiredValue: '1', message: 'برای فعال‌سازی حفاظت جریان باتری، ابتدا باید SFET_PRESENT فعال باشد.' },
+        'EN_9V': { controller: 'HVDCP_EN', requiredValue: '1', message: 'برای درخواست ولتاژ 9V، ابتدا باید HVDCP_EN فعال باشد.' },
+        'EN_12V': { controller: 'HVDCP_EN', requiredValue: '1', message: 'برای درخواست ولتاژ 12V، ابتدا باید HVDCP_EN فعال باشد.' },
+        
+        // --- وابستگی‌های مربوط به ADC ---
+        'ADC_RATE': { controller: 'ADC_EN', requiredValue: '1', message: 'برای تغییر تنظیمات ADC، ابتدا باید ADC_EN فعال باشد.' },
+        'ADC_SAMPLE_1_0': { controller: 'ADC_EN', requiredValue: '1', message: 'برای تغییر تنظیمات ADC، ابتدا باید ADC_EN فعال باشد.' },
+        'ADC_AVG': { controller: 'ADC_EN', requiredValue: '1', message: 'برای تغییر تنظیمات ADC، ابتدا باید ADC_EN فعال باشد.' },
+        'ADC_AVG_INIT': { controller: 'ADC_EN', requiredValue: '1', message: 'برای تغییر تنظیمات ADC، ابتدا باید ADC_EN فعال باشد.' },
+        'IBUS_ADC_DIS': { controller: 'ADC_EN', requiredValue: '1', message: 'برای کنترل کانال‌های ADC، ابتدا باید ADC_EN فعال باشد.' },
+        'IBAT_ADC_DIS': { controller: 'ADC_EN', requiredValue: '1', message: 'برای کنترل کانال‌های ADC، ابتدا باید ADC_EN فعال باشد.' },
+        'VBUS_ADC_DIS': { controller: 'ADC_EN', requiredValue: '1', message: 'برای کنترل کانال‌های ADC، ابتدا باید ADC_EN فعال باشد.' },
+        'VBAT_ADC_DIS': { controller: 'ADC_EN', requiredValue: '1', message: 'برای کنترل کانال‌های ADC، ابتدا باید ADC_EN فعال باشد.' },
+        'VSYS_ADC_DIS': { controller: 'ADC_EN', requiredValue: '1', message: 'برای کنترل کانال‌های ADC، ابتدا باید ADC_EN فعال باشد.' },
+        'TS_ADC_DIS': { controller: 'ADC_EN', requiredValue: '1', message: 'برای کنترل کانال‌های ADC، ابتدا باید ADC_EN فعال باشد.' },
+        'TDIE_ADC_DIS': { controller: 'ADC_EN', requiredValue: '1', message: 'برای کنترل کانال‌های ADC، ابتدا باید ADC_EN فعال باشد.' },
+        'DP_ADC_DIS': { controller: 'ADC_EN', requiredValue: '1', message: 'برای کنترل کانال‌های ADC، ابتدا باید ADC_EN فعال باشد.' },
+        'DM_ADC_DIS': { controller: 'ADC_EN', requiredValue: '1', message: 'برای کنترل کانال‌های ADC، ابتدا باید ADC_EN فعال باشد.' },
+        'VAC1_ADC_DIS': { controller: 'ADC_EN', requiredValue: '1', message: 'برای کنترل کانال‌های ADC، ابتدا باید ADC_EN فعال باشد.' },
+        'VAC2_ADC_DIS': { controller: 'ADC_EN', requiredValue: '1', message: 'برای کنترل کانال‌های ADC، ابتدا باید ADC_EN فعال باشد.' },
+
+        // --- وابستگی‌های مربوط به دما ---
+        'JEITA_VSET_2_0': { controller: 'TS_IGNORE', requiredValue: '0', message: 'برای استفاده از تنظیمات JEITA، ابتدا باید TS_IGNORE غیرفعال باشد.' },
+        'JEITA_ISETH_1_0': { controller: 'TS_IGNORE', requiredValue: '0', message: 'برای استفاده از تنظیمات JEITA، ابتدا باید TS_IGNORE غیرفعال باشد.' },
+        'JEITA_ISETC_1_0': { controller: 'TS_IGNORE', requiredValue: '0', message: 'برای استفاده از تنظیمات JEITA، ابتدا باید TS_IGNORE غیرفعال باشد.' },
+        'TS_COOL_1_0': { controller: 'TS_IGNORE', requiredValue: '0', message: 'برای استفاده از تنظیمات JEITA، ابتدا باید TS_IGNORE غیرفعال باشد.' },
+        'TS_WARM_1_0': { controller: 'TS_IGNORE', requiredValue: '0', message: 'برای استفاده از تنظیمات JEITA، ابتدا باید TS_IGNORE غیرفعال باشد.' },
+        'BHOT_1_0': { controller: 'TS_IGNORE', requiredValue: '0', message: 'برای تنظیم دمای OTG، ابتدا باید TS_IGNORE غیرفعال باشد.' },
+        'BCOLD': { controller: 'TS_IGNORE', requiredValue: '0', message: 'برای تنظیم دمای OTG، ابتدا باید TS_IGNORE غیرفعال باشد.' },
+
+        // --- وابستگی‌های عملکردی ---
+        'FORCE_VINDPM_DET': { controller: 'VSYS_STAT', requiredValue: '0', message: 'این دستور تنها زمانی مجاز است که ولتاژ باتری بالاتر از VSYSMIN باشد (VSYS_STAT=0).'},
+        'EN_MPPT': { controller: 'VSYS_STAT', requiredValue: '0', message: 'MPPT تنها زمانی مجاز است که ولتاژ باتری بالاتر از VSYSMIN باشد (VSYS_STAT=0).'}
+    };
+
+
     // ===================================================================================
     // بخش ۲: مدیریت وب‌سوکت و وضعیت اتصال
-    // این بخش ارتباط لحظه‌ای با ESP32 را برای دریافت وقفه‌ها و نمایش وضعیت اتصال مدیریت می‌کند.
     // ===================================================================================
 
     const statusIndicator = document.getElementById('status-indicator');
@@ -310,37 +342,45 @@ document.addEventListener('DOMContentLoaded', function() {
         websocket.onclose = () => {
             console.log('Connection closed');
             updateStatusIndicator('disconnected');
-            setTimeout(initWebSocket, 2000); // تلاش برای اتصال مجدد پس از ۲ ثانیه
+            setTimeout(initWebSocket, 2000);
         };
         
         websocket.onmessage = (event) => {
             console.log('Message from server: ', event.data);
-            showToast(event.data);
+            showToast(event.data, 'interrupt');
         };
     }
     initWebSocket();
 
     // ===================================================================================
     // بخش ۳: مدیریت UI (رابط کاربری)
-    // این بخش شامل توابع مربوط به نمایش پاپ‌آپ‌ها، مقداردهی اولیه Tooltipها و بارگذاری داده‌ها است.
     // ===================================================================================
 
     /**
-     * نمایش یک پیام موقت (Toast) در پایین صفحه.
+     * نمایش یک پیام موقت (Toast) با نوع و رنگ مشخص.
      * @param {string} message - پیامی که باید نمایش داده شود.
+     * @param {string} type - نوع پیام ('interrupt', 'warning', 'success').
      */
-    function showToast(message) {
+    function showToast(message, type = 'interrupt') {
         const toast = document.getElementById("toast");
         if (toast) {
-            toast.innerHTML = `<strong>وقفه:</strong> ${message}`;
             toast.className = "show";
-            setTimeout(() => { toast.className = toast.className.replace("show", ""); }, 5000);
+            toast.classList.add(type);
+            const title = {
+                interrupt: 'وقفه',
+                warning: 'هشدار',
+                success: 'موفقیت'
+            }[type];
+            toast.innerHTML = `<strong>${title}:</strong> ${message}`;
+            setTimeout(function() {
+                toast.classList.remove("show");
+                toast.classList.remove(type);
+            }, 5000);
         }
     }
 
     /**
-     * یک بار در ابتدای بارگذاری صفحه اجرا می‌شود.
-     * آیکون‌های راهنما (?) و متن توضیحات آن‌ها را به صورت داینامیک به هر کارت اضافه می‌کند.
+     * مقداردهی اولیه Tooltipها در ابتدای بارگذاری صفحه.
      */
     function initializeUI() {
         document.querySelectorAll('.data-card').forEach(card => {
@@ -348,7 +388,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const explanation = registerExplanations[regName];
             if (explanation) {
                 const labelSpan = card.querySelector('.label');
-                if (labelSpan) {
+                if (labelSpan && !labelSpan.parentElement.classList.contains('label-container')) {
                     const labelContainer = document.createElement('div');
                     labelContainer.className = 'label-container';
 
@@ -360,10 +400,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     tooltipText.className = 'tooltip-text';
                     tooltipText.textContent = explanation;
 
-                    // برای جلوگیری از تکرار، ابتدا محتوای قبلی را پاک می‌کنیم
                     const existingLabel = labelSpan.cloneNode(true);
-                    labelSpan.innerHTML = '';
-                    
                     labelContainer.appendChild(existingLabel);
                     labelContainer.appendChild(tooltipIcon);
                     labelContainer.appendChild(tooltipText);
@@ -378,7 +415,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // ===================================================================================
     // بخش ۴: دریافت و نمایش داده‌ها
-    // این بخش مسئول دریافت دوره‌ای داده‌ها از ESP32 و نمایش آن‌ها در کارت‌های مربوطه است.
     // ===================================================================================
 
     if (typeof window.API_ENDPOINT === 'undefined') return;
@@ -387,7 +423,6 @@ document.addEventListener('DOMContentLoaded', function() {
     const loadingOverlay = document.getElementById('loading-overlay');
     if (!dataContainer) return;
 
-    // آبجکت کمکی برای تفسیر مقادیر فقط-خواندنی که چندین حالت دارند.
     const statusInterpreters = {
         CHG_STAT_2_0: v => ["Not Charging", "Trickle", "Pre-charge", "Fast Charge", "Taper", "Reserved", "Top-off", "Done"][v] || "Unknown",
         VBUS_STAT_3_0: v => ({0:"No Input",1:"SDP",2:"CDP",3:"DCP",4:"HVDCP",5:"Unknown",6:"Non-Standard",7:"OTG",8:"Not Qualified"})[v]||"Reserved",
@@ -396,16 +431,12 @@ document.addEventListener('DOMContentLoaded', function() {
 
     let isFirstLoad = true;
 
-    /**
-     * تابع اصلی برای دریافت داده‌ها از API و به‌روزرسانی UI.
-     */
     const fetchData = async () => {
         try {
             const response = await fetch(window.API_ENDPOINT);
             if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
             const data = await response.json();
             
-            // پس از اولین دریافت موفق داده، انیمیشن بارگذاری را محو کن
             if (isFirstLoad && loadingOverlay) {
                 loadingOverlay.style.opacity = '0';
                 setTimeout(() => loadingOverlay.style.display = 'none', 500);
@@ -418,7 +449,6 @@ document.addEventListener('DOMContentLoaded', function() {
                     let rawValue = data[key];
                     const cardElement = element.closest('.data-card');
 
-                    // ذخیره مقدار خام برای استفاده در هنگام ویرایش
                     if (cardElement) {
                         cardElement.dataset.currentValue = rawValue;
                     }
@@ -431,8 +461,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     let displayValue;
                     const config = registerConfig[key];
 
-                    // تصمیم‌گیری برای نحوه نمایش مقدار بر اساس نوع رجیستر
-                    if (config) { // اگر رجیستر قابل نوشتن باشد
+                    if (config) {
                         if (config.type === 'select' || config.type === 'boolean') {
                             displayValue = config.options[rawValue] || `خام: ${rawValue}`;
                         } else if (config.type === 'command') {
@@ -440,11 +469,11 @@ document.addEventListener('DOMContentLoaded', function() {
                         } else { // number
                             displayValue = `${rawValue}${config.unit || ''}`;
                         }
-                    } else if (statusInterpreters[key]) { // اگر رجیستر فقط-خواندنی با چند حالت باشد
+                    } else if (statusInterpreters[key]) {
                         displayValue = statusInterpreters[key](rawValue);
-                    } else if (typeof rawValue === 'number' && !Number.isInteger(rawValue)) { // اگر عدد اعشاری باشد
+                    } else if (typeof rawValue === 'number' && !Number.isInteger(rawValue)) {
                         displayValue = rawValue.toFixed(2);
-                    } else { // حالت پیش‌فرض برای سایر مقادیر
+                    } else {
                         displayValue = rawValue;
                     }
                     element.textContent = displayValue;
@@ -459,11 +488,10 @@ document.addEventListener('DOMContentLoaded', function() {
     };
 
     fetchData();
-    setInterval(fetchData, 5000); // به‌روزرسانی داده‌ها هر ۵ ثانیه
+    setInterval(fetchData, 5000);
 
     // ===================================================================================
     // بخش ۵: مدیریت مودال و تعامل کاربر
-    // این بخش شامل منطق باز کردن مودال، ساختن کنترل‌های ورودی و ارسال درخواست نوشتن به سرور است.
     // ===================================================================================
 
     const modal = document.getElementById('edit-modal');
@@ -482,12 +510,25 @@ document.addEventListener('DOMContentLoaded', function() {
         const config = registerConfig[currentEditingReg];
         if (!config) return;
 
+        // --- NEW: Dependency Check ---
+        const dependency = registerDependencies[currentEditingReg];
+        if (dependency) {
+            const controllerCard = document.querySelector(`.data-card[data-reg="${dependency.controller}"]`);
+            if (controllerCard) {
+                const controllerValue = controllerCard.dataset.currentValue;
+                if (controllerValue !== dependency.requiredValue) {
+                    showToast(dependency.message, 'warning'); // نمایش هشدار به کاربر
+                    return; // جلوگیری از باز شدن مودال
+                }
+            }
+        }
+        // --- END NEW ---
+
         const rawValue = card.dataset.currentValue;
         const labelText = card.querySelector('.label-container .label').textContent;
         modalTitle.textContent = `ویرایش ${labelText}`;
-        modalBody.innerHTML = ''; // پاک کردن محتوای قبلی مودال
+        modalBody.innerHTML = '';
 
-        // ساختن کنترل ورودی مناسب بر اساس نوع رجیستر
         if (config.type === 'boolean') {
             const btnGroup = document.createElement('div');
             btnGroup.className = 'modal-btn-group';
@@ -543,7 +584,6 @@ document.addEventListener('DOMContentLoaded', function() {
         const config = registerConfig[currentEditingReg];
         let newValue;
 
-        // استخراج مقدار جدید از کنترل ورودی
         if (config.type === 'command') {
             newValue = 1;
         } else if (config.type === 'boolean') {
@@ -561,7 +601,6 @@ document.addEventListener('DOMContentLoaded', function() {
         modal.style.display = 'none';
     });
     
-    // مدیریت کلیک روی دکمه‌های boolean در مودال
     modalBody.addEventListener('click', (event) => {
         if(event.target.tagName === 'BUTTON') {
             const parent = event.target.parentElement;
@@ -572,8 +611,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-
-    // --- منطق دکمه ریست (REG_RST) ---
     const resetButton = document.getElementById('reset-button');
     const confirmModal = document.getElementById('confirm-modal');
     if(resetButton && confirmModal) {
@@ -591,15 +628,10 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    /**
-     * ارسال درخواست نوشتن (POST) به سرور ESP32.
-     * @param {string} reg - نام رجیستری که باید نوشته شود.
-     * @param {string|number} val - مقدار جدیدی که باید نوشته شود.
-     */
     async function sendWriteRequest(reg, val) {
         const card = document.querySelector(`.data-card[data-reg="${reg}"]`);
         if (card) {
-            card.classList.add('saving'); // افکت درخشان برای بازخورد
+            card.classList.add('saving');
         }
 
         try {
@@ -610,18 +642,18 @@ document.addEventListener('DOMContentLoaded', function() {
             });
 
             if (response.ok) {
-                showToast(`دستور ${reg} با موفقیت ارسال شد.`);
-                setTimeout(fetchData, 500); // دریافت مجدد داده‌ها برای نمایش تغییر
+                showToast(`دستور ${reg} با موفقیت ارسال شد.`, 'success');
+                setTimeout(fetchData, 500);
             } else {
                 const errorText = await response.text();
-                showToast(`خطا در نوشتن: ${errorText}`);
+                showToast(`خطا در نوشتن: ${errorText}`, 'warning');
             }
         } catch (error) {
             console.error('Failed to send write request:', error);
-            showToast('خطا در ارسال درخواست. اتصال را بررسی کنید.');
+            showToast('خطا در ارسال درخواست. اتصال را بررسی کنید.', 'warning');
         } finally {
             if (card) {
-                setTimeout(() => card.classList.remove('saving'), 500); // حذف افکت پس از اتمام
+                setTimeout(() => card.classList.remove('saving'), 500);
             }
         }
     }

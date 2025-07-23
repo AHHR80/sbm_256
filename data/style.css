@@ -213,11 +213,11 @@ header p {
     opacity: 1;
 }
 
+/* --- Toast Notification Styles --- */
 #toast {
     visibility: hidden;
     min-width: 250px;
     max-width: 90%;
-    background-color: var(--command-color);
     color: #fff;
     text-align: center;
     border-radius: 8px;
@@ -232,12 +232,14 @@ header p {
     transition: opacity 0.5s, bottom 0.5s, visibility 0.5s;
     box-shadow: 0 5px 15px rgba(0,0,0,0.3);
 }
-
 #toast.show {
     visibility: visible;
     opacity: 1;
     bottom: 50px;
 }
+#toast.interrupt { background-color: var(--command-color); }
+#toast.warning { background-color: var(--status-connecting); }
+#toast.success { background-color: var(--status-connected); }
 
 /* --- Modal Styles --- */
 .modal {
