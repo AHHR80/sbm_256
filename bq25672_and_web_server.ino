@@ -211,13 +211,15 @@ void handleApiData2(AsyncWebServerRequest *request) {
         doc["EN_HIZ"] = (val8 >> 2) & 0x01;
     } else { doc["EN_ICO"] = -1; doc["FORCE_ICO"] = -1; doc["EN_HIZ"] = -1; }
     if(readByte(0x11, val8)) { doc["SDRV_CTRL_1_0"] = (val8 >> 1) & 0x03; } else { doc["SDRV_CTRL_1_0"] = -1; }
-    if(readByte(0x12, val8)) { doc["EN_OTG"] = (val8 >> 6) & 0x01; } else { doc["EN_OTG"] = -1; }
+    if(readByte(0x12, val8)) { 
+        doc["DIS_ACDRV"] = (val8 >> 7) & 0x01;
+        doc["EN_OTG"] = (val8 >> 6) & 0x01; 
+    } else { doc["DIS_ACDRV"] = -1; doc["EN_OTG"] = -1; }
     if(readByte(0x13, val8)) {
         doc["EN_ACDRV2"] = (val8 >> 7) & 0x01;
         doc["EN_ACDRV1"] = (val8 >> 6) & 0x01;
         doc["FORCE_VINDPM_DET"] = (val8 >> 1) & 0x01;
     } else { doc["EN_ACDRV2"] = -1; doc["EN_ACDRV1"] = -1; doc["FORCE_VINDPM_DET"] = -1; }
-    if(readByte(0x12, val8)) { doc["DIS_ACDRV"] = (val8 >> 7) & 0x01; } else { doc["DIS_ACDRV"] = -1; }
     if(readByte(0x14, val8)) { doc["SFET_PRESENT"] = (val8 >> 7) & 0x01; } else { doc["SFET_PRESENT"] = -1; }
     if(readByte(0x15, val8)) { doc["EN_MPPT"] = val8 & 0x01; } else { doc["EN_MPPT"] = -1; }
     if(readWord(0x19, val16)) { doc["ICO_ILIM_8_0"] = (val16 & 0x1FF) * 10; } else { doc["ICO_ILIM_8_0"] = -1; }
@@ -416,8 +418,6 @@ void handleApiWrite(AsyncWebServerRequest *request) {
         
         // Handle REG_RST command
         if (regName == "REG_RST") {
-            // This bit is self-clearing, so we just write 1 to it.
-            // It's in REG0x09, bit 6
             success = modifyByte(0x09, 0b01000000, 0b01000000);
         }
         // Page 1
@@ -433,11 +433,15 @@ void handleApiWrite(AsyncWebServerRequest *request) {
         else if (regName == "VINDPM_7_0") { uint8_t regVal = (val - 3600) / 100; success = writeByte(0x05, regVal); }
         else if (regName == "IINDPM_8_0") { uint16_t regVal = val / 10; success = writeWord(0x06, regVal); }
         else if (regName == "EN_ICO") { success = modifyByte(0x0F, (uint8_t)val << 4, 0b00010000); }
+        else if (regName == "FORCE_ICO") { success = modifyByte(0x0F, (uint8_t)val << 3, 0b00001000); }
         else if (regName == "EN_HIZ") { success = modifyByte(0x0F, (uint8_t)val << 2, 0b00000100); }
         else if (regName == "SDRV_CTRL_1_0") { success = modifyByte(0x11, (uint8_t)val << 1, 0b00000110); }
         else if (regName == "EN_OTG") { success = modifyByte(0x12, (uint8_t)val << 6, 0b01000000); }
+        else if (regName == "DIS_ACDRV") { success = modifyByte(0x12, (uint8_t)val << 7, 0b10000000); }
         else if (regName == "EN_ACDRV2") { success = modifyByte(0x13, (uint8_t)val << 7, 0b10000000); }
         else if (regName == "EN_ACDRV1") { success = modifyByte(0x13, (uint8_t)val << 6, 0b01000000); }
+        else if (regName == "FORCE_VINDPM_DET") { success = modifyByte(0x13, (uint8_t)val << 1, 0b00000010); }
+        else if (regName == "SFET_PRESENT") { success = modifyByte(0x14, (uint8_t)val << 7, 0b10000000); }
         else if (regName == "EN_MPPT") { success = modifyByte(0x15, (uint8_t)val, 0b00000001); }
         else if (regName == "ADC_EN") { success = modifyByte(0x2E, (uint8_t)val << 7, 0b10000000); }
 
@@ -454,7 +458,7 @@ void handleApiWrite(AsyncWebServerRequest *request) {
         else if (regName == "EN_EXTILIM") { success = modifyByte(0x14, (uint8_t)val << 1, 0b00000010); }
         else if (regName == "ADC_SAMPLE_1_0") { success = modifyByte(0x2E, (uint8_t)val << 4, 0b00110000); }
 
-        // Page 4 (A large number of registers)
+        // Page 4
         else if (regName == "STOP_WD_CHG") { success = modifyByte(0x09, (uint8_t)val << 5, 0b00100000); }
         else if (regName == "PRECHG_TMR") { success = modifyByte(0x0D, (uint8_t)val << 7, 0b10000000); }
         else if (regName == "TOPOFF_TMR_1_0") { success = modifyByte(0x0E, (uint8_t)val << 6, 0b11000000); }
@@ -464,8 +468,10 @@ void handleApiWrite(AsyncWebServerRequest *request) {
         else if (regName == "CHG_TMR_1_0") { success = modifyByte(0x0E, (uint8_t)val << 1, 0b00000110); }
         else if (regName == "TMR2X_EN") { success = modifyByte(0x0E, (uint8_t)val, 0b00000001); }
         else if (regName == "EN_AUTO_IBATDIS") { success = modifyByte(0x0F, (uint8_t)val << 7, 0b10000000); }
+        else if (regName == "FORCE_IBATDIS") { success = modifyByte(0x0F, (uint8_t)val << 6, 0b01000000); }
         else if (regName == "EN_TERM") { success = modifyByte(0x0F, (uint8_t)val << 1, 0b00000010); }
         else if (regName == "WATCHDOG_2_0") { success = modifyByte(0x10, (uint8_t)val, 0x07); }
+        else if (regName == "FORCE_INDET") { success = modifyByte(0x11, (uint8_t)val << 7, 0b10000000); }
         else if (regName == "AUTO_INDET_EN") { success = modifyByte(0x11, (uint8_t)val << 6, 0b01000000); }
         else if (regName == "EN_12V") { success = modifyByte(0x11, (uint8_t)val << 5, 0b00100000); }
         else if (regName == "EN_9V") { success = modifyByte(0x11, (uint8_t)val << 4, 0b00010000); }

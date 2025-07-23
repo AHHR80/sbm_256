@@ -100,6 +100,7 @@ document.addEventListener('DOMContentLoaded', function() {
         ADC_DONE_STAT: v => v ? "Done" : "In Progress", CHG_TMR_STAT: v => v ? "Expired" : "OK", TRICHG_TMR_STAT: v => v ? "Expired" : "OK",
         PRECHG_TMR_STAT: v => v ? "Expired" : "OK", TS_COLD_STAT: v => v ? "Fault" : "OK", TS_COOL_STAT: v => v ? "Active" : "Inactive",
         TS_WARM_STAT: v => v ? "Active" : "Inactive", TS_HOT_STAT: v => v ? "Fault" : "OK", IBAT_REG_STAT: v => v ? "Active" : "Inactive",
+        FORCE_VINDPM_DET: v => v ? "Active" : "Inactive",
     };
 
     const fetchData = async () => {
@@ -148,16 +149,22 @@ document.addEventListener('DOMContentLoaded', function() {
         const currentValue = currentValueSpan.textContent;
 
         let newValue;
-        // For boolean-like registers, just toggle the value
-        if (currentValue === "Enabled" || currentValue === "Disabled" || currentValue === "Yes" || currentValue === "No") {
-            newValue = (currentValue === "Enabled" || currentValue === "Yes") ? 0 : 1;
+        // For boolean-like registers or command registers, just toggle/set the value to 1
+        if (card.classList.contains('command') || currentValue === "Enabled" || currentValue === "Disabled" || currentValue === "Yes" || currentValue === "No" || currentValue === "Active" || currentValue === "Inactive") {
+            // For commands, we always send '1' to activate them. For toggles, we determine the new value.
+            if (card.classList.contains('command')) {
+                 newValue = 1;
+                 alert(`دستور ${regName} اجرا می‌شود.`);
+            } else {
+                 newValue = (currentValue === "Enabled" || currentValue === "Yes") ? 0 : 1;
+            }
         } else {
             // For numeric values, show a prompt
             let promptValue = currentValue.replace(/[^\d.-]/g, ''); // Remove units like 'mV', 'mA' for prompt
             newValue = prompt(`مقدار جدید را برای ${regName} وارد کنید:\n(مقدار فعلی: ${currentValue})`, promptValue);
         }
         
-        if (newValue === null || newValue.trim() === "") {
+        if (newValue === null || (typeof newValue === 'string' && newValue.trim() === "")) {
             console.log('Write operation cancelled.');
             return; // User cancelled or entered empty value
         }
