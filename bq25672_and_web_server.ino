@@ -1,5 +1,5 @@
 #include <WiFi.h>
-#include <ESPAsyncWebServer.h>
+#include <ESPAsyncWebServer.hh>
 #include <LittleFS.h>
 #include <Wire.h>
 #include "ArduinoJson.h"
@@ -20,6 +20,143 @@ volatile bool interruptFired = false; // Flag for interrupt detection
 // --- Watchdog Timer ---
 unsigned long lastWatchdogReset = 0;
 const long watchdogInterval = 30000; // 30 seconds (less than the default 40s timeout)
+
+
+// ===================================================================================
+// بخش جدید: اعتبارسنجی ورودی در سمت سرور
+// ===================================================================================
+
+// یک ساختار برای نگهداری قوانین اعتبارسنجی هر رجیستر
+struct ValidationRule {
+    const char* regName; // نام رجیستر که از رابط وب ارسال می‌شود
+    long min;            // حداقل مقدار مجاز
+    long max;            // حداکثر مقدار مجاز
+};
+
+// نقشه اعتبارسنجی شامل تمام رجیسترهای قابل نوشتن با محدودیت‌هایشان
+const ValidationRule validationMap[] = {
+    // Page 1
+    {"VSYSMIN_5_0", 2500, 16000},
+    {"CELL_1_0", 1, 4},
+    {"VOTG_10_0", 2800, 22000},
+    {"IOTG_6_0", 160, 3360},
+    {"EN_CHG", 0, 1},
+    // Page 2
+    {"VREG_10_0", 3000, 18800},
+    {"ICHG_8_0", 50, 3000},
+    {"VINDPM_7_0", 3600, 22000},
+    {"IINDPM_8_0", 100, 3300},
+    {"EN_ICO", 0, 1},
+    {"EN_HIZ", 0, 1},
+    {"SDRV_CTRL_1_0", 0, 3},
+    {"EN_OTG", 0, 1},
+    {"EN_ACDRV2", 0, 1},
+    {"EN_ACDRV1", 0, 1},
+    {"DIS_ACDRV", 0, 1},
+    {"SFET_PRESENT", 0, 1},
+    {"EN_MPPT", 0, 1},
+    {"ADC_EN", 0, 1},
+    // Page 3
+    {"VBAT_LOWV_1_0", 0, 3},
+    {"IPRECHG_5_0", 40, 2000},
+    {"ITERM_4_0", 40, 1000},
+    {"TRECHG_1_0", 0, 3},
+    {"VRECHG_3_0", 50, 800},
+    {"VAC_OVP_1_0", 0, 3},
+    {"EN_IBAT", 0, 1},
+    {"IBAT_REG_1_0", 0, 3},
+    {"EN_IINDPM", 0, 1},
+    {"EN_EXTILIM", 0, 1},
+    {"ADC_SAMPLE_1_0", 0, 3},
+    // Page 4
+    {"STOP_WD_CHG", 0, 1},
+    {"PRECHG_TMR", 0, 1},
+    {"TOPOFF_TMR_1_0", 0, 3},
+    {"EN_TRICHG_TMR", 0, 1},
+    {"EN_PRECHG_TMR", 0, 1},
+    {"EN_CHG_TMR", 0, 1},
+    {"CHG_TMR_1_0", 0, 3},
+    {"TMR2X_EN", 0, 1},
+    {"EN_AUTO_IBATDIS", 0, 1},
+    {"EN_TERM", 0, 1},
+    {"WATCHDOG_2_0", 0, 7},
+    {"AUTO_INDET_EN", 0, 1},
+    {"EN_12V", 0, 1},
+    {"EN_9V", 0, 1},
+    {"HVDCP_EN", 0, 1},
+    {"SDRV_DLY", 0, 1},
+    {"PFM_OTG_DIS", 0, 1},
+    {"PFM_FWD_DIS", 0, 1},
+    {"WKUP_DLY", 0, 1},
+    {"DIS_LDO", 0, 1},
+    {"DIS_OTG_OOA", 0, 1},
+    {"DIS_FWD_OOA", 0, 1},
+    {"PWM_FREQ", 0, 1},
+    {"DIS_STAT", 0, 1},
+    {"DIS_VSYS_SHORT", 0, 1},
+    {"DIS_VOTG_UVP", 0, 1},
+    {"EN_IBUS_OCP", 0, 1},
+    {"EN_BATOC", 0, 1},
+    {"VOC_PCT_2_0", 0, 7},
+    {"VOC_DLY_1_0", 0, 3},
+    {"VOC_RATE_1_0", 0, 3},
+    {"TREG_1_0", 0, 3},
+    {"TSHUT_1_0", 0, 3},
+    {"VBUS_PD_EN", 0, 1},
+    {"VAC1_PD_EN", 0, 1},
+    {"VAC2_PD_EN", 0, 1},
+    {"JEITA_VSET_2_0", 0, 7},
+    {"JEITA_ISETH_1_0", 0, 3},
+    {"JEITA_ISETC_1_0", 0, 3},
+    {"TS_COOL_1_0", 0, 3},
+    {"TS_WARM_1_0", 0, 3},
+    {"BHOT_1_0", 0, 3},
+    {"BCOLD", 0, 1},
+    {"TS_IGNORE", 0, 1},
+    {"ADC_RATE", 0, 1},
+    {"ADC_AVG", 0, 1},
+    {"ADC_AVG_INIT", 0, 1},
+    {"IBUS_ADC_DIS", 0, 1},
+    {"IBAT_ADC_DIS", 0, 1},
+    {"VBUS_ADC_DIS", 0, 1},
+    {"VBAT_ADC_DIS", 0, 1},
+    {"VSYS_ADC_DIS", 0, 1},
+    {"TS_ADC_DIS", 0, 1},
+    {"TDIE_ADC_DIS", 0, 1},
+    {"DP_ADC_DIS", 0, 1},
+    {"DM_ADC_DIS", 0, 1},
+    {"VAC2_ADC_DIS", 0, 1},
+    {"VAC1_ADC_DIS", 0, 1},
+    {"DPLUS_DAC_2_0", 0, 7},
+    {"DMINUS_DAC_2_0", 0, 7}
+};
+
+/**
+ * بررسی می‌کند که آیا مقدار ورودی برای یک رجیستر خاص معتبر است یا خیر.
+ * @param regName نام رجیستر برای بررسی.
+ * @param value مقدار دریافت شده از کاربر.
+ * @return true اگر مقدار معتبر باشد، در غیر این صورت false.
+ */
+bool isValueValid(const String& regName, long value) {
+    // در نقشه اعتبارسنجی جستجو کن
+    for (const auto& rule : validationMap) {
+        if (regName.equals(rule.regName)) {
+            // اگر قانونی برای این رجیستر پیدا شد، آن را اعمال کن
+            if (value >= rule.min && value <= rule.max) {
+                return true; // مقدار در محدوده مجاز است
+            } else {
+                // ثبت خطا برای دیباگ کردن
+                Serial.printf("Validation FAILED for %s: Value %ld is out of range [%ld, %ld]\n", 
+                              regName.c_str(), value, rule.min, rule.max);
+                return false; // مقدار خارج از محدوده است
+            }
+        }
+    }
+    // اگر قانونی برای رجیستر پیدا نشد (مثلاً برای دستورات لحظه‌ای)، آن را معتبر فرض می‌کنیم.
+    // بررسی اولیه عدد بودن در تابع handleApiWrite انجام می‌شود.
+    return true;
+}
+
 
 // --- I2C Communication Functions ---
 // Reads a 16-bit word (two bytes) from a register
@@ -411,10 +548,29 @@ void handleApiData5(AsyncWebServerRequest *request) {
 void handleApiWrite(AsyncWebServerRequest *request) {
     if (request->hasParam("reg", true) && request->hasParam("val", true)) {
         String regName = request->getParam("reg", true)->value();
-        long val = request->getParam("val", true)->value().toInt();
-        bool success = false;
+        String valStr = request->getParam("val", true)->value();
+        
+        // --- لایه اعتبارسنجی جدید ---
+        // ۱. بررسی می‌کنیم که ورودی یک رشته عددی معتبر باشد
+        for (size_t i = 0; i < valStr.length(); i++) {
+            if (i == 0 && valStr[i] == '-') continue; // اجازه علامت منفی در ابتدا
+            if (!isDigit(valStr[i])) {
+                request->send(400, "text/plain", "مقدار ورودی باید یک عدد صحیح باشد.");
+                return;
+            }
+        }
+        
+        long val = valStr.toInt();
 
-        Serial.printf("Write request for %s with value %ld\n", regName.c_str(), val);
+        // ۲. بررسی می‌کنیم که آیا مقدار در محدوده مجاز برای آن رجیستر خاص است یا خیر
+        if (!isValueValid(regName, val)) {
+            request->send(400, "text/plain", "مقدار ارسال شده خارج از محدوده مجاز برای این رجیستر است.");
+            return; // اجرای تابع در صورت شکست اعتبارسنجی متوقف می‌شود
+        }
+        // --- پایان لایه اعتبارسنجی ---
+
+        bool success = false;
+        Serial.printf("Write request for %s with value %ld (Validated)\n", regName.c_str(), val);
         
         // Handle REG_RST command
         if (regName == "REG_RST") {
