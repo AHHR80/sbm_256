@@ -165,18 +165,36 @@ bool readWord(uint8_t reg, uint16_t& value) {
     return true;
 }
 
+// ===================================================================================
+// START: CORRECTED FUNCTIONS
+// ===================================================================================
+/**
+ * @brief Reads a single 8-bit byte from a specified register.
+ * This function is optimized to read only one byte, preventing unnecessary bus traffic.
+ * @param reg The register address to read from.
+ * @param value Reference to a variable where the read value will be stored.
+ * @return true if the read was successful, false otherwise.
+ */
 bool readByte(uint8_t reg, uint8_t& value) {
-    uint16_t wordValue;
-    if (!readWord(reg, wordValue)) { return false; }
-    value = (uint8_t)wordValue;
+    Wire.beginTransmission(BQ25672_I2C_ADDR);
+    Wire.write(reg);
+    if (Wire.endTransmission(false) != 0) { 
+        Serial.printf("I2C readByte error (address phase) for reg 0x%02X\n", reg);
+        return false; 
+    }
+    if (Wire.requestFrom((uint8_t)BQ25672_I2C_ADDR, (uint8_t)1) != 1) { 
+        Serial.printf("I2C readByte error (data phase) for reg 0x%02X\n", reg);
+        return false; 
+    }
+    value = Wire.read();
     return true;
 }
 
 bool writeWord(uint8_t reg, uint16_t value) {
     Wire.beginTransmission(BQ25672_I2C_ADDR);
     Wire.write(reg);
-    Wire.write(value & 0xFF);
-    Wire.write(value >> 8);
+    Wire.write(value & 0xFF); // LSB
+    Wire.write(value >> 8);   // MSB
     if (Wire.endTransmission() != 0) {
         Serial.printf("I2C writeWord error for reg 0x%02X\n", reg);
         return false;
@@ -184,9 +202,28 @@ bool writeWord(uint8_t reg, uint16_t value) {
     return true;
 }
 
+/**
+ * @brief Writes a single 8-bit byte to a specified register.
+ * This function is corrected to send only one byte of data, preventing
+ * an overwrite of the subsequent register.
+ * @param reg The register address to write to.
+ * @param value The 8-bit value to write.
+ * @return true if the write was successful, false otherwise.
+ */
 bool writeByte(uint8_t reg, uint8_t value) {
-    return writeWord(reg, (uint16_t)value);
+    Wire.beginTransmission(BQ25672_I2C_ADDR);
+    Wire.write(reg);
+    Wire.write(value);
+    if (Wire.endTransmission() != 0) {
+        Serial.printf("I2C writeByte error for reg 0x%02X\n", reg);
+        return false;
+    }
+    return true;
 }
+// ===================================================================================
+// END: CORRECTED FUNCTIONS
+// ===================================================================================
+
 
 bool modifyByte(uint8_t reg, uint8_t value, uint8_t mask) {
     uint8_t currentValue;
