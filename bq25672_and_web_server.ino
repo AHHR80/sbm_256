@@ -686,6 +686,8 @@ void setup() {
     Serial.begin(115200);
     Wire.begin();
 
+    sleep(50); // adding sleep for preparation of sbm_256 i2c
+
     // --- NEW: Configure ADC on startup ---
     Serial.println("Setting initial ADC state to: Enabled, One-Shot mode.");
     if (writeByte(0x2E, 0xC0)) { // 0b11000000: ADC_EN=1, ADC_RATE=1 (One-shot)
