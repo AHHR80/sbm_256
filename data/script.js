@@ -3,8 +3,10 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // ===================================================================================
     // بخش ۱: توضیحات، پیکربندی و وابستگی‌های رجیسترها
-    // در این بخش، تمام منطق و داده‌های مربوط به رجیسترها تعریف شده‌اند.
     // ===================================================================================
+
+    // NEW: Global state object to hold controller register values across all pages
+    let globalRegisterState = {};
 
     /**
      * @const {Object} registerExplanations
@@ -200,7 +202,6 @@ document.addEventListener('DOMContentLoaded', function() {
         IBAT_REG_1_0: { type: 'select', options: { '0': '3A', '1': '4A', '2': '5A', '3': 'Disabled' } },
         EN_IINDPM: { type: 'boolean', options: { '0': 'Disabled', '1': 'Enabled' } },
         EN_EXTILIM: { type: 'boolean', options: { '0': 'Disabled', '1': 'Enabled' } },
-        ADC_SAMPLE_1_0: { type: 'select', options: { '0': '15-bit', '1': '14-bit', '2': '13-bit', '3': '12-bit' } },
         // Page 4
         STOP_WD_CHG: { type: 'boolean', options: { '0': 'No', '1': 'Yes' } },
         PRECHG_TMR: { type: 'select', options: { '0': '2h', '1': '0.5h' } },
@@ -249,6 +250,7 @@ document.addEventListener('DOMContentLoaded', function() {
         BCOLD: { type: 'select', options: { '0': '-10°C', '1': '-20°C' } },
         TS_IGNORE: { type: 'boolean', options: { '0': 'No', '1': 'Yes' } },
         ADC_RATE: { type: 'select', options: { '0': 'Continuous', '1': 'One Shot' } },
+        ADC_SAMPLE_1_0: { type: 'select', options: { '0': '15-bit', '1': '14-bit', '2': '13-bit', '3': '12-bit' } },
         ADC_AVG: { type: 'boolean', options: { '0': 'Disabled', '1': 'Enabled' } },
         ADC_AVG_INIT: { type: 'boolean', options: { '0': 'Use Existing', '1': 'Use New' } },
         IBUS_ADC_DIS: { type: 'boolean', options: { '0': 'Enabled', '1': 'Disabled' } },
@@ -431,22 +433,35 @@ document.addEventListener('DOMContentLoaded', function() {
 
     let isFirstLoad = true;
 
+    // UPDATED: fetchData to get both page-specific and global status data
     const fetchData = async () => {
         try {
-            const response = await fetch(window.API_ENDPOINT);
-            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-            const data = await response.json();
-            
+            // Fetch page-specific data and global status data concurrently
+            const [pageResponse, globalStatusResponse] = await Promise.all([
+                fetch(window.API_ENDPOINT),
+                fetch('/api/global_status')
+            ]);
+
+            if (!pageResponse.ok) throw new Error(`Page data HTTP error! status: ${pageResponse.status}`);
+            if (!globalStatusResponse.ok) throw new Error(`Global status HTTP error! status: ${globalStatusResponse.status}`);
+
+            const pageData = await pageResponse.json();
+            const globalStatusData = await globalStatusResponse.json();
+
+            // Store the global status data in the global state object
+            globalRegisterState = globalStatusData;
+
             if (isFirstLoad && loadingOverlay) {
                 loadingOverlay.style.opacity = '0';
                 setTimeout(() => loadingOverlay.style.display = 'none', 500);
                 isFirstLoad = false;
             }
 
-            for (const key in data) {
+            // Process and display the page-specific data
+            for (const key in pageData) {
                 const element = document.getElementById(key);
                 if (element) {
-                    let rawValue = data[key];
+                    let rawValue = pageData[key];
                     const cardElement = element.closest('.data-card');
 
                     if (cardElement) {
@@ -510,19 +525,21 @@ document.addEventListener('DOMContentLoaded', function() {
         const config = registerConfig[currentEditingReg];
         if (!config) return;
 
-        // --- NEW: Dependency Check ---
+        // UPDATED: Dependency Check using globalRegisterState
         const dependency = registerDependencies[currentEditingReg];
         if (dependency) {
-            const controllerCard = document.querySelector(`.data-card[data-reg="${dependency.controller}"]`);
-            if (controllerCard) {
-                const controllerValue = controllerCard.dataset.currentValue;
-                if (controllerValue !== dependency.requiredValue) {
-                    showToast(dependency.message, 'warning'); // نمایش هشدار به کاربر
-                    return; // جلوگیری از باز شدن مودال
-                }
+            const controllerValue = globalRegisterState[dependency.controller];
+            
+            if (controllerValue === undefined) {
+                showToast('وضعیت کنترل‌کننده هنوز بارگذاری نشده است. لطفاً چند لحظه صبر کنید.', 'warning');
+                return;
+            }
+
+            if (String(controllerValue) !== dependency.requiredValue) {
+                showToast(dependency.message, 'warning');
+                return; 
             }
         }
-        // --- END NEW ---
 
         const rawValue = card.dataset.currentValue;
         const labelText = card.querySelector('.label-container .label').textContent;
