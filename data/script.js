@@ -468,6 +468,32 @@ document.addEventListener('DOMContentLoaded', function() {
     // بخش ۴: منطق ویژه صفحه تاریخچه
     // ===================================================================================
     
+    /**
+     * Converts milliseconds to a human-readable uptime string (D, HH:MM:SS).
+     * @param {number} milliseconds The timestamp from millis().
+     * @returns {string} A formatted uptime string.
+     */
+    function formatUptime(milliseconds) {
+        if (typeof milliseconds !== 'number' || milliseconds < 0) {
+            return "زمان نامعتبر";
+        }
+
+        let totalSeconds = Math.floor(milliseconds / 1000);
+        let days = Math.floor(totalSeconds / 86400);
+        totalSeconds %= 86400;
+        let hours = Math.floor(totalSeconds / 3600);
+        totalSeconds %= 3600;
+        let minutes = Math.floor(totalSeconds / 60);
+        let seconds = totalSeconds % 60;
+
+        // Pad with leading zeros
+        hours = String(hours).padStart(2, '0');
+        minutes = String(minutes).padStart(2, '0');
+        seconds = String(seconds).padStart(2, '0');
+
+        return `روز ${days}، ${hours}:${minutes}:${seconds}`;
+    }
+
     function createHistoryItem(item) {
         const li = document.createElement('li');
         li.className = 'history-item';
@@ -475,14 +501,12 @@ document.addEventListener('DOMContentLoaded', function() {
             li.classList.add('unseen');
         }
 
-        const time = new Date(item.timestamp);
-        const timeString = time.toLocaleTimeString('fa-IR');
-        const dateString = time.toLocaleDateString('fa-IR');
+        const uptimeString = formatUptime(item.timestamp);
 
         li.innerHTML = `
             <div class="history-time">
-                <span>${dateString}</span>
-                <span>${timeString}</span>
+                <span>زمان سپری شده</span>
+                <span>${uptimeString}</span>
             </div>
             <div class="history-message">${item.message}</div>
         `;
