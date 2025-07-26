@@ -5,15 +5,9 @@ document.addEventListener('DOMContentLoaded', function() {
     // بخش ۱: توضیحات، پیکربندی و وابستگی‌های رجیسترها
     // ===================================================================================
 
-    // NEW: Global state object to hold controller register values across all pages
     let globalRegisterState = {};
 
-    /**
-     * @const {Object} registerExplanations
-     * حاوی توضیحات راهنما (Tooltip) برای هر رجیستر.
-     */
     const registerExplanations = {
-        // --- صفحه ۱ ---
         VSYSMIN_5_0: "این یکی از مهم‌ترین تنظیمات حفاظتی است. این رجیستر حداقل ولتاژی را که سیستم (SYS) مجاز است به آن افت کند، تعیین می‌کند. حتی اگر باتری کاملاً خالی یا جدا شده باشد، چیپ تلاش می‌کند تا ولتاژ سیستم را بالاتر از این مقدار نگه دارد تا از خاموش شدن یا ریست شدن میکروکنترلر و سایر قطعات جلوگیری کند. مقدار آن باید متناسب با نیاز سیستم شما تنظیم شود.",
         CELL_1_0: "این رجیستر به چیپ می‌گوید که باتری شما از چند سلول سری تشکیل شده است (از ۱ تا ۴ سلول). تنظیم صحیح این مقدار حیاتی است، زیرا مقادیر پیش‌فرض ولتاژ شارژ (VREG) و حداقل ولتاژ سیستم (VSYSMIN) بر اساس آن تعیین می‌شود. تغییر این مقدار، رجیسترهای مرتبط را به حالت پیش‌فرض بازنشانی می‌کند.",
         VOTG_10_0: "این رجیستر ولتاژ خروجی روی پین VBUS را زمانی که دستگاه در حالت On-The-Go (OTG) یا 'پاوربانک' قرار دارد، تنظیم می‌کند. شما می‌توانید ولتاژ خروجی را برای تغذیه دستگاه‌های دیگر در محدوده وسیعی (مثلاً ۵ تا ۱۲ ولت) تنظیم کنید.",
@@ -124,6 +118,7 @@ document.addEventListener('DOMContentLoaded', function() {
         BCOLD: "آستانه دمای پایین را برای عملکرد ایمن در حالت OTG تنظیم می‌کند.",
         TS_IGNORE: "مانیتورینگ دمای باتری از طریق پین TS را به طور کامل نادیده می‌گیرد (استفاده از این گزینه توصیه نمی‌شود).",
         ADC_RATE: "نرخ تبدیل ADC را بین حالت 'پیوسته' و 'تک نمونه‌ای' (One-shot) انتخاب می‌کند.",
+        ADC_SAMPLE_1_0: "این گزینه، دقت و سرعت مبدل ADC را تنظیم می‌کند. رزولوشن بالاتر (مثلاً 15-bit) زمان تبدیل بیشتری نیاز دارد، در حالی که رزولوشن پایین‌تر (مثلاً 12-bit) سریع‌تر است.",
         ADC_AVG: "قابلیت میانگین‌گیری از نتایج ADC را برای کاهش نویز و افزایش دقت فعال می‌کند.",
         ADC_AVG_INIT: "تعیین می‌کند که فرآیند میانگین‌گیری با مقدار فعلی رجیستر شروع شود یا با یک تبدیل ADC جدید.",
         IBUS_ADC_DIS: "کانال ADC مربوط به جریان ورودی را غیرفعال می‌کند.",
@@ -163,18 +158,12 @@ document.addEventListener('DOMContentLoaded', function() {
         D_MINUS_ADC_15_0: "ولتاژ لحظه‌ای پین D- را برای دیباگ کردن نمایش می‌دهد."
     };
 
-    /**
-     * @const {Object} registerConfig
-     * "مغز" رابط کاربری برای رجیسترهای قابل نوشتن.
-     */
     const registerConfig = {
-        // Page 1
         VSYSMIN_5_0: { type: 'number', range: { min: 2500, max: 16000, step: 250 }, unit: 'mV' },
         CELL_1_0: { type: 'select', options: { '1': '1s', '2': '2s', '3': '3s', '4': '4s' } },
         VOTG_10_0: { type: 'number', range: { min: 2800, max: 22000, step: 10 }, unit: 'mV' },
         IOTG_6_0: { type: 'number', range: { min: 160, max: 3360, step: 40 }, unit: 'mA' },
         EN_CHG: { type: 'boolean', options: { '0': 'Disabled', '1': 'Enabled' } },
-        // Page 2
         VREG_10_0: { type: 'number', range: { min: 3000, max: 18800, step: 10 }, unit: 'mV' },
         ICHG_8_0: { type: 'number', range: { min: 50, max: 3000, step: 10 }, unit: 'mA' },
         VINDPM_7_0: { type: 'number', range: { min: 3600, max: 22000, step: 100 }, unit: 'mV' },
@@ -191,7 +180,6 @@ document.addEventListener('DOMContentLoaded', function() {
         SFET_PRESENT: { type: 'boolean', options: { '0': 'No', '1': 'Yes' } },
         EN_MPPT: { type: 'boolean', options: { '0': 'Disabled', '1': 'Enabled' } },
         ADC_EN: { type: 'boolean', options: { '0': 'Disabled', '1': 'Enabled' } },
-        // Page 3
         VBAT_LOWV_1_0: { type: 'select', options: { '0': '15% VREG', '1': '62.2% VREG', '2': '66.7% VREG', '3': '71.4% VREG' } },
         IPRECHG_5_0: { type: 'number', range: { min: 40, max: 2000, step: 40 }, unit: 'mA' },
         ITERM_4_0: { type: 'number', range: { min: 40, max: 1000, step: 40 }, unit: 'mA' },
@@ -202,7 +190,6 @@ document.addEventListener('DOMContentLoaded', function() {
         IBAT_REG_1_0: { type: 'select', options: { '0': '3A', '1': '4A', '2': '5A', '3': 'Disabled' } },
         EN_IINDPM: { type: 'boolean', options: { '0': 'Disabled', '1': 'Enabled' } },
         EN_EXTILIM: { type: 'boolean', options: { '0': 'Disabled', '1': 'Enabled' } },
-        // Page 4
         STOP_WD_CHG: { type: 'boolean', options: { '0': 'No', '1': 'Yes' } },
         PRECHG_TMR: { type: 'select', options: { '0': '2h', '1': '0.5h' } },
         TOPOFF_TMR_1_0: { type: 'select', options: { '0': 'Disabled', '1': '15min', '2': '30min', '3': '45min' } },
@@ -268,18 +255,12 @@ document.addEventListener('DOMContentLoaded', function() {
         DMINUS_DAC_2_0: { type: 'select', options: { '0': 'HIZ', '1': '0V', '2': '0.6V', '3': '1.2V', '4': '2.0V', '5': '2.7V', '6': '3.3V', '7': 'Reserved' } },
     };
 
-    /**
-     * @const {Object} registerDependencies
-     * "نقشه وابستگی‌ها" برای بررسی پیش‌نیازها قبل از ویرایش.
-     */
     const registerDependencies = {
         'FORCE_ICO': { controller: 'EN_ICO', requiredValue: '1', message: 'برای اجرای این دستور، ابتدا باید EN_ICO فعال باشد.' },
         'SDRV_CTRL_1_0': { controller: 'SFET_PRESENT', requiredValue: '1', message: 'برای کنترل Ship FET، ابتدا باید SFET_PRESENT فعال باشد.' },
         'EN_BATOC': { controller: 'SFET_PRESENT', requiredValue: '1', message: 'برای فعال‌سازی حفاظت جریان باتری، ابتدا باید SFET_PRESENT فعال باشد.' },
         'EN_9V': { controller: 'HVDCP_EN', requiredValue: '1', message: 'برای درخواست ولتاژ 9V، ابتدا باید HVDCP_EN فعال باشد.' },
         'EN_12V': { controller: 'HVDCP_EN', requiredValue: '1', message: 'برای درخواست ولتاژ 12V، ابتدا باید HVDCP_EN فعال باشد.' },
-        
-        // --- وابستگی‌های مربوط به ADC ---
         'ADC_RATE': { controller: 'ADC_EN', requiredValue: '1', message: 'برای تغییر تنظیمات ADC، ابتدا باید ADC_EN فعال باشد.' },
         'ADC_SAMPLE_1_0': { controller: 'ADC_EN', requiredValue: '1', message: 'برای تغییر تنظیمات ADC، ابتدا باید ADC_EN فعال باشد.' },
         'ADC_AVG': { controller: 'ADC_EN', requiredValue: '1', message: 'برای تغییر تنظیمات ADC، ابتدا باید ADC_EN فعال باشد.' },
@@ -295,8 +276,6 @@ document.addEventListener('DOMContentLoaded', function() {
         'DM_ADC_DIS': { controller: 'ADC_EN', requiredValue: '1', message: 'برای کنترل کانال‌های ADC، ابتدا باید ADC_EN فعال باشد.' },
         'VAC1_ADC_DIS': { controller: 'ADC_EN', requiredValue: '1', message: 'برای کنترل کانال‌های ADC، ابتدا باید ADC_EN فعال باشد.' },
         'VAC2_ADC_DIS': { controller: 'ADC_EN', requiredValue: '1', message: 'برای کنترل کانال‌های ADC، ابتدا باید ADC_EN فعال باشد.' },
-
-        // --- وابستگی‌های مربوط به دما ---
         'JEITA_VSET_2_0': { controller: 'TS_IGNORE', requiredValue: '0', message: 'برای استفاده از تنظیمات JEITA، ابتدا باید TS_IGNORE غیرفعال باشد.' },
         'JEITA_ISETH_1_0': { controller: 'TS_IGNORE', requiredValue: '0', message: 'برای استفاده از تنظیمات JEITA، ابتدا باید TS_IGNORE غیرفعال باشد.' },
         'JEITA_ISETC_1_0': { controller: 'TS_IGNORE', requiredValue: '0', message: 'برای استفاده از تنظیمات JEITA، ابتدا باید TS_IGNORE غیرفعال باشد.' },
@@ -304,15 +283,12 @@ document.addEventListener('DOMContentLoaded', function() {
         'TS_WARM_1_0': { controller: 'TS_IGNORE', requiredValue: '0', message: 'برای استفاده از تنظیمات JEITA، ابتدا باید TS_IGNORE غیرفعال باشد.' },
         'BHOT_1_0': { controller: 'TS_IGNORE', requiredValue: '0', message: 'برای تنظیم دمای OTG، ابتدا باید TS_IGNORE غیرفعال باشد.' },
         'BCOLD': { controller: 'TS_IGNORE', requiredValue: '0', message: 'برای تنظیم دمای OTG، ابتدا باید TS_IGNORE غیرفعال باشد.' },
-
-        // --- وابستگی‌های عملکردی ---
         'FORCE_VINDPM_DET': { controller: 'VSYS_STAT', requiredValue: '0', message: 'این دستور تنها زمانی مجاز است که ولتاژ باتری بالاتر از VSYSMIN باشد (VSYS_STAT=0).'},
         'EN_MPPT': { controller: 'VSYS_STAT', requiredValue: '0', message: 'MPPT تنها زمانی مجاز است که ولتاژ باتری بالاتر از VSYSMIN باشد (VSYS_STAT=0).'}
     };
 
-
     // ===================================================================================
-    // بخش ۲: مدیریت وب‌سوکت و وضعیت اتصال
+    // بخش ۲: مدیریت وب‌سوکت، هشدارها و وضعیت اتصال
     // ===================================================================================
 
     const statusIndicator = document.getElementById('status-indicator');
@@ -321,13 +297,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function updateStatusIndicator(status) {
         if (!statusIndicator) return;
-        statusIndicator.className = 'status-indicator'; // Reset classes
+        statusIndicator.className = 'status-indicator';
         statusIndicator.classList.add(status);
-        const textMap = {
-            connecting: 'در حال اتصال...',
-            connected: 'متصل',
-            disconnected: 'قطع'
-        };
+        const textMap = { connecting: 'در حال اتصال...', connected: 'متصل', disconnected: 'قطع' };
         statusIndicator.textContent = textMap[status];
     }
 
@@ -350,40 +322,58 @@ document.addEventListener('DOMContentLoaded', function() {
         websocket.onmessage = (event) => {
             console.log('Message from server: ', event.data);
             showToast(event.data, 'interrupt');
+            checkUnseenCount(); // Update badge on new interrupt
+            // If on history page, prepend the new event
+            if (window.location.pathname.includes('history.html')) {
+                const historyList = document.getElementById('history-list');
+                if(historyList) {
+                    const newItem = createHistoryItem({
+                        timestamp: new Date().getTime(), // Approximate time
+                        message: event.data,
+                        seen: true // Assume seen as it's live
+                    });
+                    historyList.prepend(newItem);
+                }
+            }
         };
     }
-    initWebSocket();
-
-    // ===================================================================================
-    // بخش ۳: مدیریت UI (رابط کاربری)
-    // ===================================================================================
-
-    /**
-     * نمایش یک پیام موقت (Toast) با نوع و رنگ مشخص.
-     * @param {string} message - پیامی که باید نمایش داده شود.
-     * @param {string} type - نوع پیام ('interrupt', 'warning', 'success').
-     */
+    
     function showToast(message, type = 'interrupt') {
         const toast = document.getElementById("toast");
         if (toast) {
             toast.className = "show";
             toast.classList.add(type);
-            const title = {
-                interrupt: 'وقفه',
-                warning: 'هشدار',
-                success: 'موفقیت'
-            }[type];
+            const title = { interrupt: 'وقفه', warning: 'هشدار', success: 'موفقیت' }[type];
             toast.innerHTML = `<strong>${title}:</strong> ${message}`;
-            setTimeout(function() {
-                toast.classList.remove("show");
-                toast.classList.remove(type);
-            }, 5000);
+            setTimeout(() => { toast.className = toast.className.replace("show", ""); }, 5000);
         }
     }
 
-    /**
-     * مقداردهی اولیه Tooltipها در ابتدای بارگذاری صفحه.
-     */
+    async function checkUnseenCount() {
+        const historyNavButton = document.getElementById('history-nav-button');
+        if (!historyNavButton) return;
+        
+        const badge = historyNavButton.querySelector('.notification-badge');
+        try {
+            const response = await fetch('/api/unseen_count');
+            if(response.ok) {
+                const data = await response.json();
+                if (data.unseen_count > 0) {
+                    badge.textContent = data.unseen_count;
+                    badge.style.display = 'flex';
+                } else {
+                    badge.style.display = 'none';
+                }
+            }
+        } catch (error) {
+            console.error("Could not fetch unseen count:", error);
+        }
+    }
+
+    // ===================================================================================
+    // بخش ۳: مدیریت UI (رابط کاربری) و بارگذاری داده‌ها
+    // ===================================================================================
+
     function initializeUI() {
         document.querySelectorAll('.data-card').forEach(card => {
             const regName = card.dataset.reg;
@@ -393,50 +383,28 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (labelSpan && !labelSpan.parentElement.classList.contains('label-container')) {
                     const labelContainer = document.createElement('div');
                     labelContainer.className = 'label-container';
-
                     const tooltipIcon = document.createElement('span');
                     tooltipIcon.className = 'tooltip-icon';
                     tooltipIcon.textContent = '?';
-
                     const tooltipText = document.createElement('div');
                     tooltipText.className = 'tooltip-text';
                     tooltipText.textContent = explanation;
-
                     const existingLabel = labelSpan.cloneNode(true);
                     labelContainer.appendChild(existingLabel);
                     labelContainer.appendChild(tooltipIcon);
                     labelContainer.appendChild(tooltipText);
-                    
                     labelSpan.replaceWith(labelContainer);
                 }
             }
         });
     }
-    initializeUI();
 
-
-    // ===================================================================================
-    // بخش ۴: دریافت و نمایش داده‌ها
-    // ===================================================================================
-
-    if (typeof window.API_ENDPOINT === 'undefined') return;
-
-    const dataContainer = document.getElementById('data-container');
     const loadingOverlay = document.getElementById('loading-overlay');
-    if (!dataContainer) return;
-
-    const statusInterpreters = {
-        CHG_STAT_2_0: v => ["Not Charging", "Trickle", "Pre-charge", "Fast Charge", "Taper", "Reserved", "Top-off", "Done"][v] || "Unknown",
-        VBUS_STAT_3_0: v => ({0:"No Input",1:"SDP",2:"CDP",3:"DCP",4:"HVDCP",5:"Unknown",6:"Non-Standard",7:"OTG",8:"Not Qualified"})[v]||"Reserved",
-        ICO_STAT_1_0: v => ["Disabled", "In Progress", "Done", "Reserved"][v] || "Unknown",
-    };
-
     let isFirstLoad = true;
 
-    // UPDATED: fetchData to get both page-specific and global status data
-    const fetchData = async () => {
+    async function fetchPageData() {
+        if (typeof window.API_ENDPOINT === 'undefined') return;
         try {
-            // Fetch page-specific data and global status data concurrently
             const [pageResponse, globalStatusResponse] = await Promise.all([
                 fetch(window.API_ENDPOINT),
                 fetch('/api/global_status')
@@ -446,10 +414,7 @@ document.addEventListener('DOMContentLoaded', function() {
             if (!globalStatusResponse.ok) throw new Error(`Global status HTTP error! status: ${globalStatusResponse.status}`);
 
             const pageData = await pageResponse.json();
-            const globalStatusData = await globalStatusResponse.json();
-
-            // Store the global status data in the global state object
-            globalRegisterState = globalStatusData;
+            globalRegisterState = await globalStatusResponse.json();
 
             if (isFirstLoad && loadingOverlay) {
                 loadingOverlay.style.opacity = '0';
@@ -457,31 +422,30 @@ document.addEventListener('DOMContentLoaded', function() {
                 isFirstLoad = false;
             }
 
-            // Process and display the page-specific data
+            const dataContainer = document.getElementById('data-container');
+            if (!dataContainer) return;
+
+            const statusInterpreters = {
+                CHG_STAT_2_0: v => ["Not Charging", "Trickle", "Pre-charge", "Fast Charge", "Taper", "Reserved", "Top-off", "Done"][v] || "Unknown",
+                VBUS_STAT_3_0: v => ({0:"No Input",1:"SDP",2:"CDP",3:"DCP",4:"HVDCP",5:"Unknown",6:"Non-Standard",7:"OTG",8:"Not Qualified"})[v]||"Reserved",
+                ICO_STAT_1_0: v => ["Disabled", "In Progress", "Done", "Reserved"][v] || "Unknown",
+            };
+
             for (const key in pageData) {
                 const element = document.getElementById(key);
                 if (element) {
                     let rawValue = pageData[key];
                     const cardElement = element.closest('.data-card');
-
-                    if (cardElement) {
-                        cardElement.dataset.currentValue = rawValue;
-                    }
-                    
-                    if (rawValue === -1 || rawValue === -999.0) {
-                        element.textContent = "Error";
-                        continue;
-                    }
-
+                    if (cardElement) cardElement.dataset.currentValue = rawValue;
+                    if (rawValue === -1 || rawValue === -999.0) { element.textContent = "Error"; continue; }
                     let displayValue;
                     const config = registerConfig[key];
-
                     if (config) {
                         if (config.type === 'select' || config.type === 'boolean') {
                             displayValue = config.options[rawValue] || `خام: ${rawValue}`;
                         } else if (config.type === 'command') {
                             displayValue = "اجرا";
-                        } else { // number
+                        } else {
                             displayValue = `${rawValue}${config.unit || ''}`;
                         }
                     } else if (statusInterpreters[key]) {
@@ -496,17 +460,70 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         } catch (error) {
             console.error("Failed to fetch data:", error);
-            if (isFirstLoad && loadingOverlay) {
-                loadingOverlay.textContent = 'خطا در اتصال';
-            }
+            if (isFirstLoad && loadingOverlay) loadingOverlay.textContent = 'خطا در اتصال';
         }
-    };
-
-    fetchData();
-    setInterval(fetchData, 5000);
+    }
 
     // ===================================================================================
-    // بخش ۵: مدیریت مودال و تعامل کاربر
+    // بخش ۴: منطق ویژه صفحه تاریخچه
+    // ===================================================================================
+    
+    function createHistoryItem(item) {
+        const li = document.createElement('li');
+        li.className = 'history-item';
+        if (!item.seen) {
+            li.classList.add('unseen');
+        }
+
+        const time = new Date(item.timestamp);
+        const timeString = time.toLocaleTimeString('fa-IR');
+        const dateString = time.toLocaleDateString('fa-IR');
+
+        li.innerHTML = `
+            <div class="history-time">
+                <span>${dateString}</span>
+                <span>${timeString}</span>
+            </div>
+            <div class="history-message">${item.message}</div>
+        `;
+        return li;
+    }
+
+    async function loadHistory() {
+        const historyList = document.getElementById('history-list');
+        if (!historyList) return;
+
+        try {
+            const response = await fetch('/api/history');
+            if (!response.ok) throw new Error('Failed to fetch history');
+            const historyData = await response.json();
+
+            historyList.innerHTML = '';
+            // Reverse the array to show newest first
+            historyData.reverse().forEach(item => {
+                historyList.appendChild(createHistoryItem(item));
+            });
+
+            if (isFirstLoad && loadingOverlay) {
+                loadingOverlay.style.opacity = '0';
+                setTimeout(() => loadingOverlay.style.display = 'none', 500);
+                isFirstLoad = false;
+            }
+            
+            // Mark all as seen after displaying them
+            await fetch('/api/mark_history_seen', { method: 'POST' });
+
+        } catch (error) {
+            console.error('Error loading history:', error);
+            historyList.innerHTML = '<li class="history-item">خطا در بارگذاری تاریخچه</li>';
+            if (isFirstLoad && loadingOverlay) {
+                loadingOverlay.textContent = 'خطا در بارگذاری';
+            }
+        }
+    }
+
+    // ===================================================================================
+    // بخش ۵: مدیریت مودال و ارسال دستورات
     // ===================================================================================
 
     const modal = document.getElementById('edit-modal');
@@ -514,153 +531,121 @@ document.addEventListener('DOMContentLoaded', function() {
     const modalBody = document.getElementById('modal-body');
     const modalSave = document.getElementById('modal-save');
     const modalCancel = document.getElementById('modal-cancel');
-
     let currentEditingReg = null;
 
-    dataContainer.addEventListener('click', (event) => {
-        const card = event.target.closest('.data-card.writable');
-        if (!card) return;
+    function setupModalEventListeners() {
+        const dataContainer = document.getElementById('data-container');
+        if (!dataContainer) return;
 
-        currentEditingReg = card.dataset.reg;
-        const config = registerConfig[currentEditingReg];
-        if (!config) return;
-
-        // UPDATED: Dependency Check using globalRegisterState
-        const dependency = registerDependencies[currentEditingReg];
-        if (dependency) {
-            const controllerValue = globalRegisterState[dependency.controller];
-            
-            if (controllerValue === undefined) {
-                showToast('وضعیت کنترل‌کننده هنوز بارگذاری نشده است. لطفاً چند لحظه صبر کنید.', 'warning');
-                return;
+        dataContainer.addEventListener('click', (event) => {
+            const card = event.target.closest('.data-card.writable');
+            if (!card) return;
+            currentEditingReg = card.dataset.reg;
+            const config = registerConfig[currentEditingReg];
+            if (!config) return;
+            const dependency = registerDependencies[currentEditingReg];
+            if (dependency) {
+                const controllerValue = globalRegisterState[dependency.controller];
+                if (controllerValue === undefined) {
+                    showToast('وضعیت کنترل‌کننده هنوز بارگذاری نشده است.', 'warning');
+                    return;
+                }
+                if (String(controllerValue) !== dependency.requiredValue) {
+                    showToast(dependency.message, 'warning');
+                    return;
+                }
             }
-
-            if (String(controllerValue) !== dependency.requiredValue) {
-                showToast(dependency.message, 'warning');
-                return; 
+            const rawValue = card.dataset.currentValue;
+            const labelText = card.querySelector('.label-container .label').textContent;
+            modalTitle.textContent = `ویرایش ${labelText}`;
+            modalBody.innerHTML = '';
+            if (config.type === 'boolean') {
+                modalBody.innerHTML = `<div class="modal-btn-group">
+                    <button data-value="1" class="${rawValue == 1 ? 'active' : ''}">${config.options['1']}</button>
+                    <button data-value="0" class="${rawValue == 0 ? 'active' : ''}">${config.options['0']}</button>
+                </div>`;
+            } else if (config.type === 'select') {
+                const select = document.createElement('select');
+                for (const val in config.options) {
+                    const option = document.createElement('option');
+                    option.value = val;
+                    option.textContent = config.options[val];
+                    if (val == rawValue) option.selected = true;
+                    select.appendChild(option);
+                }
+                modalBody.appendChild(select);
+            } else if (config.type === 'number') {
+                const input = document.createElement('input');
+                input.type = 'number';
+                input.value = rawValue;
+                if (config.range) {
+                    input.min = config.range.min;
+                    input.max = config.range.max;
+                    input.step = config.range.step;
+                }
+                modalBody.appendChild(input);
+                if (config.unit) {
+                    const unitSpan = document.createElement('span');
+                    unitSpan.className = 'modal-unit';
+                    unitSpan.textContent = config.unit;
+                    modalBody.appendChild(unitSpan);
+                }
+            } else if (config.type === 'command') {
+                modalBody.innerHTML = `<p>با کلیک روی "ذخیره"، دستور <strong>${currentEditingReg}</strong> اجرا خواهد شد.</p>`;
             }
-        }
+            modal.style.display = 'flex';
+        });
 
-        const rawValue = card.dataset.currentValue;
-        const labelText = card.querySelector('.label-container .label').textContent;
-        modalTitle.textContent = `ویرایش ${labelText}`;
-        modalBody.innerHTML = '';
-
-        if (config.type === 'boolean') {
-            const btnGroup = document.createElement('div');
-            btnGroup.className = 'modal-btn-group';
-            btnGroup.innerHTML = `
-                <button data-value="1" class="${rawValue == 1 ? 'active' : ''}">${config.options['1']}</button>
-                <button data-value="0" class="${rawValue == 0 ? 'active' : ''}">${config.options['0']}</button>
-            `;
-            modalBody.appendChild(btnGroup);
-        } else if (config.type === 'select') {
-            const select = document.createElement('select');
-            for (const val in config.options) {
-                const option = document.createElement('option');
-                option.value = val;
-                option.textContent = config.options[val];
-                if (val == rawValue) option.selected = true;
-                select.appendChild(option);
-            }
-            modalBody.appendChild(select);
-        } else if (config.type === 'number') {
-            const input = document.createElement('input');
-            input.type = 'number';
-            input.value = rawValue;
-            if (config.range) {
-                input.min = config.range.min;
-                input.max = config.range.max;
-                input.step = config.range.step;
-            }
-            modalBody.appendChild(input);
-            if (config.unit) {
-                const unitSpan = document.createElement('span');
-                unitSpan.className = 'modal-unit';
-                unitSpan.textContent = config.unit;
-                modalBody.appendChild(unitSpan);
-            }
-        } else if (config.type === 'command') {
-            modalBody.innerHTML = `<p>با کلیک روی "ذخیره"، دستور <strong>${currentEditingReg}</strong> اجرا خواهد شد.</p>`;
-        }
-
-        modal.style.display = 'flex';
-    });
-
-    modalCancel.addEventListener('click', () => {
-        modal.style.display = 'none';
-    });
-
-    window.addEventListener('click', (event) => {
-        if (event.target == modal) {
+        modalCancel.addEventListener('click', () => { modal.style.display = 'none'; });
+        window.addEventListener('click', (event) => { if (event.target == modal) modal.style.display = 'none'; });
+        modalSave.addEventListener('click', () => {
+            const config = registerConfig[currentEditingReg];
+            let newValue;
+            if (config.type === 'command') newValue = 1;
+            else if (config.type === 'boolean') newValue = modalBody.querySelector('button.active')?.dataset.value;
+            else if (config.type === 'select') newValue = modalBody.querySelector('select').value;
+            else if (config.type === 'number') newValue = modalBody.querySelector('input').value;
+            if (newValue !== null) sendWriteRequest(currentEditingReg, newValue);
             modal.style.display = 'none';
-        }
-    });
-
-    modalSave.addEventListener('click', () => {
-        const config = registerConfig[currentEditingReg];
-        let newValue;
-
-        if (config.type === 'command') {
-            newValue = 1;
-        } else if (config.type === 'boolean') {
-            const activeButton = modalBody.querySelector('button.active');
-            newValue = activeButton ? activeButton.dataset.value : null;
-        } else if (config.type === 'select') {
-            newValue = modalBody.querySelector('select').value;
-        } else if (config.type === 'number') {
-            newValue = modalBody.querySelector('input').value;
-        }
-
-        if (newValue !== null) {
-            sendWriteRequest(currentEditingReg, newValue);
-        }
-        modal.style.display = 'none';
-    });
-    
-    modalBody.addEventListener('click', (event) => {
-        if(event.target.tagName === 'BUTTON') {
-            const parent = event.target.parentElement;
-            if (parent.classList.contains('modal-btn-group')) {
-                parent.querySelector('.active')?.classList.remove('active');
+        });
+        modalBody.addEventListener('click', (event) => {
+            if (event.target.tagName === 'BUTTON' && event.target.parentElement.classList.contains('modal-btn-group')) {
+                event.target.parentElement.querySelector('.active')?.classList.remove('active');
                 event.target.classList.add('active');
             }
-        }
-    });
+        });
 
-    const resetButton = document.getElementById('reset-button');
-    const confirmModal = document.getElementById('confirm-modal');
-    if(resetButton && confirmModal) {
-        const confirmYes = document.getElementById('confirm-yes');
-        const confirmNo = document.getElementById('confirm-no');
-        
-        resetButton.addEventListener('click', () => confirmModal.style.display = 'flex');
-        confirmNo.addEventListener('click', () => confirmModal.style.display = 'none');
-        confirmYes.addEventListener('click', () => {
-            sendWriteRequest('REG_RST', 1);
-            confirmModal.style.display = 'none';
-        });
-        window.addEventListener('click', (event) => {
-            if (event.target == confirmModal) confirmModal.style.display = 'none';
-        });
+        const resetButton = document.getElementById('reset-button');
+        const confirmModal = document.getElementById('confirm-modal');
+        if (resetButton && confirmModal) {
+            const confirmYes = document.getElementById('confirm-yes');
+            const confirmNo = document.getElementById('confirm-no');
+            resetButton.addEventListener('click', () => confirmModal.style.display = 'flex');
+            confirmNo.addEventListener('click', () => confirmModal.style.display = 'none');
+            confirmYes.addEventListener('click', () => {
+                sendWriteRequest('REG_RST', 1);
+                confirmModal.style.display = 'none';
+            });
+            window.addEventListener('click', (event) => { if (event.target == confirmModal) confirmModal.style.display = 'none'; });
+        }
     }
 
     async function sendWriteRequest(reg, val) {
         const card = document.querySelector(`.data-card[data-reg="${reg}"]`);
-        if (card) {
-            card.classList.add('saving');
-        }
-
+        if (card) card.classList.add('saving');
         try {
             const response = await fetch('/api/write', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
                 body: `reg=${encodeURIComponent(reg)}&val=${encodeURIComponent(val)}`
             });
-
             if (response.ok) {
                 showToast(`دستور ${reg} با موفقیت ارسال شد.`, 'success');
-                setTimeout(fetchData, 500);
+                if(window.location.pathname.includes('history.html')) {
+                    // No need to refetch data on history page after write
+                } else {
+                    setTimeout(fetchPageData, 500);
+                }
             } else {
                 const errorText = await response.text();
                 showToast(`خطا در نوشتن: ${errorText}`, 'warning');
@@ -669,9 +654,26 @@ document.addEventListener('DOMContentLoaded', function() {
             console.error('Failed to send write request:', error);
             showToast('خطا در ارسال درخواست. اتصال را بررسی کنید.', 'warning');
         } finally {
-            if (card) {
-                setTimeout(() => card.classList.remove('saving'), 500);
-            }
+            if (card) setTimeout(() => card.classList.remove('saving'), 500);
+        }
+    }
+    
+    // ===================================================================================
+    // بخش ۶: راه‌اندازی اصلی
+    // ===================================================================================
+
+    initializeUI();
+    initWebSocket();
+
+    if (window.location.pathname.includes('history.html')) {
+        loadHistory();
+    } else {
+        checkUnseenCount();
+        const dataContainer = document.getElementById('data-container');
+        if (dataContainer) {
+            fetchPageData();
+            setInterval(fetchPageData, 5000);
+            setupModalEventListeners();
         }
     }
 });

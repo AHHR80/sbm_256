@@ -21,122 +21,48 @@ volatile bool interruptFired = false; // Flag for interrupt detection
 unsigned long lastWatchdogReset = 0;
 const long watchdogInterval = 30000; // 30 seconds (less than the default 40s timeout)
 
+// --- History/Log Configuration ---
+#define HISTORY_FILE "/history.log"
+#define MAX_HISTORY_ENTRIES 50 // Keep the last 50 events
 
 // ===================================================================================
 // بخش اعتبارسنجی ورودی در سمت سرور
 // ===================================================================================
-
-// یک ساختار برای نگهداری قوانین اعتبارسنجی هر رجیستر
 struct ValidationRule {
-    const char* regName; // نام رجیستر که از رابط وب ارسال می‌شود
-    long min;            // حداقل مقدار مجاز
-    long max;            // حداکثر مقدار مجاز
+    const char* regName;
+    long min;
+    long max;
 };
 
-// نقشه اعتبارسنجی شامل تمام رجیسترهای قابل نوشتن با محدودیت‌هایشان
 const ValidationRule validationMap[] = {
-    // Page 1
-    {"VSYSMIN_5_0", 2500, 16000},
-    {"CELL_1_0", 1, 4},
-    {"VOTG_10_0", 2800, 22000},
-    {"IOTG_6_0", 160, 3360},
-    {"EN_CHG", 0, 1},
-    // Page 2
-    {"VREG_10_0", 3000, 18800},
-    {"ICHG_8_0", 50, 3000},
-    {"VINDPM_7_0", 3600, 22000},
-    {"IINDPM_8_0", 100, 3300},
-    {"EN_ICO", 0, 1},
-    {"EN_HIZ", 0, 1},
-    {"SDRV_CTRL_1_0", 0, 3},
-    {"EN_OTG", 0, 1},
-    {"EN_ACDRV2", 0, 1},
-    {"EN_ACDRV1", 0, 1},
-    {"DIS_ACDRV", 0, 1},
-    {"SFET_PRESENT", 0, 1},
-    {"EN_MPPT", 0, 1},
-    {"ADC_EN", 0, 1},
-    // Page 3
-    {"VBAT_LOWV_1_0", 0, 3},
-    {"IPRECHG_5_0", 40, 2000},
-    {"ITERM_4_0", 40, 1000},
-    {"TRECHG_1_0", 0, 3},
-    {"VRECHG_3_0", 50, 800},
-    {"VAC_OVP_1_0", 0, 3},
-    {"EN_IBAT", 0, 1},
-    {"IBAT_REG_1_0", 0, 3},
-    {"EN_IINDPM", 0, 1},
-    {"EN_EXTILIM", 0, 1},
-    {"ADC_SAMPLE_1_0", 0, 3},
-    // Page 4
-    {"STOP_WD_CHG", 0, 1},
-    {"PRECHG_TMR", 0, 1},
-    {"TOPOFF_TMR_1_0", 0, 3},
-    {"EN_TRICHG_TMR", 0, 1},
-    {"EN_PRECHG_TMR", 0, 1},
-    {"EN_CHG_TMR", 0, 1},
-    {"CHG_TMR_1_0", 0, 3},
-    {"TMR2X_EN", 0, 1},
-    {"EN_AUTO_IBATDIS", 0, 1},
-    {"EN_TERM", 0, 1},
-    {"WATCHDOG_2_0", 0, 7},
-    {"AUTO_INDET_EN", 0, 1},
-    {"EN_12V", 0, 1},
-    {"EN_9V", 0, 1},
-    {"HVDCP_EN", 0, 1},
-    {"SDRV_DLY", 0, 1},
-    {"PFM_OTG_DIS", 0, 1},
-    {"PFM_FWD_DIS", 0, 1},
-    {"WKUP_DLY", 0, 1},
-    {"DIS_LDO", 0, 1},
-    {"DIS_OTG_OOA", 0, 1},
-    {"DIS_FWD_OOA", 0, 1},
-    {"PWM_FREQ", 0, 1},
-    {"DIS_STAT", 0, 1},
-    {"DIS_VSYS_SHORT", 0, 1},
-    {"DIS_VOTG_UVP", 0, 1},
-    {"EN_IBUS_OCP", 0, 1},
-    {"EN_BATOC", 0, 1},
-    {"VOC_PCT_2_0", 0, 7},
-    {"VOC_DLY_1_0", 0, 3},
-    {"VOC_RATE_1_0", 0, 3},
-    {"TREG_1_0", 0, 3},
-    {"TSHUT_1_0", 0, 3},
-    {"VBUS_PD_EN", 0, 1},
-    {"VAC1_PD_EN", 0, 1},
-    {"VAC2_PD_EN", 0, 1},
-    {"JEITA_VSET_2_0", 0, 7},
-    {"JEITA_ISETH_1_0", 0, 3},
-    {"JEITA_ISETC_1_0", 0, 3},
-    {"TS_COOL_1_0", 0, 3},
-    {"TS_WARM_1_0", 0, 3},
-    {"BHOT_1_0", 0, 3},
-    {"BCOLD", 0, 1},
-    {"TS_IGNORE", 0, 1},
-    {"ADC_RATE", 0, 1},
-    {"ADC_AVG", 0, 1},
-    {"ADC_AVG_INIT", 0, 1},
-    {"IBUS_ADC_DIS", 0, 1},
-    {"IBAT_ADC_DIS", 0, 1},
-    {"VBUS_ADC_DIS", 0, 1},
-    {"VBAT_ADC_DIS", 0, 1},
-    {"VSYS_ADC_DIS", 0, 1},
-    {"TS_ADC_DIS", 0, 1},
-    {"TDIE_ADC_DIS", 0, 1},
-    {"DP_ADC_DIS", 0, 1},
-    {"DM_ADC_DIS", 0, 1},
-    {"VAC2_ADC_DIS", 0, 1},
-    {"VAC1_ADC_DIS", 0, 1},
-    {"DPLUS_DAC_2_0", 0, 7},
-    {"DMINUS_DAC_2_0", 0, 7}
+    {"VSYSMIN_5_0", 2500, 16000}, {"CELL_1_0", 1, 4}, {"VOTG_10_0", 2800, 22000},
+    {"IOTG_6_0", 160, 3360}, {"EN_CHG", 0, 1}, {"VREG_10_0", 3000, 18800},
+    {"ICHG_8_0", 50, 3000}, {"VINDPM_7_0", 3600, 22000}, {"IINDPM_8_0", 100, 3300},
+    {"EN_ICO", 0, 1}, {"EN_HIZ", 0, 1}, {"SDRV_CTRL_1_0", 0, 3}, {"EN_OTG", 0, 1},
+    {"EN_ACDRV2", 0, 1}, {"EN_ACDRV1", 0, 1}, {"DIS_ACDRV", 0, 1}, {"SFET_PRESENT", 0, 1},
+    {"EN_MPPT", 0, 1}, {"ADC_EN", 0, 1}, {"VBAT_LOWV_1_0", 0, 3}, {"IPRECHG_5_0", 40, 2000},
+    {"ITERM_4_0", 40, 1000}, {"TRECHG_1_0", 0, 3}, {"VRECHG_3_0", 50, 800},
+    {"VAC_OVP_1_0", 0, 3}, {"EN_IBAT", 0, 1}, {"IBAT_REG_1_0", 0, 3}, {"EN_IINDPM", 0, 1},
+    {"EN_EXTILIM", 0, 1}, {"ADC_SAMPLE_1_0", 0, 3}, {"STOP_WD_CHG", 0, 1},
+    {"PRECHG_TMR", 0, 1}, {"TOPOFF_TMR_1_0", 0, 3}, {"EN_TRICHG_TMR", 0, 1},
+    {"EN_PRECHG_TMR", 0, 1}, {"EN_CHG_TMR", 0, 1}, {"CHG_TMR_1_0", 0, 3},
+    {"TMR2X_EN", 0, 1}, {"EN_AUTO_IBATDIS", 0, 1}, {"EN_TERM", 0, 1},
+    {"WATCHDOG_2_0", 0, 7}, {"AUTO_INDET_EN", 0, 1}, {"EN_12V", 0, 1}, {"EN_9V", 0, 1},
+    {"HVDCP_EN", 0, 1}, {"SDRV_DLY", 0, 1}, {"PFM_OTG_DIS", 0, 1}, {"PFM_FWD_DIS", 0, 1},
+    {"WKUP_DLY", 0, 1}, {"DIS_LDO", 0, 1}, {"DIS_OTG_OOA", 0, 1}, {"DIS_FWD_OOA", 0, 1},
+    {"PWM_FREQ", 0, 1}, {"DIS_STAT", 0, 1}, {"DIS_VSYS_SHORT", 0, 1}, {"DIS_VOTG_UVP", 0, 1},
+    {"EN_IBUS_OCP", 0, 1}, {"EN_BATOC", 0, 1}, {"VOC_PCT_2_0", 0, 7}, {"VOC_DLY_1_0", 0, 3},
+    {"VOC_RATE_1_0", 0, 3}, {"TREG_1_0", 0, 3}, {"TSHUT_1_0", 0, 3}, {"VBUS_PD_EN", 0, 1},
+    {"VAC1_PD_EN", 0, 1}, {"VAC2_PD_EN", 0, 1}, {"JEITA_VSET_2_0", 0, 7},
+    {"JEITA_ISETH_1_0", 0, 3}, {"JEITA_ISETC_1_0", 0, 3}, {"TS_COOL_1_0", 0, 3},
+    {"TS_WARM_1_0", 0, 3}, {"BHOT_1_0", 0, 3}, {"BCOLD", 0, 1}, {"TS_IGNORE", 0, 1},
+    {"ADC_RATE", 0, 1}, {"ADC_AVG", 0, 1}, {"ADC_AVG_INIT", 0, 1}, {"IBUS_ADC_DIS", 0, 1},
+    {"IBAT_ADC_DIS", 0, 1}, {"VBUS_ADC_DIS", 0, 1}, {"VBAT_ADC_DIS", 0, 1},
+    {"VSYS_ADC_DIS", 0, 1}, {"TS_ADC_DIS", 0, 1}, {"TDIE_ADC_DIS", 0, 1},
+    {"DP_ADC_DIS", 0, 1}, {"DM_ADC_DIS", 0, 1}, {"VAC2_ADC_DIS", 0, 1},
+    {"VAC1_ADC_DIS", 0, 1}, {"DPLUS_DAC_2_0", 0, 7}, {"DMINUS_DAC_2_0", 0, 7}
 };
 
-/**
- * بررسی می‌کند که آیا مقدار ورودی برای یک رجیستر خاص معتبر است یا خیر.
- * @param regName نام رجیستر برای بررسی.
- * @param value مقدار دریافت شده از کاربر.
- * @return true اگر مقدار معتبر باشد، در غیر این صورت false.
- */
 bool isValueValid(const String& regName, long value) {
     for (const auto& rule : validationMap) {
         if (regName.equals(rule.regName)) {
@@ -151,7 +77,6 @@ bool isValueValid(const String& regName, long value) {
     }
     return true;
 }
-
 
 // --- I2C Communication Functions ---
 bool readWord(uint8_t reg, uint16_t& value) {
@@ -222,6 +147,41 @@ bool readBytes(uint8_t startReg, uint8_t* buffer, uint8_t count) {
     return true;
 }
 
+// --- History Logging Functions ---
+void logInterrupt(const String& reason) {
+    File historyFile = LittleFS.open(HISTORY_FILE, "r");
+    JsonDocument doc;
+    JsonArray history;
+    if (historyFile && historyFile.size() > 0) {
+        DeserializationError error = deserializeJson(doc, historyFile);
+        if (error) {
+            Serial.print(F("deserializeJson() failed: "));
+            Serial.println(error.c_str());
+            history = doc.to<JsonArray>();
+        } else {
+            history = doc.as<JsonArray>();
+        }
+    } else {
+        history = doc.to<JsonArray>();
+    }
+    historyFile.close();
+    JsonObject newEntry = history.add<JsonObject>();
+    newEntry["timestamp"] = millis();
+    newEntry["message"] = reason;
+    newEntry["seen"] = false;
+    while (history.size() > MAX_HISTORY_ENTRIES) {
+        history.remove(0);
+    }
+    historyFile = LittleFS.open(HISTORY_FILE, "w");
+    if (!historyFile) {
+        Serial.println("Failed to open history file for writing");
+        return;
+    }
+    if (serializeJson(doc, historyFile) == 0) {
+        Serial.println(F("Failed to write to history file"));
+    }
+    historyFile.close();
+}
 
 // --- Interrupt Logic ---
 String getInterruptReason() {
@@ -327,7 +287,7 @@ void handleApiData2(AsyncWebServerRequest *request) {
     if(readByte(0x05, val8)) { doc["VINDPM_7_0"] = val8 * 100 + 3600; } else { doc["VINDPM_7_0"] = -1; }
     if(readWord(0x06, val16)) { doc["IINDPM_8_0"] = (val16 & 0x1FF) * 10; } else { doc["IINDPM_8_0"] = -1; }
     if(readByte(0x0F, val8)) {
-        doc["EN_ICO"] = (val8 >> 4) & 0x01; // RESTORED
+        doc["EN_ICO"] = (val8 >> 4) & 0x01;
         doc["FORCE_ICO"] = (val8 >> 3) & 0x01;
         doc["EN_HIZ"] = (val8 >> 2) & 0x01;
     } else { doc["EN_ICO"] = -1; doc["FORCE_ICO"] = -1; doc["EN_HIZ"] = -1; }
@@ -341,7 +301,7 @@ void handleApiData2(AsyncWebServerRequest *request) {
         doc["EN_ACDRV1"] = (val8 >> 6) & 0x01;
         doc["FORCE_VINDPM_DET"] = (val8 >> 1) & 0x01;
     } else { doc["EN_ACDRV2"] = -1; doc["EN_ACDRV1"] = -1; doc["FORCE_VINDPM_DET"] = -1; }
-    if(readByte(0x14, val8)) { doc["SFET_PRESENT"] = (val8 >> 7) & 0x01; } else { doc["SFET_PRESENT"] = -1; } // RESTORED
+    if(readByte(0x14, val8)) { doc["SFET_PRESENT"] = (val8 >> 7) & 0x01; } else { doc["SFET_PRESENT"] = -1; }
     if(readByte(0x15, val8)) { doc["EN_MPPT"] = val8 & 0x01; } else { doc["EN_MPPT"] = -1; }
     if(readWord(0x19, val16)) { doc["ICO_ILIM_8_0"] = (val16 & 0x1FF) * 10; } else { doc["ICO_ILIM_8_0"] = -1; }
     if(readByte(0x1B, val8)) {
@@ -349,7 +309,7 @@ void handleApiData2(AsyncWebServerRequest *request) {
         doc["AC1_PRESENT_STAT"] = (val8 >> 1) & 0x01;
     } else { doc["AC2_PRESENT_STAT"] = -1; doc["AC1_PRESENT_STAT"] = -1; }
     if(readByte(0x1F, val8)) { doc["VBATOTG_LOW_STAT"] = (val8 >> 4) & 0x01; } else { doc["VBATOTG_LOW_STAT"] = -1; }
-    if(readByte(0x2E, val8)) { doc["ADC_EN"] = (val8 >> 7) & 0x01; } else { doc["ADC_EN"] = -1; } // RESTORED
+    if(readByte(0x2E, val8)) { doc["ADC_EN"] = (val8 >> 7) & 0x01; } else { doc["ADC_EN"] = -1; }
     if(readByte(0x20, val8)) {
         doc["VBUS_OVP_STAT"] = (val8 >> 6) & 0x01;
         doc["VBAT_OVP_STAT"] = (val8 >> 5) & 0x01;
@@ -419,7 +379,7 @@ void handleApiData4(AsyncWebServerRequest *request) {
         doc["AUTO_INDET_EN"] = (val8 >> 6) & 0x01;
         doc["EN_12V"] = (val8 >> 5) & 0x01;
         doc["EN_9V"] = (val8 >> 4) & 0x01;
-        doc["HVDCP_EN"] = (val8 >> 3) & 0x01; // RESTORED
+        doc["HVDCP_EN"] = (val8 >> 3) & 0x01;
         doc["SDRV_DLY"] = val8 & 0x01;
     } else { doc["FORCE_INDET"] = -1; doc["AUTO_INDET_EN"] = -1; doc["EN_12V"] = -1; doc["EN_9V"] = -1; doc["HVDCP_EN"] = -1; doc["SDRV_DLY"] = -1; }
     if(readByte(0x12, val8)) {
@@ -460,7 +420,7 @@ void handleApiData4(AsyncWebServerRequest *request) {
         doc["TS_WARM_1_0"] = (val8 >> 4) & 0x03;
         doc["BHOT_1_0"] = (val8 >> 2) & 0x03;
         doc["BCOLD"] = (val8 >> 1) & 0x01;
-        doc["TS_IGNORE"] = val8 & 0x01; // RESTORED
+        doc["TS_IGNORE"] = val8 & 0x01;
     } else { doc["TS_COOL_1_0"] = -1; doc["TS_WARM_1_0"] = -1; doc["BHOT_1_0"] = -1; doc["BCOLD"] = -1; doc["TS_IGNORE"] = -1; }
     if(readByte(0x2E, val8)) {
         doc["ADC_RATE"] = (val8 >> 6) & 0x01;
@@ -529,44 +489,100 @@ void handleApiData5(AsyncWebServerRequest *request) {
     String output; serializeJson(doc, output); request->send(200, "application/json", output);
 }
 
-// ===================================================================================
-// START: NEW GLOBAL STATUS HANDLER
-// ===================================================================================
-/**
- * @brief Handles requests for global status registers needed for cross-page dependencies.
- */
 void handleApiGlobalStatus(AsyncWebServerRequest *request) {
     StaticJsonDocument<256> doc;
     uint8_t val8;
-
-    // Read SFET_PRESENT from REG14
     if (readByte(0x14, val8)) { doc["SFET_PRESENT"] = (val8 >> 7) & 0x01; } else { doc["SFET_PRESENT"] = -1; }
-    // Read ADC_EN from REG2E
     if (readByte(0x2E, val8)) { doc["ADC_EN"] = (val8 >> 7) & 0x01; } else { doc["ADC_EN"] = -1; }
-    // Read VSYS_STAT from REG1E
     if (readByte(0x1E, val8)) { doc["VSYS_STAT"] = (val8 >> 4) & 0x01; } else { doc["VSYS_STAT"] = -1; }
-    // Read EN_ICO from REG0F
     if (readByte(0x0F, val8)) { doc["EN_ICO"] = (val8 >> 4) & 0x01; } else { doc["EN_ICO"] = -1; }
-    // Read HVDCP_EN from REG11
     if (readByte(0x11, val8)) { doc["HVDCP_EN"] = (val8 >> 3) & 0x01; } else { doc["HVDCP_EN"] = -1; }
-    // Read TS_IGNORE from REG18
     if (readByte(0x18, val8)) { doc["TS_IGNORE"] = val8 & 0x01; } else { doc["TS_IGNORE"] = -1; }
+    String output; serializeJson(doc, output); request->send(200, "application/json", output);
+}
 
+// --- History API Handlers ---
+void handleGetHistory(AsyncWebServerRequest *request) {
+    File file = LittleFS.open(HISTORY_FILE, "r");
+    if (!file) {
+        request->send(200, "application/json", "[]");
+        return;
+    }
+    // Read the file content into a String to avoid issues with send() overloads
+    String content = file.readString();
+    file.close();
+    request->send(200, "application/json", content);
+}
+
+void handleGetUnseenCount(AsyncWebServerRequest *request) {
+    File file = LittleFS.open(HISTORY_FILE, "r");
+    int unseenCount = 0;
+    if (file && file.size() > 0) {
+        JsonDocument doc;
+        DeserializationError error = deserializeJson(doc, file);
+        if (!error) {
+            JsonArray history = doc.as<JsonArray>();
+            for (JsonObject entry : history) {
+                if (entry["seen"] == false) {
+                    unseenCount++;
+                }
+            }
+        }
+    }
+    file.close();
+    
+    JsonDocument responseDoc;
+    responseDoc["unseen_count"] = unseenCount;
     String output;
-    serializeJson(doc, output);
+    serializeJson(responseDoc, output);
     request->send(200, "application/json", output);
 }
-// ===================================================================================
-// END: NEW GLOBAL STATUS HANDLER
-// ===================================================================================
+
+void handleMarkHistorySeen(AsyncWebServerRequest *request) {
+    File file = LittleFS.open(HISTORY_FILE, "r");
+    if (!file || file.size() == 0) {
+        file.close();
+        request->send(200, "text/plain", "No history to mark.");
+        return;
+    }
+
+    JsonDocument doc;
+    DeserializationError error = deserializeJson(doc, file);
+    file.close();
+
+    if (error) {
+        request->send(500, "text/plain", "Failed to parse history file.");
+        return;
+    }
+
+    JsonArray history = doc.as<JsonArray>();
+    bool changed = false;
+    for (JsonObject entry : history) {
+        if (entry["seen"] == false) {
+            entry["seen"] = true;
+            changed = true;
+        }
+    }
+
+    if (changed) {
+        file = LittleFS.open(HISTORY_FILE, "w");
+        if (serializeJson(doc, file) == 0) {
+            request->send(500, "text/plain", "Failed to write updated history.");
+        } else {
+            request->send(200, "text/plain", "OK");
+        }
+        file.close();
+    } else {
+        request->send(200, "text/plain", "No unseen items to mark.");
+    }
+}
 
 
-// --- UPDATED API WRITE HANDLER with Server-Side Validation ---
+// --- API Write Handler ---
 void handleApiWrite(AsyncWebServerRequest *request) {
     if (request->hasParam("reg", true) && request->hasParam("val", true)) {
         String regName = request->getParam("reg", true)->value();
         String valStr = request->getParam("val", true)->value();
-        
         long val = valStr.toInt();
         
         if (val == 0 && valStr != "0") {
@@ -582,9 +598,7 @@ void handleApiWrite(AsyncWebServerRequest *request) {
         bool success = false;
         Serial.printf("Write request for %s with value %ld (Validated)\n", regName.c_str(), val);
         
-        if (regName == "REG_RST") {
-            success = modifyByte(0x09, 0b01000000, 0b01000000);
-        }
+        if (regName == "REG_RST") { success = modifyByte(0x09, 0b01000000, 0b01000000); }
         else if (regName == "VSYSMIN_5_0") { uint8_t regVal = (val - 2500) / 250; success = modifyByte(0x00, regVal, 0x3F); }
         else if (regName == "CELL_1_0") { if (val >= 1 && val <= 4) { uint8_t regVal = (val - 1); success = modifyByte(0x0A, regVal << 6, 0b11000000); } }
         else if (regName == "VOTG_10_0") { uint16_t regVal = (val - 2800) / 10; success = writeWord(0x0B, regVal); }
@@ -726,6 +740,7 @@ void setup() {
     server.on("/page3.html", HTTP_GET, [](AsyncWebServerRequest *request){ request->send(LittleFS, "/page3.html", "text/html"); });
     server.on("/page4.html", HTTP_GET, [](AsyncWebServerRequest *request){ request->send(LittleFS, "/page4.html", "text/html"); });
     server.on("/page5.html", HTTP_GET, [](AsyncWebServerRequest *request){ request->send(LittleFS, "/page5.html", "text/html"); });
+    server.on("/history.html", HTTP_GET, [](AsyncWebServerRequest *request){ request->send(LittleFS, "/history.html", "text/html"); });
     server.on("/style.css", HTTP_GET, [](AsyncWebServerRequest *request) { request->send(LittleFS, "/style.css", "text/css"); });
     server.on("/script.js", HTTP_GET, [](AsyncWebServerRequest *request) { request->send(LittleFS, "/script.js", "text/javascript"); });
     
@@ -735,7 +750,10 @@ void setup() {
     server.on("/api/data3", HTTP_GET, handleApiData3);
     server.on("/api/data4", HTTP_GET, handleApiData4);
     server.on("/api/data5", HTTP_GET, handleApiData5);
-    server.on("/api/global_status", HTTP_GET, handleApiGlobalStatus); // NEW GLOBAL STATUS ROUTE
+    server.on("/api/global_status", HTTP_GET, handleApiGlobalStatus);
+    server.on("/api/history", HTTP_GET, handleGetHistory);
+    server.on("/api/unseen_count", HTTP_GET, handleGetUnseenCount);
+    server.on("/api/mark_history_seen", HTTP_POST, handleMarkHistorySeen);
 
     server.on("/api/write", HTTP_POST, handleApiWrite);
 
@@ -753,6 +771,7 @@ void loop() {
             Serial.print("Interrupt Reason: ");
             Serial.println(reason);
             ws.textAll(reason);
+            logInterrupt(reason); // Log the event to file
         }
     }
 
@@ -768,16 +787,3 @@ void loop() {
     
     ws.cleanupClients();
 }
-```
-
----
-
-**خلاصه تغییرات در کد آردوینو:**
-
-* **`handleApiData2`:** خواندن رجیسترهای `EN_ICO`, `SFET_PRESENT` و `ADC_EN` به این تابع بازگردانده شد.
-* **`handleApiData4`:** خواندن رجیسترهای `HVDCP_EN` و `TS_IGNORE` به این تابع بازگردانده شد.
-* **`setup()`:** یک `delay(50);` اضافه شد.
-
-با این اصلاح، اکنون سیستم به درستی کار خواهد کرد. داده‌های سراسری برای منطق بررسی وابستگی‌ها استفاده می‌شوند و داده‌های مخصوص هر صفحه نیز به طور کامل برای نمایش در رابط کاربری ارسال و به‌روزرسانی می‌شوند.
-
-باز هم از دقت و پیگیری شما که باعث شد این نقص مهم برطرف شود، متشک

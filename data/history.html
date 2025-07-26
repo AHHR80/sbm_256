@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تاریخچه وقایع</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="status-indicator">در حال اتصال...</div>
+    <div class="loading-overlay">در حال بارگذاری تاریخچه...</div>
+
+    <div class="container">
+        <header>
+            <a href="/" class="back-button">&larr;</a>
+            <h1>تاریخچه وقایع شارژر</h1>
+            <p>لیست آخرین وقایع ثبت شده. رویدادهای جدید هایلایت شده‌اند.</p>
+        </header>
+        <main id="history-container">
+            <ul id="history-list">
+                <!-- History items will be inserted here by JavaScript -->
+            </ul>
+        </main>
+    </div>
+    
+    <div id="toast"></div>
+    <script src="script.js"></script>
+</body>
+</html>

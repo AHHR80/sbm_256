@@ -12,6 +12,7 @@
     --status-connected: #27ae60;
     --status-connecting: #f39c12;
     --status-disconnected: #c0392b;
+    --unseen-highlight: rgba(233, 69, 96, 0.15);
 }
 
 @import url('https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;700&display=swap');
@@ -48,6 +49,7 @@ header {
 header h1 {
     color: #fff;
     margin-bottom: 5px;
+    margin-top: 50px; /* Add space for buttons */
 }
 
 header p {
@@ -61,7 +63,10 @@ header p {
 }
 
 .nav-button {
-    display: block;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
     padding: 20px;
     background-color: var(--card-bg-color);
     color: var(--font-color);
@@ -71,6 +76,7 @@ header p {
     font-size: 1.1em;
     transition: transform 0.2s ease, background-color 0.2s ease;
     border: 2px solid transparent;
+    position: relative;
 }
 
 .nav-button:hover {
@@ -78,6 +84,21 @@ header p {
     background-color: var(--secondary-color);
     border-color: #fff;
 }
+
+.notification-badge {
+    background-color: var(--secondary-color);
+    color: white;
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 0.8em;
+    font-weight: bold;
+    border: 2px solid var(--primary-color);
+}
+
 
 .data-grid {
     display: grid;
@@ -132,8 +153,8 @@ header p {
 
 .back-button {
     position: absolute;
-    top: 0;
-    right: 0;
+    top: 20px;
+    right: 20px;
     padding: 8px 15px;
     background-color: var(--secondary-color);
     color: #fff;
@@ -146,7 +167,33 @@ header p {
     background-color: #c43a52;
 }
 
-/* --- Tooltip Styles --- */
+.history-button-header {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    background-color: var(--card-bg-color);
+    color: var(--font-color);
+    text-decoration: none;
+    border-radius: 5px;
+    transition: background-color 0.2s ease;
+    font-size: 0.9em;
+}
+
+.history-button-header:hover {
+    background-color: #2a3a5e;
+}
+
+.history-button-header .notification-badge {
+    width: 20px;
+    height: 20px;
+    font-size: 0.75em;
+    border: none;
+}
+
 .label-container {
     position: relative;
     display: flex;
@@ -213,7 +260,6 @@ header p {
     opacity: 1;
 }
 
-/* --- Toast Notification Styles --- */
 #toast {
     visibility: hidden;
     min-width: 250px;
@@ -241,7 +287,6 @@ header p {
 #toast.warning { background-color: var(--status-connecting); }
 #toast.success { background-color: var(--status-connected); }
 
-/* --- Modal Styles --- */
 .modal {
     display: none;
     position: fixed;
@@ -371,7 +416,6 @@ header p {
     background-color: #6c7a7b;
 }
 
-/* --- Reset Button & Confirmation Modal --- */
 .reset-container {
     grid-column: 1 / -1;
     margin-top: 20px;
@@ -426,9 +470,6 @@ header p {
     color: white;
 }
 
-/* --- New Styles for Completeness --- */
-
-/* Loading Overlay */
 .loading-overlay {
     position: fixed;
     top: 0;
@@ -445,7 +486,6 @@ header p {
     transition: opacity 0.5s ease;
 }
 
-/* Connection Status Indicator */
 .status-indicator {
     position: fixed;
     top: 15px;
@@ -461,7 +501,6 @@ header p {
 .status-indicator.connecting { background-color: var(--status-connecting); }
 .status-indicator.disconnected { background-color: var(--status-disconnected); }
 
-/* Saving Feedback Animation */
 .data-card.saving {
     animation: saving-glow 1s ease-in-out;
 }
@@ -470,4 +509,46 @@ header p {
     0% { box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2); }
     50% { box-shadow: 0 0 20px var(--success-color); }
     100% { box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2); }
+}
+
+/* --- History Page Styles --- */
+#history-list {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.history-item {
+    background-color: var(--card-bg-color);
+    padding: 15px;
+    border-radius: 8px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+    border-left: 5px solid var(--primary-color);
+    transition: background-color 0.3s;
+}
+
+.history-item.unseen {
+    background-color: var(--unseen-highlight);
+    border-left-color: var(--secondary-color);
+}
+
+.history-time {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    color: var(--font-color-label);
+    font-size: 0.9em;
+    white-space: nowrap;
+}
+
+.history-message {
+    flex-grow: 1;
+    text-align: right;
+    font-size: 1.1em;
 }
