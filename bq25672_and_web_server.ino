@@ -21,9 +21,10 @@ volatile bool interruptFired = false; // Flag for interrupt detection
 unsigned long lastWatchdogReset = 0;
 const long watchdogInterval = 30000; // 30 seconds (less than the default 40s timeout)
 
-// --- History/Log Configuration ---
+// --- Configuration Files ---
 #define HISTORY_FILE "/history.log"
 #define MAX_HISTORY_ENTRIES 50 // Keep the last 50 events
+#define SETTINGS_FILE "/settings.json" // File for persistent settings
 
 // ===================================================================================
 // بخش اعتبارسنجی ورودی در سمت سرور
@@ -34,6 +35,7 @@ struct ValidationRule {
     long max;
 };
 
+// This map ensures that only valid values are written to the registers.
 const ValidationRule validationMap[] = {
     {"VSYSMIN_5_0", 2500, 16000}, {"CELL_1_0", 1, 4}, {"VOTG_10_0", 2800, 22000},
     {"IOTG_6_0", 160, 3360}, {"EN_CHG", 0, 1}, {"VREG_10_0", 3000, 18800},
@@ -182,6 +184,187 @@ void logInterrupt(const String& reason) {
     }
     historyFile.close();
 }
+
+// --- REFACTORED: Central function to write to a BQ25672 register by name ---
+/**
+ * @brief Translates a register name and value into an I2C write command.
+ * @param regName The string name of the register (e.g., "ICHG_8_0").
+ * @param val The raw value to write.
+ * @return True if the I2C write was successful, false otherwise.
+ */
+bool writeBqRegister(const String& regName, long val) {
+    bool success = false;
+    
+    // This block contains the logic to convert the web request into an I2C command.
+    // It is now used by both the web handler and the startup settings loader.
+    if (regName == "REG_RST") { 
+        success = modifyByte(0x09, 0b01000000, 0b01000000);
+        if (success) {
+            Serial.println("Performing factory reset: Deleting settings file.");
+            if (LittleFS.exists(SETTINGS_FILE)) {
+                if (!LittleFS.remove(SETTINGS_FILE)) {
+                    Serial.println("Error deleting settings.json.");
+                }
+            }
+        }
+    }
+    else if (regName == "VSYSMIN_5_0") { uint8_t regVal = (val - 2500) / 250; success = modifyByte(0x00, regVal, 0x3F); }
+    else if (regName == "CELL_1_0") { if (val >= 1 && val <= 4) { uint8_t regVal = (val - 1); success = modifyByte(0x0A, regVal << 6, 0b11000000); } }
+    else if (regName == "VOTG_10_0") { uint16_t regVal = (val - 2800) / 10; success = writeWord(0x0B, regVal); }
+    else if (regName == "IOTG_6_0") { uint8_t regVal = val / 40; success = modifyByte(0x0D, regVal, 0x7F); }
+    else if (regName == "EN_CHG") { success = modifyByte(0x0F, (uint8_t)val << 5, 0b00100000); }
+    else if (regName == "VREG_10_0") { uint16_t regVal = val / 10; success = writeWord(0x01, regVal); }
+    else if (regName == "ICHG_8_0") { uint16_t regVal = val / 10; success = writeWord(0x03, regVal); }
+    else if (regName == "VINDPM_7_0") { uint8_t regVal = (val - 3600) / 100; success = writeByte(0x05, regVal); }
+    else if (regName == "IINDPM_8_0") { uint16_t regVal = val / 10; success = writeWord(0x06, regVal); }
+    else if (regName == "EN_ICO") { success = modifyByte(0x0F, (uint8_t)val << 4, 0b00010000); }
+    else if (regName == "FORCE_ICO") { success = modifyByte(0x0F, (uint8_t)val << 3, 0b00001000); }
+    else if (regName == "EN_HIZ") { success = modifyByte(0x0F, (uint8_t)val << 2, 0b00000100); }
+    else if (regName == "SDRV_CTRL_1_0") { success = modifyByte(0x11, (uint8_t)val << 1, 0b00000110); }
+    else if (regName == "EN_OTG") { success = modifyByte(0x12, (uint8_t)val << 6, 0b01000000); }
+    else if (regName == "DIS_ACDRV") { success = modifyByte(0x12, (uint8_t)val << 7, 0b10000000); }
+    else if (regName == "EN_ACDRV2") { success = modifyByte(0x13, (uint8_t)val << 7, 0b10000000); }
+    else if (regName == "EN_ACDRV1") { success = modifyByte(0x13, (uint8_t)val << 6, 0b01000000); }
+    else if (regName == "FORCE_VINDPM_DET") { success = modifyByte(0x13, (uint8_t)val << 1, 0b00000010); }
+    else if (regName == "SFET_PRESENT") { success = modifyByte(0x14, (uint8_t)val << 7, 0b10000000); }
+    else if (regName == "EN_MPPT") { success = modifyByte(0x15, (uint8_t)val, 0b00000001); }
+    else if (regName == "ADC_EN") { success = modifyByte(0x2E, (uint8_t)val << 7, 0b10000000); }
+    else if (regName == "VBAT_LOWV_1_0") { success = modifyByte(0x08, (uint8_t)val << 6, 0b11000000); }
+    else if (regName == "IPRECHG_5_0") { uint8_t regVal = val / 40; success = modifyByte(0x08, regVal, 0x3F); }
+    else if (regName == "ITERM_4_0") { uint8_t regVal = val / 40; success = modifyByte(0x09, regVal, 0x1F); }
+    else if (regName == "TRECHG_1_0") { success = modifyByte(0x0A, (uint8_t)val << 4, 0b00110000); }
+    else if (regName == "VRECHG_3_0") { uint8_t regVal = (val - 50) / 50; success = modifyByte(0x0A, regVal, 0x0F); }
+    else if (regName == "VAC_OVP_1_0") { success = modifyByte(0x10, (uint8_t)val << 4, 0b00110000); }
+    else if (regName == "EN_IBAT") { success = modifyByte(0x14, (uint8_t)val << 5, 0b00100000); }
+    else if (regName == "IBAT_REG_1_0") { success = modifyByte(0x14, (uint8_t)val << 3, 0b00011000); }
+    else if (regName == "EN_IINDPM") { success = modifyByte(0x14, (uint8_t)val << 2, 0b00000100); }
+    else if (regName == "EN_EXTILIM") { success = modifyByte(0x14, (uint8_t)val << 1, 0b00000010); }
+    else if (regName == "ADC_SAMPLE_1_0") { success = modifyByte(0x2E, (uint8_t)val << 4, 0b00110000); }
+    else if (regName == "STOP_WD_CHG") { success = modifyByte(0x09, (uint8_t)val << 5, 0b00100000); }
+    else if (regName == "PRECHG_TMR") { success = modifyByte(0x0D, (uint8_t)val << 7, 0b10000000); }
+    else if (regName == "TOPOFF_TMR_1_0") { success = modifyByte(0x0E, (uint8_t)val << 6, 0b11000000); }
+    else if (regName == "EN_TRICHG_TMR") { success = modifyByte(0x0E, (uint8_t)val << 5, 0b00100000); }
+    else if (regName == "EN_PRECHG_TMR") { success = modifyByte(0x0E, (uint8_t)val << 4, 0b00010000); }
+    else if (regName == "EN_CHG_TMR") { success = modifyByte(0x0E, (uint8_t)val << 3, 0b00001000); }
+    else if (regName == "CHG_TMR_1_0") { success = modifyByte(0x0E, (uint8_t)val << 1, 0b00000110); }
+    else if (regName == "TMR2X_EN") { success = modifyByte(0x0E, (uint8_t)val, 0b00000001); }
+    else if (regName == "EN_AUTO_IBATDIS") { success = modifyByte(0x0F, (uint8_t)val << 7, 0b10000000); }
+    else if (regName == "FORCE_IBATDIS") { success = modifyByte(0x0F, (uint8_t)val << 6, 0b01000000); }
+    else if (regName == "EN_TERM") { success = modifyByte(0x0F, (uint8_t)val << 1, 0b00000010); }
+    else if (regName == "WATCHDOG_2_0") { success = modifyByte(0x10, (uint8_t)val, 0x07); }
+    else if (regName == "FORCE_INDET") { success = modifyByte(0x11, (uint8_t)val << 7, 0b10000000); }
+    else if (regName == "AUTO_INDET_EN") { success = modifyByte(0x11, (uint8_t)val << 6, 0b01000000); }
+    else if (regName == "EN_12V") { success = modifyByte(0x11, (uint8_t)val << 5, 0b00100000); }
+    else if (regName == "EN_9V") { success = modifyByte(0x11, (uint8_t)val << 4, 0b00010000); }
+    else if (regName == "HVDCP_EN") { success = modifyByte(0x11, (uint8_t)val << 3, 0b00001000); }
+    else if (regName == "SDRV_DLY") { success = modifyByte(0x11, (uint8_t)val, 0b00000001); }
+    else if (regName == "PFM_OTG_DIS") { success = modifyByte(0x12, (uint8_t)val << 5, 0b00100000); }
+    else if (regName == "PFM_FWD_DIS") { success = modifyByte(0x12, (uint8_t)val << 4, 0b00010000); }
+    else if (regName == "WKUP_DLY") { success = modifyByte(0x12, (uint8_t)val << 3, 0b00001000); }
+    else if (regName == "DIS_LDO") { success = modifyByte(0x12, (uint8_t)val << 2, 0b00000100); }
+    else if (regName == "DIS_OTG_OOA") { success = modifyByte(0x12, (uint8_t)val << 1, 0b00000010); }
+    else if (regName == "DIS_FWD_OOA") { success = modifyByte(0x12, (uint8_t)val, 0b00000001); }
+    else if (regName == "PWM_FREQ") { success = modifyByte(0x13, (uint8_t)val << 5, 0b00100000); }
+    else if (regName == "DIS_STAT") { success = modifyByte(0x13, (uint8_t)val << 4, 0b00010000); }
+    else if (regName == "DIS_VSYS_SHORT") { success = modifyByte(0x13, (uint8_t)val << 3, 0b00001000); }
+    else if (regName == "DIS_VOTG_UVP") { success = modifyByte(0x13, (uint8_t)val << 2, 0b00000100); }
+    else if (regName == "EN_IBUS_OCP") { success = modifyByte(0x13, (uint8_t)val, 0b00000001); }
+    else if (regName == "EN_BATOC") { success = modifyByte(0x14, (uint8_t)val, 0b00000001); }
+    else if (regName == "VOC_PCT_2_0") { success = modifyByte(0x15, (uint8_t)val << 5, 0b11100000); }
+    else if (regName == "VOC_DLY_1_0") { success = modifyByte(0x15, (uint8_t)val << 3, 0b00011000); }
+    else if (regName == "VOC_RATE_1_0") { success = modifyByte(0x15, (uint8_t)val << 1, 0b00000110); }
+    else if (regName == "TREG_1_0") { success = modifyByte(0x16, (uint8_t)val << 6, 0b11000000); }
+    else if (regName == "TSHUT_1_0") { success = modifyByte(0x16, (uint8_t)val << 4, 0b00110000); }
+    else if (regName == "VBUS_PD_EN") { success = modifyByte(0x16, (uint8_t)val << 3, 0b00001000); }
+    else if (regName == "VAC1_PD_EN") { success = modifyByte(0x16, (uint8_t)val << 2, 0b00000100); }
+    else if (regName == "VAC2_PD_EN") { success = modifyByte(0x16, (uint8_t)val << 1, 0b00000010); }
+    else if (regName == "JEITA_VSET_2_0") { success = modifyByte(0x17, (uint8_t)val << 5, 0b11100000); }
+    else if (regName == "JEITA_ISETH_1_0") { success = modifyByte(0x17, (uint8_t)val << 3, 0b00011000); }
+    else if (regName == "JEITA_ISETC_1_0") { success = modifyByte(0x17, (uint8_t)val << 1, 0b00000110); }
+    else if (regName == "TS_COOL_1_0") { success = modifyByte(0x18, (uint8_t)val << 6, 0b11000000); }
+    else if (regName == "TS_WARM_1_0") { success = modifyByte(0x18, (uint8_t)val << 4, 0b00110000); }
+    else if (regName == "BHOT_1_0") { success = modifyByte(0x18, (uint8_t)val << 2, 0b00001100); }
+    else if (regName == "BCOLD") { success = modifyByte(0x18, (uint8_t)val << 1, 0b00000010); }
+    else if (regName == "TS_IGNORE") { success = modifyByte(0x18, (uint8_t)val, 0b00000001); }
+    else if (regName == "ADC_RATE") { success = modifyByte(0x2E, (uint8_t)val << 6, 0b01000000); }
+    else if (regName == "ADC_AVG") { success = modifyByte(0x2E, (uint8_t)val << 3, 0b00001000); }
+    else if (regName == "ADC_AVG_INIT") { success = modifyByte(0x2E, (uint8_t)val << 2, 0b00000100); }
+    else if (regName == "IBUS_ADC_DIS") { success = modifyByte(0x2F, (uint8_t)val << 7, 0b10000000); }
+    else if (regName == "IBAT_ADC_DIS") { success = modifyByte(0x2F, (uint8_t)val << 6, 0b01000000); }
+    else if (regName == "VBUS_ADC_DIS") { success = modifyByte(0x2F, (uint8_t)val << 5, 0b00100000); }
+    else if (regName == "VBAT_ADC_DIS") { success = modifyByte(0x2F, (uint8_t)val << 4, 0b00010000); }
+    else if (regName == "VSYS_ADC_DIS") { success = modifyByte(0x2F, (uint8_t)val << 3, 0b00001000); }
+    else if (regName == "TS_ADC_DIS") { success = modifyByte(0x2F, (uint8_t)val << 2, 0b00000100); }
+    else if (regName == "TDIE_ADC_DIS") { success = modifyByte(0x2F, (uint8_t)val << 1, 0b00000010); }
+    else if (regName == "DP_ADC_DIS") { success = modifyByte(0x30, (uint8_t)val << 7, 0b10000000); }
+    else if (regName == "DM_ADC_DIS") { success = modifyByte(0x30, (uint8_t)val << 6, 0b01000000); }
+    else if (regName == "VAC2_ADC_DIS") { success = modifyByte(0x30, (uint8_t)val << 5, 0b00100000); }
+    else if (regName == "VAC1_ADC_DIS") { success = modifyByte(0x30, (uint8_t)val << 4, 0b00010000); }
+    else if (regName == "DPLUS_DAC_2_0") { success = modifyByte(0x47, (uint8_t)val << 5, 0b11100000); }
+    else if (regName == "DMINUS_DAC_2_0") { success = modifyByte(0x47, (uint8_t)val << 2, 0b00011100); }
+    
+    return success;
+}
+
+
+// --- Persistent Settings Functions ---
+void saveSetting(const String& regName, long value) {
+    File settingsFile = LittleFS.open(SETTINGS_FILE, "r");
+    StaticJsonDocument<1024> doc;
+
+    if (settingsFile && settingsFile.size() > 0) {
+        DeserializationError error = deserializeJson(doc, settingsFile);
+        if (error) {
+            Serial.println("Failed to parse settings.json, creating new one.");
+        }
+    }
+    settingsFile.close();
+
+    doc[regName] = value;
+
+    settingsFile = LittleFS.open(SETTINGS_FILE, "w");
+    if (!settingsFile) {
+        Serial.println("Failed to open settings file for writing");
+        return;
+    }
+    if (serializeJson(doc, settingsFile) == 0) {
+        Serial.println("Failed to write to settings file");
+    }
+    settingsFile.close();
+    Serial.printf("Saved setting: %s = %ld\n", regName.c_str(), value);
+}
+
+void applySavedSettings() {
+    File settingsFile = LittleFS.open(SETTINGS_FILE, "r");
+    if (!settingsFile || settingsFile.size() == 0) {
+        Serial.println("No saved settings file found.");
+        settingsFile.close();
+        return;
+    }
+
+    StaticJsonDocument<1024> doc;
+    DeserializationError error = deserializeJson(doc, settingsFile);
+    settingsFile.close();
+
+    if (error) {
+        Serial.println("Failed to parse settings.json.");
+        return;
+    }
+
+    Serial.println("Applying saved settings...");
+    JsonObject settings = doc.as<JsonObject>();
+    for (JsonPair kv : settings) {
+        String regName = kv.key().c_str();
+        long val = kv.value().as<long>();
+        
+        Serial.printf("  - Applying %s = %ld\n", regName.c_str(), val);
+        if (!writeBqRegister(regName, val)) {
+            Serial.printf("  -> FAILED to apply setting for %s\n", regName.c_str());
+        }
+    }
+    Serial.println("Finished applying settings.");
+}
+
 
 // --- Interrupt Logic ---
 String getInterruptReason() {
@@ -578,7 +761,7 @@ void handleMarkHistorySeen(AsyncWebServerRequest *request) {
 }
 
 
-// --- API Write Handler ---
+// --- REFACTORED: API Write Handler ---
 void handleApiWrite(AsyncWebServerRequest *request) {
     if (request->hasParam("reg", true) && request->hasParam("val", true)) {
         String regName = request->getParam("reg", true)->value();
@@ -595,107 +778,21 @@ void handleApiWrite(AsyncWebServerRequest *request) {
             return;
         }
 
-        bool success = false;
         Serial.printf("Write request for %s with value %ld (Validated)\n", regName.c_str(), val);
         
-        if (regName == "REG_RST") { success = modifyByte(0x09, 0b01000000, 0b01000000); }
-        else if (regName == "VSYSMIN_5_0") { uint8_t regVal = (val - 2500) / 250; success = modifyByte(0x00, regVal, 0x3F); }
-        else if (regName == "CELL_1_0") { if (val >= 1 && val <= 4) { uint8_t regVal = (val - 1); success = modifyByte(0x0A, regVal << 6, 0b11000000); } }
-        else if (regName == "VOTG_10_0") { uint16_t regVal = (val - 2800) / 10; success = writeWord(0x0B, regVal); }
-        else if (regName == "IOTG_6_0") { uint8_t regVal = val / 40; success = modifyByte(0x0D, regVal, 0x7F); }
-        else if (regName == "EN_CHG") { success = modifyByte(0x0F, (uint8_t)val << 5, 0b00100000); }
-        else if (regName == "VREG_10_0") { uint16_t regVal = val / 10; success = writeWord(0x01, regVal); }
-        else if (regName == "ICHG_8_0") { uint16_t regVal = val / 10; success = writeWord(0x03, regVal); }
-        else if (regName == "VINDPM_7_0") { uint8_t regVal = (val - 3600) / 100; success = writeByte(0x05, regVal); }
-        else if (regName == "IINDPM_8_0") { uint16_t regVal = val / 10; success = writeWord(0x06, regVal); }
-        else if (regName == "EN_ICO") { success = modifyByte(0x0F, (uint8_t)val << 4, 0b00010000); }
-        else if (regName == "FORCE_ICO") { success = modifyByte(0x0F, (uint8_t)val << 3, 0b00001000); }
-        else if (regName == "EN_HIZ") { success = modifyByte(0x0F, (uint8_t)val << 2, 0b00000100); }
-        else if (regName == "SDRV_CTRL_1_0") { success = modifyByte(0x11, (uint8_t)val << 1, 0b00000110); }
-        else if (regName == "EN_OTG") { success = modifyByte(0x12, (uint8_t)val << 6, 0b01000000); }
-        else if (regName == "DIS_ACDRV") { success = modifyByte(0x12, (uint8_t)val << 7, 0b10000000); }
-        else if (regName == "EN_ACDRV2") { success = modifyByte(0x13, (uint8_t)val << 7, 0b10000000); }
-        else if (regName == "EN_ACDRV1") { success = modifyByte(0x13, (uint8_t)val << 6, 0b01000000); }
-        else if (regName == "FORCE_VINDPM_DET") { success = modifyByte(0x13, (uint8_t)val << 1, 0b00000010); }
-        else if (regName == "SFET_PRESENT") { success = modifyByte(0x14, (uint8_t)val << 7, 0b10000000); }
-        else if (regName == "EN_MPPT") { success = modifyByte(0x15, (uint8_t)val, 0b00000001); }
-        else if (regName == "ADC_EN") { success = modifyByte(0x2E, (uint8_t)val << 7, 0b10000000); }
-        else if (regName == "VBAT_LOWV_1_0") { success = modifyByte(0x08, (uint8_t)val << 6, 0b11000000); }
-        else if (regName == "IPRECHG_5_0") { uint8_t regVal = val / 40; success = modifyByte(0x08, regVal, 0x3F); }
-        else if (regName == "ITERM_4_0") { uint8_t regVal = val / 40; success = modifyByte(0x09, regVal, 0x1F); }
-        else if (regName == "TRECHG_1_0") { success = modifyByte(0x0A, (uint8_t)val << 4, 0b00110000); }
-        else if (regName == "VRECHG_3_0") { uint8_t regVal = (val - 50) / 50; success = modifyByte(0x0A, regVal, 0x0F); }
-        else if (regName == "VAC_OVP_1_0") { success = modifyByte(0x10, (uint8_t)val << 4, 0b00110000); }
-        else if (regName == "EN_IBAT") { success = modifyByte(0x14, (uint8_t)val << 5, 0b00100000); }
-        else if (regName == "IBAT_REG_1_0") { success = modifyByte(0x14, (uint8_t)val << 3, 0b00011000); }
-        else if (regName == "EN_IINDPM") { success = modifyByte(0x14, (uint8_t)val << 2, 0b00000100); }
-        else if (regName == "EN_EXTILIM") { success = modifyByte(0x14, (uint8_t)val << 1, 0b00000010); }
-        else if (regName == "ADC_SAMPLE_1_0") { success = modifyByte(0x2E, (uint8_t)val << 4, 0b00110000); }
-        else if (regName == "STOP_WD_CHG") { success = modifyByte(0x09, (uint8_t)val << 5, 0b00100000); }
-        else if (regName == "PRECHG_TMR") { success = modifyByte(0x0D, (uint8_t)val << 7, 0b10000000); }
-        else if (regName == "TOPOFF_TMR_1_0") { success = modifyByte(0x0E, (uint8_t)val << 6, 0b11000000); }
-        else if (regName == "EN_TRICHG_TMR") { success = modifyByte(0x0E, (uint8_t)val << 5, 0b00100000); }
-        else if (regName == "EN_PRECHG_TMR") { success = modifyByte(0x0E, (uint8_t)val << 4, 0b00010000); }
-        else if (regName == "EN_CHG_TMR") { success = modifyByte(0x0E, (uint8_t)val << 3, 0b00001000); }
-        else if (regName == "CHG_TMR_1_0") { success = modifyByte(0x0E, (uint8_t)val << 1, 0b00000110); }
-        else if (regName == "TMR2X_EN") { success = modifyByte(0x0E, (uint8_t)val, 0b00000001); }
-        else if (regName == "EN_AUTO_IBATDIS") { success = modifyByte(0x0F, (uint8_t)val << 7, 0b10000000); }
-        else if (regName == "FORCE_IBATDIS") { success = modifyByte(0x0F, (uint8_t)val << 6, 0b01000000); }
-        else if (regName == "EN_TERM") { success = modifyByte(0x0F, (uint8_t)val << 1, 0b00000010); }
-        else if (regName == "WATCHDOG_2_0") { success = modifyByte(0x10, (uint8_t)val, 0x07); }
-        else if (regName == "FORCE_INDET") { success = modifyByte(0x11, (uint8_t)val << 7, 0b10000000); }
-        else if (regName == "AUTO_INDET_EN") { success = modifyByte(0x11, (uint8_t)val << 6, 0b01000000); }
-        else if (regName == "EN_12V") { success = modifyByte(0x11, (uint8_t)val << 5, 0b00100000); }
-        else if (regName == "EN_9V") { success = modifyByte(0x11, (uint8_t)val << 4, 0b00010000); }
-        else if (regName == "HVDCP_EN") { success = modifyByte(0x11, (uint8_t)val << 3, 0b00001000); }
-        else if (regName == "SDRV_DLY") { success = modifyByte(0x11, (uint8_t)val, 0b00000001); }
-        else if (regName == "PFM_OTG_DIS") { success = modifyByte(0x12, (uint8_t)val << 5, 0b00100000); }
-        else if (regName == "PFM_FWD_DIS") { success = modifyByte(0x12, (uint8_t)val << 4, 0b00010000); }
-        else if (regName == "WKUP_DLY") { success = modifyByte(0x12, (uint8_t)val << 3, 0b00001000); }
-        else if (regName == "DIS_LDO") { success = modifyByte(0x12, (uint8_t)val << 2, 0b00000100); }
-        else if (regName == "DIS_OTG_OOA") { success = modifyByte(0x12, (uint8_t)val << 1, 0b00000010); }
-        else if (regName == "DIS_FWD_OOA") { success = modifyByte(0x12, (uint8_t)val, 0b00000001); }
-        else if (regName == "PWM_FREQ") { success = modifyByte(0x13, (uint8_t)val << 5, 0b00100000); }
-        else if (regName == "DIS_STAT") { success = modifyByte(0x13, (uint8_t)val << 4, 0b00010000); }
-        else if (regName == "DIS_VSYS_SHORT") { success = modifyByte(0x13, (uint8_t)val << 3, 0b00001000); }
-        else if (regName == "DIS_VOTG_UVP") { success = modifyByte(0x13, (uint8_t)val << 2, 0b00000100); }
-        else if (regName == "EN_IBUS_OCP") { success = modifyByte(0x13, (uint8_t)val, 0b00000001); }
-        else if (regName == "EN_BATOC") { success = modifyByte(0x14, (uint8_t)val, 0b00000001); }
-        else if (regName == "VOC_PCT_2_0") { success = modifyByte(0x15, (uint8_t)val << 5, 0b11100000); }
-        else if (regName == "VOC_DLY_1_0") { success = modifyByte(0x15, (uint8_t)val << 3, 0b00011000); }
-        else if (regName == "VOC_RATE_1_0") { success = modifyByte(0x15, (uint8_t)val << 1, 0b00000110); }
-        else if (regName == "TREG_1_0") { success = modifyByte(0x16, (uint8_t)val << 6, 0b11000000); }
-        else if (regName == "TSHUT_1_0") { success = modifyByte(0x16, (uint8_t)val << 4, 0b00110000); }
-        else if (regName == "VBUS_PD_EN") { success = modifyByte(0x16, (uint8_t)val << 3, 0b00001000); }
-        else if (regName == "VAC1_PD_EN") { success = modifyByte(0x16, (uint8_t)val << 2, 0b00000100); }
-        else if (regName == "VAC2_PD_EN") { success = modifyByte(0x16, (uint8_t)val << 1, 0b00000010); }
-        else if (regName == "JEITA_VSET_2_0") { success = modifyByte(0x17, (uint8_t)val << 5, 0b11100000); }
-        else if (regName == "JEITA_ISETH_1_0") { success = modifyByte(0x17, (uint8_t)val << 3, 0b00011000); }
-        else if (regName == "JEITA_ISETC_1_0") { success = modifyByte(0x17, (uint8_t)val << 1, 0b00000110); }
-        else if (regName == "TS_COOL_1_0") { success = modifyByte(0x18, (uint8_t)val << 6, 0b11000000); }
-        else if (regName == "TS_WARM_1_0") { success = modifyByte(0x18, (uint8_t)val << 4, 0b00110000); }
-        else if (regName == "BHOT_1_0") { success = modifyByte(0x18, (uint8_t)val << 2, 0b00001100); }
-        else if (regName == "BCOLD") { success = modifyByte(0x18, (uint8_t)val << 1, 0b00000010); }
-        else if (regName == "TS_IGNORE") { success = modifyByte(0x18, (uint8_t)val, 0b00000001); }
-        else if (regName == "ADC_RATE") { success = modifyByte(0x2E, (uint8_t)val << 6, 0b01000000); }
-        else if (regName == "ADC_AVG") { success = modifyByte(0x2E, (uint8_t)val << 3, 0b00001000); }
-        else if (regName == "ADC_AVG_INIT") { success = modifyByte(0x2E, (uint8_t)val << 2, 0b00000100); }
-        else if (regName == "IBUS_ADC_DIS") { success = modifyByte(0x2F, (uint8_t)val << 7, 0b10000000); }
-        else if (regName == "IBAT_ADC_DIS") { success = modifyByte(0x2F, (uint8_t)val << 6, 0b01000000); }
-        else if (regName == "VBUS_ADC_DIS") { success = modifyByte(0x2F, (uint8_t)val << 5, 0b00100000); }
-        else if (regName == "VBAT_ADC_DIS") { success = modifyByte(0x2F, (uint8_t)val << 4, 0b00010000); }
-        else if (regName == "VSYS_ADC_DIS") { success = modifyByte(0x2F, (uint8_t)val << 3, 0b00001000); }
-        else if (regName == "TS_ADC_DIS") { success = modifyByte(0x2F, (uint8_t)val << 2, 0b00000100); }
-        else if (regName == "TDIE_ADC_DIS") { success = modifyByte(0x2F, (uint8_t)val << 1, 0b00000010); }
-        else if (regName == "DP_ADC_DIS") { success = modifyByte(0x30, (uint8_t)val << 7, 0b10000000); }
-        else if (regName == "DM_ADC_DIS") { success = modifyByte(0x30, (uint8_t)val << 6, 0b01000000); }
-        else if (regName == "VAC2_ADC_DIS") { success = modifyByte(0x30, (uint8_t)val << 5, 0b00100000); }
-        else if (regName == "VAC1_ADC_DIS") { success = modifyByte(0x30, (uint8_t)val << 4, 0b00010000); }
-        else if (regName == "DPLUS_DAC_2_0") { success = modifyByte(0x47, (uint8_t)val << 5, 0b11100000); }
-        else if (regName == "DMINUS_DAC_2_0") { success = modifyByte(0x47, (uint8_t)val << 2, 0b00011100); }
+        // Call the central write function
+        bool success = writeBqRegister(regName, val);
         
-        if (success) { request->send(200, "text/plain", "OK"); } 
-        else { request->send(500, "text/plain", "Failed to write to register or unknown register name."); }
+        if (success) { 
+            // Don't save one-time commands to the settings file
+            if (regName != "REG_RST" && regName != "FORCE_ICO" && regName != "FORCE_VINDPM_DET" && regName != "FORCE_IBATDIS") {
+                saveSetting(regName, val);
+            }
+            request->send(200, "text/plain", "OK"); 
+        } 
+        else { 
+            request->send(500, "text/plain", "Failed to write to register or unknown register name."); 
+        }
     } else {
         request->send(400, "text/plain", "Missing parameters.");
     }
@@ -706,8 +803,15 @@ void setup() {
     Serial.begin(115200);
     Wire.begin();
 
-    // --- NEW: Add delay to allow BQ25672 to initialize ---
     delay(50); // Wait for 50ms to ensure the I2C bus is ready
+
+    if (!LittleFS.begin(true)) {
+        Serial.println("An Error has occurred while mounting LittleFS");
+        return;
+    }
+
+    // --- Apply saved settings on boot ---
+    applySavedSettings();
 
     // --- Configure ADC on startup ---
     Serial.println("Setting initial ADC state to: Enabled, One-Shot mode.");
@@ -715,11 +819,6 @@ void setup() {
         Serial.println("Initial ADC configuration successful.");
     } else {
         Serial.println("FAILED to set initial ADC configuration.");
-    }
-
-    if (!LittleFS.begin(true)) {
-        Serial.println("An Error has occurred while mounting LittleFS");
-        return;
     }
 
     WiFi.softAP(ssid, password);
