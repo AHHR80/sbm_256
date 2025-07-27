@@ -374,25 +374,38 @@ document.addEventListener('DOMContentLoaded', function() {
     // بخش ۳: مدیریت UI (رابط کاربری) و بارگذاری داده‌ها
     // ===================================================================================
 
+    // REFACTORED: This function now only adds tooltips, as labels are set in HTML.
     function initializeUI() {
         document.querySelectorAll('.data-card').forEach(card => {
             const regName = card.dataset.reg;
             const explanation = registerExplanations[regName];
+
+            // Only proceed if there's an explanation for this register
             if (explanation) {
                 const labelSpan = card.querySelector('.label');
+                
+                // Ensure we don't add a tooltip twice and that a label exists
                 if (labelSpan && !labelSpan.parentElement.classList.contains('label-container')) {
                     const labelContainer = document.createElement('div');
                     labelContainer.className = 'label-container';
+                    
                     const tooltipIcon = document.createElement('span');
                     tooltipIcon.className = 'tooltip-icon';
                     tooltipIcon.textContent = '?';
+                    
                     const tooltipText = document.createElement('div');
                     tooltipText.className = 'tooltip-text';
                     tooltipText.textContent = explanation;
+                    
+                    // Clone the original label to keep its content
                     const existingLabel = labelSpan.cloneNode(true);
+                    
+                    // Build the new structure
                     labelContainer.appendChild(existingLabel);
                     labelContainer.appendChild(tooltipIcon);
                     labelContainer.appendChild(tooltipText);
+                    
+                    // Replace the old label span with the new structure
                     labelSpan.replaceWith(labelContainer);
                 }
             }
@@ -580,7 +593,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             }
             const rawValue = card.dataset.currentValue;
-            const labelText = card.querySelector('.label-container .label').textContent;
+            
+            // MODIFIED: Read the display name directly from the card's label
+            const labelElement = card.querySelector('.label');
+            const labelText = labelElement ? labelElement.textContent.trim() : currentEditingReg;
+            
             modalTitle.textContent = `ویرایش ${labelText}`;
             modalBody.innerHTML = '';
             if (config.type === 'boolean') {
@@ -615,7 +632,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     modalBody.appendChild(unitSpan);
                 }
             } else if (config.type === 'command') {
-                modalBody.innerHTML = `<p>با کلیک روی "ذخیره"، دستور <strong>${currentEditingReg}</strong> اجرا خواهد شد.</p>`;
+                modalBody.innerHTML = `<p>با کلیک روی "ذخیره"، دستور <strong>${labelText}</strong> اجرا خواهد شد.</p>`;
             }
             modal.style.display = 'flex';
         });
@@ -657,6 +674,16 @@ document.addEventListener('DOMContentLoaded', function() {
     async function sendWriteRequest(reg, val) {
         const card = document.querySelector(`.data-card[data-reg="${reg}"]`);
         if (card) card.classList.add('saving');
+        
+        // MODIFIED: Read the display name from the card's label for the toast message
+        let displayName = reg;
+        if (card) {
+            const labelElement = card.querySelector('.label');
+            if (labelElement) {
+                displayName = labelElement.textContent.trim();
+            }
+        }
+
         try {
             const response = await fetch('/api/write', {
                 method: 'POST',
@@ -664,7 +691,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 body: `reg=${encodeURIComponent(reg)}&val=${encodeURIComponent(val)}`
             });
             if (response.ok) {
-                showToast(`دستور ${reg} با موفقیت ارسال شد.`, 'success');
+                showToast(`دستور ${displayName} با موفقیت ارسال شد.`, 'success');
                 if(window.location.pathname.includes('history.html')) {
                     // No need to refetch data on history page after write
                 } else {
