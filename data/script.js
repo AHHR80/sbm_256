@@ -7,6 +7,51 @@ document.addEventListener('DOMContentLoaded', function() {
 
     let globalRegisterState = {};
 
+    // NEW: Dictionary for interrupt explanations
+    const interruptExplanations = {
+        "IINDPM_EVENT": { title: "محدودیت جریان ورودی", description: "جریان کشیده شده از ورودی به حد تنظیم شده (IINDPM) رسیده است. جریان شارژ برای محافظت از آداپتور کاهش یافته است." },
+        "VINDPM_EVENT": { title: "محدودیت ولتاژ ورودی", description: "ولتاژ ورودی به دلیل بار زیاد به حد تنظیم شده (VINDPM) افت کرده است. جریان شارژ برای تثبیت ولتاژ کاهش یافته است." },
+        "WD_EXPIRED": { title: "تایمر Watchdog منقضی شد", description: "ارتباط با میکروکنترلر قطع شده و تنظیمات به حالت پیش‌فرض بازگشتند." },
+        "POOR_SOURCE": { title: "منبع تغذیه ضعیف", description: "آداپتور متصل شده توانایی تامین جریان کافی را ندارد و غیرفعال شده است." },
+        "PG_STATUS_CHANGE": { title: "تغییر وضعیت Power Good", description: "وضعیت پایداری منبع تغذie ورودی تغییر کرده است (ممکن است متصل یا قطع شده باشد)." },
+        "AC2_PRESENCE_CHANGE": { title: "تغییر وضعیت ورودی ۲", description: "یک آداپتور به ورودی شماره ۲ متصل یا از آن جدا شده است." },
+        "AC1_PRESENCE_CHANGE": { title: "تغییر وضعیت ورودی ۱", description: "یک آداپتور به ورودی شماره ۱ متصل یا از آن جدا شده است." },
+        "VBUS_PRESENCE_CHANGE": { title: "تغییر وضعیت VBUS", description: "ولتاژ روی خط اصلی VBUS برقرار یا قطع شده است." },
+        "CHARGE_STATUS_CHANGE": { title: "تغییر وضعیت شارژ", description: "مرحله فرآیند شارژ تغییر کرده است (مثلاً از شارژ سریع به خاتمه شارژ)." },
+        "ICO_STATUS_CHANGE": { title: "تغییر وضعیت بهینه‌ساز جریان", description: "الگوریتم بهینه‌ساز جریان ورودی (ICO) وضعیت خود را تغییر داده است (شروع، پایان)." },
+        "VBUS_TYPE_CHANGE": { title: "تغییر نوع آداپتور", description: "نوع آداپتور متصل به ورودی تغییر کرده است (مثلاً از SDP به DCP)." },
+        "TREG_EVENT": { title: "محدودیت حرارتی", description: "دمای داخلی چیپ بالا رفته و جریان شارژ برای محافظت کاهش یافته است." },
+        "VBAT_PRESENCE_CHANGE": { title: "تغییر وضعیت باتری", description: "باتری به دستگاه متصل یا از آن جدا شده است." },
+        "BC12_DONE": { title: "پایان تشخیص BC1.2", description: "فرآیند شناسایی نوع استاندارد آداپتور (BC1.2) به پایان رسیده است." },
+        "DPDM_DONE": { title: "پایان تشخیص D+/D-", description: "فرآیند کلی تشخیص نوع آداپتور از طریق پین‌های D+/D- به پایان رسیده است." },
+        "ADC_DONE": { title: "پایان تبدیل ADC", description: "یک تبدیل آنالوگ به دیجیتال در حالت تک-نمونه‌ای (One-shot) به پایان رسیده است." },
+        "VSYS_REG_CHANGE": { title: "تغییر وضعیت رگولاسیون سیستم", description: "سیستم وارد حالت رگولاسیون حداقل ولتاژ (VSYSMIN) شده یا از آن خارج شده است." },
+        "FAST_CHARGE_TIMEOUT": { title: "خطای تایمر شارژ سریع", description: "مدت زمان مجاز برای مرحله شارژ سریع به پایان رسیده و شارژ متوقف شده است." },
+        "TRICKLE_CHARGE_TIMEOUT": { title: "خطای تایمر شارژ قطره‌ای", description: "مدت زمان مجاز برای مرحله شارژ قطره‌ای (برای باتری‌های بسیار خالی) به پایان رسیده است." },
+        "PRECHARGE_TIMEOUT": { title: "خطای تایمر پیش‌شارژ", description: "مدت زمان مجاز برای مرحله پیش‌شارژ به پایان رسیده و شارژ متوقف شده است." },
+        "TOPOFF_TIMEOUT": { title: "پایان تایمر شارژ تکمیلی", description: "مدت زمان شارژ تکمیلی (Top-off) پس از اتمام شارژ اصلی، به پایان رسیده است." },
+        "VBAT_LOW_FOR_OTG": { title: "ولتاژ باتری برای پاوربانک کم است", description: "ولتاژ باتری برای فعال کردن حالت پاوربانک (OTG) کافی نیست." },
+        "TS_COLD_EVENT": { title: "دمای باتری: سرد", description: "دمای باتری وارد محدوده سرد شده و شارژ طبق پروفایل JEITA متوقف یا محدود شده است." },
+        "TS_COOL_EVENT": { title: "دمای باتری: خنک", description: "دمای باتری وارد محدوده خنک شده و جریان شارژ طبق پروفایل JEITA کاهش یافته است." },
+        "TS_WARM_EVENT": { title: "دمای باتری: گرم", description: "دمای باتری وارد محدوده گرم شده و ولتاژ شارژ طبق پروفایل JEITA کاهش یافته است." },
+        "TS_HOT_EVENT": { title: "دمای باتری: داغ", description: "دمای باتری وارد محدوده داغ شده و شارژ برای ایمنی متوقف شده است." },
+        "IBAT_REG_EVENT": { title: "محدودیت جریان دشارژ", description: "جریان دشارژ باتری در حالت پاوربانک (OTG) به حد مجاز رسیده و محدود شده است." },
+        "VBUS_OVP_FAULT": { title: "خطای ولتاژ بالای ورودی", description: "ولتاژ آداپتور از حد مجاز فراتر رفته است. شارژ برای محافظت متوقف شد." },
+        "VBAT_OVP_FAULT": { title: "خطای ولتاژ بالای باتری", description: "ولتاژ باتری از حد مجاز تنظیم شده فراتر رفته است. شارژ برای محافظت متوقف شد." },
+        "IBUS_OCP_FAULT": { title: "خطای جریان بالای ورودی", description: "جریان کشیده شده از آداپتور از حد بحرانی فراتر رفته است. مبدل برای محافظت غیرفعال شد." },
+        "IBAT_OCP_FAULT": { title: "خطای جریان بالای باتری", description: "جریان کشیده شده از باتری (در حالت دشارژ) از حد بحرانی فراتر رفته است." },
+        "CONV_OCP_FAULT": { title: "خطای جریان بالای مبدل", description: "جریان داخلی مبدل DC-DC از حد مجاز فراتر رفته است." },
+        "VAC2_OVP_FAULT": { title: "خطای ولتاژ بالای ورودی ۲", description: "ولتاژ روی ورودی شماره ۲ از حد مجاز فراتر رفته است." },
+        "VAC1_OVP_FAULT": { title: "خطای ولتاژ بالای ورودی ۱", description: "ولتاژ روی ورودی شماره ۱ از حد مجاز فراتر رفته است." },
+        "VSYS_SHORT_FAULT": { title: "خطای اتصال کوتاه سیستم", description: "اتصال کوتاه در خروجی سیستم (SYS) تشخیص داده شده و جریان محدود شده است." },
+        "VSYS_OVP_FAULT": { title: "خطای ولتاژ بالای سیستم", description: "ولتاژ خروجی سیستم (SYS) از حد مجاز فراتر رفته است. مبدل برای محافظت متوقف شد." },
+        "OTG_OVP_FAULT": { title: "خطای ولتاژ بالای خروجی OTG", description: "ولتاژ خروجی در حالت پاوربانک (OTG) از حد مجاز فراتر رفته است." },
+        "OTG_UVP_FAULT": { title: "خطای ولتاژ پایین خروجی OTG", description: "ولتاژ خروجی در حالت پاوربانک (OTG) دچار افت شدید شده است." },
+        "THERMAL_SHUTDOWN": { title: "خاموشی حرارتی", description: "دمای چیپ به حد بحرانی رسیده و دستگاه برای جلوگیری از آسیب، به طور کامل خاموش شده است." },
+        "FLAG_READ_ERROR": { title: "خطا در خواندن وقفه", description: "ارتباط با چیپ برای خواندن دلیل وقفه ناموفق بود." },
+        "UNKNOWN_INTERRUPT": { title: "وقفه ناشناخته", description: "یک وقفه رخ داده است اما دلیل آن توسط نرم‌افزار قابل شناسایی نیست." }
+    };
+
     const registerExplanations = {
         VSYSMIN_5_0: "(VSYSMIN_5_0): این یکی از مهم‌ترین تنظیمات حفاظتی است. این رجیستر حداقل ولتاژی را که سیستم (SYS) مجاز است به آن افت کند، تعیین می‌کند. حتی اگر باتری کاملاً خالی یا جدا شده باشد، چیپ تلاش می‌کند تا ولتاژ سیستم را بالاتر از این مقدار نگه دارد تا از خاموش شدن یا ریست شدن میکروکنترلر و سایر قطعات جلوگیری کند. مقدار آن باید متناسب با نیاز سیستم شما تنظیم شود.",
         CELL_1_0: "(CELL_1_0): این رجیستر به چیپ می‌گوید که باتری شما از چند سلول سری تشکیل شده است (از ۱ تا ۴ سلول). تنظیم صحیح این مقدار حیاتی است، زیرا مقادیر پیش‌فرض ولتاژ شارژ (VREG) و حداقل ولتاژ سیستم (VSYSMIN) بر اساس آن تعیین می‌شود. تغییر این مقدار، رجیسترهای مرتبط را به حالت پیش‌فرض بازنشانی می‌کند.",
@@ -318,21 +363,39 @@ document.addEventListener('DOMContentLoaded', function() {
             setTimeout(initWebSocket, 2000);
         };
         
+        // MODIFIED: WebSocket onmessage handler to parse JSON
         websocket.onmessage = (event) => {
             console.log('Message from server: ', event.data);
-            showToast(event.data, 'interrupt');
-            checkUnseenCount(); // Update badge on new interrupt
-            // If on history page, prepend the new event
-            if (window.location.pathname.includes('history.html')) {
-                const historyList = document.getElementById('history-list');
-                if(historyList) {
-                    const newItem = createHistoryItem({
-                        timestamp: new Date().getTime(), // Approximate time
-                        message: event.data,
-                        seen: true // Assume seen as it's live
+            try {
+                const data = JSON.parse(event.data);
+                if (data.events && Array.isArray(data.events)) {
+                    let fullMessage = "";
+                    data.events.forEach(eventCode => {
+                        const explanation = interruptExplanations[eventCode];
+                        if (explanation) {
+                            fullMessage += `<strong>${explanation.title}</strong><br>${explanation.description}<br><br>`;
+                        } else {
+                            fullMessage += `<strong>وقفه ناشناخته:</strong> ${eventCode}<br><br>`;
+                        }
                     });
-                    historyList.prepend(newItem);
+                    showToast(fullMessage.trim(), 'interrupt');
+                    checkUnseenCount(); 
+
+                    if (window.location.pathname.includes('history.html')) {
+                        const historyList = document.getElementById('history-list');
+                        if(historyList) {
+                            const newItem = createHistoryItem({
+                                timestamp: new Date().getTime(),
+                                message: event.data, // Store the raw JSON string
+                                seen: true
+                            });
+                            historyList.prepend(newItem);
+                        }
+                    }
                 }
+            } catch (e) {
+                console.error("Failed to parse WebSocket message as JSON:", e);
+                showToast(event.data, 'interrupt'); // Fallback for non-JSON messages
             }
         };
     }
@@ -342,9 +405,9 @@ document.addEventListener('DOMContentLoaded', function() {
         if (toast) {
             toast.className = "show";
             toast.classList.add(type);
-            const title = { interrupt: 'وقفه', warning: 'هشدار', success: 'موفقیت' }[type];
-            toast.innerHTML = `<strong>${title}:</strong> ${message}`;
-            setTimeout(() => { toast.className = toast.className.replace("show", ""); }, 5000);
+            // The message now contains HTML, so we don't need a title prefix
+            toast.innerHTML = message;
+            setTimeout(() => { toast.className = toast.className.replace("show", ""); }, 8000); // Increased duration
         }
     }
 
@@ -373,38 +436,25 @@ document.addEventListener('DOMContentLoaded', function() {
     // بخش ۳: مدیریت UI (رابط کاربری) و بارگذاری داده‌ها
     // ===================================================================================
 
-    // REFACTORED: This function now only adds tooltips, as labels are set in HTML.
     function initializeUI() {
         document.querySelectorAll('.data-card').forEach(card => {
             const regName = card.dataset.reg;
             const explanation = registerExplanations[regName];
-
-            // Only proceed if there's an explanation for this register
             if (explanation) {
                 const labelSpan = card.querySelector('.label');
-                
-                // Ensure we don't add a tooltip twice and that a label exists
                 if (labelSpan && !labelSpan.parentElement.classList.contains('label-container')) {
                     const labelContainer = document.createElement('div');
                     labelContainer.className = 'label-container';
-                    
                     const tooltipIcon = document.createElement('span');
                     tooltipIcon.className = 'tooltip-icon';
                     tooltipIcon.textContent = '?';
-                    
                     const tooltipText = document.createElement('div');
                     tooltipText.className = 'tooltip-text';
                     tooltipText.textContent = explanation;
-                    
-                    // Clone the original label to keep its content
                     const existingLabel = labelSpan.cloneNode(true);
-                    
-                    // Build the new structure
                     labelContainer.appendChild(existingLabel);
                     labelContainer.appendChild(tooltipIcon);
                     labelContainer.appendChild(tooltipText);
-                    
-                    // Replace the old label span with the new structure
                     labelSpan.replaceWith(labelContainer);
                 }
             }
@@ -480,16 +530,10 @@ document.addEventListener('DOMContentLoaded', function() {
     // بخش ۴: منطق ویژه صفحه تاریخچه
     // ===================================================================================
     
-    /**
-     * Converts milliseconds to a human-readable uptime string (D, HH:MM:SS).
-     * @param {number} milliseconds The timestamp from millis().
-     * @returns {string} A formatted uptime string.
-     */
     function formatUptime(milliseconds) {
         if (typeof milliseconds !== 'number' || milliseconds < 0) {
             return "زمان نامعتبر";
         }
-
         let totalSeconds = Math.floor(milliseconds / 1000);
         let days = Math.floor(totalSeconds / 86400);
         totalSeconds %= 86400;
@@ -497,15 +541,13 @@ document.addEventListener('DOMContentLoaded', function() {
         totalSeconds %= 3600;
         let minutes = Math.floor(totalSeconds / 60);
         let seconds = totalSeconds % 60;
-
-        // Pad with leading zeros
         hours = String(hours).padStart(2, '0');
         minutes = String(minutes).padStart(2, '0');
         seconds = String(seconds).padStart(2, '0');
-
         return `روز ${days}، ${hours}:${minutes}:${seconds}`;
     }
 
+    // MODIFIED: createHistoryItem now parses the JSON message
     function createHistoryItem(item) {
         const li = document.createElement('li');
         li.className = 'history-item';
@@ -514,13 +556,31 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         const uptimeString = formatUptime(item.timestamp);
+        let messageHtml = '';
+
+        try {
+            const data = JSON.parse(item.message);
+            if (data.events && Array.isArray(data.events)) {
+                data.events.forEach(eventCode => {
+                    const explanation = interruptExplanations[eventCode];
+                    if (explanation) {
+                        messageHtml += `<div class="history-event"><strong>${explanation.title}:</strong> ${explanation.description}</div>`;
+                    } else {
+                        messageHtml += `<div class="history-event"><strong>وقفه ناشناخته:</strong> ${eventCode}</div>`;
+                    }
+                });
+            }
+        } catch(e) {
+            // Fallback for old, non-JSON messages
+            messageHtml = `<div class="history-event">${item.message}</div>`;
+        }
 
         li.innerHTML = `
             <div class="history-time">
                 <span>زمان سپری شده</span>
                 <span>${uptimeString}</span>
             </div>
-            <div class="history-message">${item.message}</div>
+            <div class="history-message">${messageHtml}</div>
         `;
         return li;
     }
@@ -535,7 +595,6 @@ document.addEventListener('DOMContentLoaded', function() {
             const historyData = await response.json();
 
             historyList.innerHTML = '';
-            // Reverse the array to show newest first
             historyData.reverse().forEach(item => {
                 historyList.appendChild(createHistoryItem(item));
             });
@@ -546,7 +605,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 isFirstLoad = false;
             }
             
-            // Mark all as seen after displaying them
             await fetch('/api/mark_history_seen', { method: 'POST' });
 
         } catch (error) {
@@ -593,7 +651,6 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             const rawValue = card.dataset.currentValue;
             
-            // MODIFIED: Read the display name directly from the card's label
             const labelElement = card.querySelector('.label');
             const labelText = labelElement ? labelElement.textContent.trim() : currentEditingReg;
             
@@ -674,7 +731,6 @@ document.addEventListener('DOMContentLoaded', function() {
         const card = document.querySelector(`.data-card[data-reg="${reg}"]`);
         if (card) card.classList.add('saving');
         
-        // MODIFIED: Read the display name from the card's label for the toast message
         let displayName = reg;
         if (card) {
             const labelElement = card.querySelector('.label');
@@ -690,15 +746,14 @@ document.addEventListener('DOMContentLoaded', function() {
                 body: `reg=${encodeURIComponent(reg)}&val=${encodeURIComponent(val)}`
             });
             if (response.ok) {
-                showToast(`دستور ${displayName} با موفقیت ارسال شد.`, 'success');
+                showToast(`<strong>${displayName}</strong><br>دستور با موفقیت ارسال شد.`, 'success');
                 if(window.location.pathname.includes('history.html')) {
-                    // No need to refetch data on history page after write
                 } else {
                     setTimeout(fetchPageData, 500);
                 }
             } else {
                 const errorText = await response.text();
-                showToast(`خطا در نوشتن: ${errorText}`, 'warning');
+                showToast(`<strong>خطا در نوشتن ${displayName}</strong><br>${errorText}`, 'warning');
             }
         } catch (error) {
             console.error('Failed to send write request:', error);

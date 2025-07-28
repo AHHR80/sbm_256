@@ -169,7 +169,7 @@ void logInterrupt(const String& reason) {
     historyFile.close();
     JsonObject newEntry = history.add<JsonObject>();
     newEntry["timestamp"] = millis();
-    newEntry["message"] = reason;
+    newEntry["message"] = reason; // The message is now a JSON string
     newEntry["seen"] = false;
     while (history.size() > MAX_HISTORY_ENTRIES) {
         history.remove(0);
@@ -186,17 +186,8 @@ void logInterrupt(const String& reason) {
 }
 
 // --- REFACTORED: Central function to write to a BQ25672 register by name ---
-/**
- * @brief Translates a register name and value into an I2C write command.
- * @param regName The string name of the register (e.g., "ICHG_8_0").
- * @param val The raw value to write.
- * @return True if the I2C write was successful, false otherwise.
- */
 bool writeBqRegister(const String& regName, long val) {
     bool success = false;
-    
-    // This block contains the logic to convert the web request into an I2C command.
-    // It is now used by both the web handler and the startup settings loader.
     if (regName == "REG_RST") { 
         success = modifyByte(0x09, 0b01000000, 0b01000000);
         if (success) {
@@ -366,57 +357,67 @@ void applySavedSettings() {
 }
 
 
-// --- Interrupt Logic ---
+// --- MODIFIED: Interrupt Logic ---
+/**
+ * @brief Reads the flag registers and constructs a JSON object with event codes.
+ * @return A String containing the JSON object, e.g., {"events":["VBUS_OVP_FAULT"]}.
+ */
 String getInterruptReason() {
-    String reason = "";
+    StaticJsonDocument<512> doc;
+    JsonArray events = doc.createNestedArray("events");
+    
     uint8_t flag_buffer[6];
     if (readBytes(0x22, flag_buffer, 6)) {
-        if (flag_buffer[0] & 0b10000000) reason += "IINDPM event. ";
-        if (flag_buffer[0] & 0b01000000) reason += "VINDPM event. ";
-        if (flag_buffer[0] & 0b00100000) reason += "Watchdog expired. ";
-        if (flag_buffer[0] & 0b00010000) reason += "Poor source detected. ";
-        if (flag_buffer[0] & 0b00001000) reason += "Power Good status changed. ";
-        if (flag_buffer[0] & 0b00000100) reason += "AC2 present status changed. ";
-        if (flag_buffer[0] & 0b00000010) reason += "AC1 present status changed. ";
-        if (flag_buffer[0] & 0b00000001) reason += "VBUS present status changed. ";
-        if (flag_buffer[1] & 0b10000000) reason += "Charge status changed. ";
-        if (flag_buffer[1] & 0b01000000) reason += "ICO status changed. ";
-        if (flag_buffer[1] & 0b00010000) reason += "VBUS status changed. ";
-        if (flag_buffer[1] & 0b00000100) reason += "Thermal regulation. ";
-        if (flag_buffer[1] & 0b00000010) reason += "VBAT present status changed. ";
-        if (flag_buffer[1] & 0b00000001) reason += "BC1.2 detection done. ";
-        if (flag_buffer[2] & 0b01000000) reason += "DPDM detection done. ";
-        if (flag_buffer[2] & 0b00100000) reason += "ADC conversion done. ";
-        if (flag_buffer[2] & 0b00010000) reason += "VSYS regulation status changed. ";
-        if (flag_buffer[2] & 0b00001000) reason += "Fast charge timer expired. ";
-        if (flag_buffer[2] & 0b00000100) reason += "Trickle charge timer expired. ";
-        if (flag_buffer[2] & 0b00000010) reason += "Pre-charge timer expired. ";
-        if (flag_buffer[2] & 0b00000001) reason += "Top-off timer expired. ";
-        if (flag_buffer[3] & 0b00010000) reason += "VBAT too low for OTG. ";
-        if (flag_buffer[3] & 0b00001000) reason += "TS Cold event. ";
-        if (flag_buffer[3] & 0b00000100) reason += "TS Cool event. ";
-        if (flag_buffer[3] & 0b00000010) reason += "TS Warm event. ";
-        if (flag_buffer[3] & 0b00000001) reason += "TS Hot event. ";
-        if (flag_buffer[4] & 0b10000000) reason += "IBAT regulation. ";
-        if (flag_buffer[4] & 0b01000000) reason += "VBUS OVP Fault. ";
-        if (flag_buffer[4] & 0b00100000) reason += "VBAT OVP Fault. ";
-        if (flag_buffer[4] & 0b00010000) reason += "IBUS OCP Fault. ";
-        if (flag_buffer[4] & 0b00001000) reason += "IBAT OCP Fault. ";
-        if (flag_buffer[4] & 0b00000100) reason += "Converter OCP Fault. ";
-        if (flag_buffer[4] & 0b00000010) reason += "VAC2 OVP Fault. ";
-        if (flag_buffer[4] & 0b00000001) reason += "VAC1 OVP Fault. ";
-        if (flag_buffer[5] & 0b10000000) reason += "VSYS Short Fault. ";
-        if (flag_buffer[5] & 0b01000000) reason += "VSYS OVP Fault. ";
-        if (flag_buffer[5] & 0b00100000) reason += "OTG OVP Fault. ";
-        if (flag_buffer[5] & 0b00010000) reason += "OTG UVP Fault. ";
-        if (flag_buffer[5] & 0b00000100) reason += "Thermal Shutdown. ";
+        if (flag_buffer[0] & 0b10000000) events.add("IINDPM_EVENT");
+        if (flag_buffer[0] & 0b01000000) events.add("VINDPM_EVENT");
+        if (flag_buffer[0] & 0b00100000) events.add("WD_EXPIRED");
+        if (flag_buffer[0] & 0b00010000) events.add("POOR_SOURCE");
+        if (flag_buffer[0] & 0b00001000) events.add("PG_STATUS_CHANGE");
+        if (flag_buffer[0] & 0b00000100) events.add("AC2_PRESENCE_CHANGE");
+        if (flag_buffer[0] & 0b00000010) events.add("AC1_PRESENCE_CHANGE");
+        if (flag_buffer[0] & 0b00000001) events.add("VBUS_PRESENCE_CHANGE");
+        if (flag_buffer[1] & 0b10000000) events.add("CHARGE_STATUS_CHANGE");
+        if (flag_buffer[1] & 0b01000000) events.add("ICO_STATUS_CHANGE");
+        if (flag_buffer[1] & 0b00010000) events.add("VBUS_TYPE_CHANGE");
+        if (flag_buffer[1] & 0b00000100) events.add("TREG_EVENT");
+        if (flag_buffer[1] & 0b00000010) events.add("VBAT_PRESENCE_CHANGE");
+        if (flag_buffer[1] & 0b00000001) events.add("BC12_DONE");
+        if (flag_buffer[2] & 0b01000000) events.add("DPDM_DONE");
+        if (flag_buffer[2] & 0b00100000) events.add("ADC_DONE");
+        if (flag_buffer[2] & 0b00010000) events.add("VSYS_REG_CHANGE");
+        if (flag_buffer[2] & 0b00001000) events.add("FAST_CHARGE_TIMEOUT");
+        if (flag_buffer[2] & 0b00000100) events.add("TRICKLE_CHARGE_TIMEOUT");
+        if (flag_buffer[2] & 0b00000010) events.add("PRECHARGE_TIMEOUT");
+        if (flag_buffer[2] & 0b00000001) events.add("TOPOFF_TIMEOUT");
+        if (flag_buffer[3] & 0b00010000) events.add("VBAT_LOW_FOR_OTG");
+        if (flag_buffer[3] & 0b00001000) events.add("TS_COLD_EVENT");
+        if (flag_buffer[3] & 0b00000100) events.add("TS_COOL_EVENT");
+        if (flag_buffer[3] & 0b00000010) events.add("TS_WARM_EVENT");
+        if (flag_buffer[3] & 0b00000001) events.add("TS_HOT_EVENT");
+        if (flag_buffer[4] & 0b10000000) events.add("IBAT_REG_EVENT");
+        if (flag_buffer[4] & 0b01000000) events.add("VBUS_OVP_FAULT");
+        if (flag_buffer[4] & 0b00100000) events.add("VBAT_OVP_FAULT");
+        if (flag_buffer[4] & 0b00010000) events.add("IBUS_OCP_FAULT");
+        if (flag_buffer[4] & 0b00001000) events.add("IBAT_OCP_FAULT");
+        if (flag_buffer[4] & 0b00000100) events.add("CONV_OCP_FAULT");
+        if (flag_buffer[4] & 0b00000010) events.add("VAC2_OVP_FAULT");
+        if (flag_buffer[4] & 0b00000001) events.add("VAC1_OVP_FAULT");
+        if (flag_buffer[5] & 0b10000000) events.add("VSYS_SHORT_FAULT");
+        if (flag_buffer[5] & 0b01000000) events.add("VSYS_OVP_FAULT");
+        if (flag_buffer[5] & 0b00100000) events.add("OTG_OVP_FAULT");
+        if (flag_buffer[5] & 0b00010000) events.add("OTG_UVP_FAULT");
+        if (flag_buffer[5] & 0b00000100) events.add("THERMAL_SHUTDOWN");
     } else {
-        return "Failed to read flag registers.";
+        events.add("FLAG_READ_ERROR");
     }
-    if (reason.length() == 0) {
-        return "Unknown interrupt reason.";
+
+    if (events.size() == 0) {
+        events.add("UNKNOWN_INTERRUPT");
     }
-    return reason;
+    
+    String output;
+    serializeJson(doc, output);
+    return output;
 }
 
 void IRAM_ATTR handleInterrupt() {
@@ -691,7 +692,6 @@ void handleGetHistory(AsyncWebServerRequest *request) {
         request->send(200, "application/json", "[]");
         return;
     }
-    // Read the file content into a String to avoid issues with send() overloads
     String content = file.readString();
     file.close();
     request->send(200, "application/json", content);
@@ -780,11 +780,9 @@ void handleApiWrite(AsyncWebServerRequest *request) {
 
         Serial.printf("Write request for %s with value %ld (Validated)\n", regName.c_str(), val);
         
-        // Call the central write function
         bool success = writeBqRegister(regName, val);
         
         if (success) { 
-            // Don't save one-time commands to the settings file
             if (regName != "REG_RST" && regName != "FORCE_ICO" && regName != "FORCE_VINDPM_DET" && regName != "FORCE_IBATDIS") {
                 saveSetting(regName, val);
             }
@@ -803,19 +801,17 @@ void setup() {
     Serial.begin(115200);
     Wire.begin();
 
-    delay(50); // Wait for 50ms to ensure the I2C bus is ready
+    delay(50); 
 
     if (!LittleFS.begin(true)) {
         Serial.println("An Error has occurred while mounting LittleFS");
         return;
     }
 
-    // --- Apply saved settings on boot ---
     applySavedSettings();
 
-    // --- Configure ADC on startup ---
     Serial.println("Setting initial ADC state to: Enabled, One-Shot mode.");
-    if (writeByte(0x2E, 0xC0)) { // 0b11000000: ADC_EN=1, ADC_RATE=1 (One-shot)
+    if (writeByte(0x2E, 0xC0)) { 
         Serial.println("Initial ADC configuration successful.");
     } else {
         Serial.println("FAILED to set initial ADC configuration.");
@@ -832,7 +828,6 @@ void setup() {
     ws.onEvent(onEvent);
     server.addHandler(&ws);
 
-    // --- Setup Web Server Routes ---
     server.on("/", HTTP_GET, [](AsyncWebServerRequest *request) { request->send(LittleFS, "/index.html", "text/html"); });
     server.on("/page1.html", HTTP_GET, [](AsyncWebServerRequest *request){ request->send(LittleFS, "/page1.html", "text/html"); });
     server.on("/page2.html", HTTP_GET, [](AsyncWebServerRequest *request){ request->send(LittleFS, "/page2.html", "text/html"); });
@@ -843,7 +838,6 @@ void setup() {
     server.on("/style.css", HTTP_GET, [](AsyncWebServerRequest *request) { request->send(LittleFS, "/style.css", "text/css"); });
     server.on("/script.js", HTTP_GET, [](AsyncWebServerRequest *request) { request->send(LittleFS, "/script.js", "text/javascript"); });
     
-    // API routes
     server.on("/api/data1", HTTP_GET, handleApiData1);
     server.on("/api/data2", HTTP_GET, handleApiData2);
     server.on("/api/data3", HTTP_GET, handleApiData3);
@@ -865,12 +859,12 @@ void setup() {
 void loop() {
     if (interruptFired) {
         interruptFired = false;
-        String reason = getInterruptReason();
-        if (reason.length() > 0) {
-            Serial.print("Interrupt Reason: ");
-            Serial.println(reason);
-            ws.textAll(reason);
-            logInterrupt(reason); // Log the event to file
+        String reasonJson = getInterruptReason();
+        if (reasonJson.length() > 0) {
+            Serial.print("Interrupt JSON: ");
+            Serial.println(reasonJson);
+            ws.textAll(reasonJson);
+            logInterrupt(reasonJson); 
         }
     }
 
