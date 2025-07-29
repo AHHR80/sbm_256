@@ -6,48 +6,48 @@ document.addEventListener('DOMContentLoaded', function() {
     // ===================================================================================
 
     let globalRegisterState = {};
+    let currentPageData = {}; // برای نگهداری آخرین داده‌های صفحه فعلی
 
-    // NEW: Dictionary for interrupt explanations with technical flag names
     const interruptExplanations = {
-        "IINDPM_EVENT": { title: "IINDPM_FLAG: محدودیت جریان ورودی", description: "جریان کشیده شده از ورودی به حد تنظیم شده (IINDPM) رسیده است. جریان شارژ برای محافظت از آداپتور کاهش یافته است." },
-        "VINDPM_EVENT": { title: "VINDPM_FLAG: محدودیت ولتاژ ورودی", description: "ولتاژ ورودی به دلیل بار زیاد به حد تنظیم شده (VINDPM) افت کرده است. جریان شارژ برای تثبیت ولتاژ کاهش یافته است." },
-        "WD_EXPIRED": { title: "WD_FLAG: تایمر Watchdog منقضی شد", description: "ارتباط با میکروکنترلر قطع شده و تنظیمات به حالت پیش‌فرض بازگشتند." },
-        "POOR_SOURCE": { title: "POORSRC_FLAG: منبع تغذیه ضعیف", description: "آداپتور متصل شده توانایی تامین جریان کافی را ندارد و غیرفعال شده است." },
-        "PG_STATUS_CHANGE": { title: "PG_FLAG: تغییر وضعیت Power Good", description: "وضعیت پایداری منبع تغذیه ورودی تغییر کرده است (ممکن است متصل یا قطع شده باشد)." },
-        "AC2_PRESENCE_CHANGE": { title: "AC2_PRESENT_FLAG: تغییر وضعیت ورودی ۲", description: "یک آداپتور به ورودی شماره ۲ متصل یا از آن جدا شده است." },
-        "AC1_PRESENCE_CHANGE": { title: "AC1_PRESENT_FLAG: تغییر وضعیت ورودی ۱", description: "یک آداپتور به ورودی شماره ۱ متصل یا از آن جدا شده است." },
-        "VBUS_PRESENCE_CHANGE": { title: "VBUS_PRESENT_FLAG: تغییر وضعیت VBUS", description: "ولتاژ روی خط اصلی VBUS برقرار یا قطع شده است." },
-        "CHARGE_STATUS_CHANGE": { title: "CHG_FLAG: تغییر وضعیت شارژ", description: "مرحله فرآیند شارژ تغییر کرده است (مثلاً از شارژ سریع به خاتمه شارژ)." },
-        "ICO_STATUS_CHANGE": { title: "ICO_FLAG: تغییر وضعیت بهینه‌ساز جریان", description: "الگوریتم بهینه‌ساز جریان ورودی (ICO) وضعیت خود را تغییر داده است (شروع، پایان)." },
-        "VBUS_TYPE_CHANGE": { title: "VBUS_FLAG: تغییر نوع آداپتور", description: "نوع آداپتور متصل به ورودی تغییر کرده است (مثلاً از SDP به DCP)." },
-        "TREG_EVENT": { title: "TREG_FLAG: محدودیت حرارتی", description: "دمای داخلی چیپ بالا رفته و جریان شارژ برای محافظت کاهش یافته است." },
-        "VBAT_PRESENCE_CHANGE": { title: "VBAT_PRESENT_FLAG: تغییر وضعیت باتری", description: "باتری به دستگاه متصل یا از آن جدا شده است." },
-        "BC12_DONE": { title: "BC1.2_DONE_FLAG: پایان تشخیص BC1.2", description: "فرآیند شناسایی نوع استاندارد آداپتور (BC1.2) به پایان رسیده است." },
-        "DPDM_DONE": { title: "DPDM_DONE_FLAG: پایان تشخیص D+/D-", description: "فرآیند کلی تشخیص نوع آداپتور از طریق پین‌های D+/D- به پایان رسیده است." },
-        "ADC_DONE": { title: "ADC_DONE_FLAG: پایان تبدیل ADC", description: "یک تبدیل آنالوگ به دیجیتال در حالت تک-نمونه‌ای (One-shot) به پایان رسیده است." },
-        "VSYS_REG_CHANGE": { title: "VSYS_FLAG: تغییر وضعیت رگولاسیون سیستم", description: "سیستم وارد حالت رگولاسیون حداقل ولتاژ (VSYSMIN) شده یا از آن خارج شده است." },
-        "FAST_CHARGE_TIMEOUT": { title: "CHG_TMR_FLAG: خطای تایمر شارژ سریع", description: "مدت زمان مجاز برای مرحله شارژ سریع به پایان رسیده و شارژ متوقف شده است." },
-        "TRICKLE_CHARGE_TIMEOUT": { title: "TRICHG_TMR_FLAG: خطای تایمر شارژ قطره‌ای", description: "مدت زمان مجاز برای مرحله شارژ قطره‌ای (برای باتری‌های بسیار خالی) به پایان رسیده است." },
-        "PRECHARGE_TIMEOUT": { title: "PRECHG_TMR_FLAG: خطای تایمر پیش‌شارژ", description: "مدت زمان مجاز برای مرحله پیش‌شارژ به پایان رسیده و شارژ متوقف شده است." },
-        "TOPOFF_TIMEOUT": { title: "TOPOFF_TMR_FLAG: پایان تایمر شارژ تکمیلی", description: "مدت زمان شارژ تکمیلی (Top-off) پس از اتمام شارژ اصلی، به پایان رسیده است." },
-        "VBAT_LOW_FOR_OTG": { title: "VBATOTG_LOW_FLAG: ولتاژ باتری برای پاوربانک کم است", description: "ولتاژ باتری برای فعال کردن حالت پاوربانک (OTG) کافی نیست." },
-        "TS_COLD_EVENT": { title: "TS_COLD_FLAG: دمای باتری: سرد", description: "دمای باتری وارد محدوده سرد شده و شارژ طبق پروفایل JEITA متوقف یا محدود شده است." },
-        "TS_COOL_EVENT": { title: "TS_COOL_FLAG: دمای باتری: خنک", description: "دمای باتری وارد محدوده خنک شده و جریان شارژ طبق پروفایل JEITA کاهش یافته است." },
-        "TS_WARM_EVENT": { title: "TS_WARM_FLAG: دمای باتری: گرم", description: "دمای باتری وارد محدوده گرم شده و ولتاژ شارژ طبق پروفایل JEITA کاهش یافته است." },
-        "TS_HOT_EVENT": { title: "TS_HOT_FLAG: دمای باتری: داغ", description: "دمای باتری وارد محدوده داغ شده و شارژ برای ایمنی متوقف شده است." },
-        "IBAT_REG_EVENT": { title: "IBAT_REG_FLAG: محدودیت جریان دشارژ", description: "جریان دشارژ باتری در حالت پاوربانک (OTG) به حد مجاز رسیده و محدود شده است." },
-        "VBUS_OVP_FAULT": { title: "VBUS_OVP_FLAG: خطای ولتاژ بالای ورودی", description: "ولتاژ آداپتور از حد مجاز فراتر رفته است. شارژ برای محافظت متوقف شد." },
-        "VBAT_OVP_FAULT": { title: "VBAT_OVP_FLAG: خطای ولتاژ بالای باتری", description: "ولتاژ باتری از حد مجاز تنظیم شده فراتر رفته است. شارژ برای محافظت متوقف شد." },
-        "IBUS_OCP_FAULT": { title: "IBUS_OCP_FLAG: خطای جریان بالای ورودی", description: "جریان کشیده شده از آداپتور از حد بحرانی فراتر رفته است. مبدل برای محافظت غیرفعال شد." },
-        "IBAT_OCP_FAULT": { title: "IBAT_OCP_FLAG: خطای جریان بالای باتری", description: "جریان کشیده شده از باتری (در حالت دشارژ) از حد بحرانی فراتر رفته است." },
-        "CONV_OCP_FAULT": { title: "CONV_OCP_FLAG: خطای جریان بالای مبدل", description: "جریان داخلی مبدل DC-DC از حد مجاز فراتر رفته است." },
-        "VAC2_OVP_FAULT": { title: "VAC2_OVP_FLAG: خطای ولتاژ بالای ورودی ۲", description: "ولتاژ روی ورودی شماره ۲ از حد مجاز فراتر رفته است." },
-        "VAC1_OVP_FAULT": { title: "VAC1_OVP_FLAG: خطای ولتاژ بالای ورودی ۱", description: "ولتاژ روی ورودی شماره ۱ از حد مجاز فراتر رفته است." },
-        "VSYS_SHORT_FAULT": { title: "VSYS_SHORT_FLAG: خطای اتصال کوتاه سیستم", description: "اتصال کوتاه در خروجی سیستم (SYS) تشخیص داده شده و جریان محدود شده است." },
-        "VSYS_OVP_FAULT": { title: "VSYS_OVP_FLAG: خطای ولتاژ بالای سیستم", description: "ولتاژ خروجی سیستم (SYS) از حد مجاز فراتر رفته است. مبدل برای محافظت متوقف شد." },
-        "OTG_OVP_FAULT": { title: "OTG_OVP_FLAG: خطای ولتاژ بالای خروجی OTG", description: "ولتاژ خروجی در حالت پاوربانک (OTG) از حد مجاز فراتر رفته است." },
-        "OTG_UVP_FAULT": { title: "OTG_UVP_FLAG: خطای ولتاژ پایین خروجی OTG", description: "ولتاژ خروجی در حالت پاوربانک (OTG) دچار افت شدید شده است." },
-        "THERMAL_SHUTDOWN": { title: "TSHUT_FLAG: خاموشی حرارتی", description: "دمای چیپ به حد بحرانی رسیده و دستگاه برای جلوگیری از آسیب، به طور کامل خاموش شده است." },
+        "IINDPM_EVENT": { title: "محدودیت جریان ورودی", description: "جریان کشیده شده از ورودی به حد تنظیم شده (IINDPM) رسیده است. جریان شارژ برای محافظت از آداپتور کاهش یافته است." },
+        "VINDPM_EVENT": { title: "محدودیت ولتاژ ورودی", description: "ولتاژ ورودی به دلیل بار زیاد به حد تنظیم شده (VINDPM) افت کرده است. جریان شارژ برای تثبیت ولتاژ کاهش یافته است." },
+        "WD_EXPIRED": { title: "تایمر Watchdog منقضی شد", description: "ارتباط با میکروکنترلر قطع شده و تنظیمات به حالت پیش‌فرض بازگشتند." },
+        "POOR_SOURCE": { title: "منبع تغذیه ضعیف", description: "آداپتور متصل شده توانایی تامین جریان کافی را ندارد و غیرفعال شده است." },
+        "PG_STATUS_CHANGE": { title: "تغییر وضعیت Power Good", description: "وضعیت پایداری منبع تغذیه ورودی تغییر کرده است (ممکن است متصل یا قطع شده باشد)." },
+        "AC2_PRESENCE_CHANGE": { title: "تغییر وضعیت ورودی ۲", description: "یک آداپتور به ورودی شماره ۲ متصل یا از آن جدا شده است." },
+        "AC1_PRESENCE_CHANGE": { title: "تغییر وضعیت ورودی ۱", description: "یک آداپتور به ورودی شماره ۱ متصل یا از آن جدا شده است." },
+        "VBUS_PRESENCE_CHANGE": { title: "تغییر وضعیت VBUS", description: "ولتاژ روی خط اصلی VBUS برقرار یا قطع شده است." },
+        "CHARGE_STATUS_CHANGE": { title: "تغییر وضعیت شارژ", description: "مرحله فرآیند شارژ تغییر کرده است (مثلاً از شارژ سریع به خاتمه شارژ)." },
+        "ICO_STATUS_CHANGE": { title: "تغییر وضعیت بهینه‌ساز جریان", description: "الگوریتم بهینه‌ساز جریان ورودی (ICO) وضعیت خود را تغییر داده است (شروع، پایان)." },
+        "VBUS_TYPE_CHANGE": { title: "تغییر نوع آداپتور", description: "نوع آداپتور متصل به ورودی تغییر کرده است (مثلاً از SDP به DCP)." },
+        "TREG_EVENT": { title: "محدودیت حرارتی", description: "دمای داخلی چیپ بالا رفته و جریان شارژ برای محافظت کاهش یافته است." },
+        "VBAT_PRESENCE_CHANGE": { title: "تغییر وضعیت باتری", description: "باتری به دستگاه متصل یا از آن جدا شده است." },
+        "BC12_DONE": { title: "پایان تشخیص BC1.2", description: "فرآیند شناسایی نوع استاندارد آداپتور (BC1.2) به پایان رسیده است." },
+        "DPDM_DONE": { title: "پایان تشخیص D+/D-", description: "فرآیند کلی تشخیص نوع آداپتور از طریق پین‌های D+/D- به پایان رسیده است." },
+        "ADC_DONE": { title: "پایان تبدیل ADC", description: "یک تبدیل آنالوگ به دیجیتال در حالت تک-نمونه‌ای (One-shot) به پایان رسیده است." },
+        "VSYS_REG_CHANGE": { title: "تغییر وضعیت رگولاسیون سیستم", description: "سیستم وارد حالت رگولاسیون حداقل ولتاژ (VSYSMIN) شده یا از آن خارج شده است." },
+        "FAST_CHARGE_TIMEOUT": { title: "خطای تایمر شارژ سریع", description: "مدت زمان مجاز برای مرحله شارژ سریع به پایان رسیده و شارژ متوقف شده است." },
+        "TRICKLE_CHARGE_TIMEOUT": { title: "خطای تایمر شارژ قطره‌ای", description: "مدت زمان مجاز برای مرحله شارژ قطره‌ای (برای باتری‌های بسیار خالی) به پایان رسیده است." },
+        "PRECHARGE_TIMEOUT": { title: "خطای تایمر پیش‌شارژ", description: "مدت زمان مجاز برای مرحله پیش‌شارژ به پایان رسیده و شارژ متوقف شده است." },
+        "TOPOFF_TIMEOUT": { title: "پایان تایمر شارژ تکمیلی", description: "مدت زمان شارژ تکمیلی (Top-off) پس از اتمام شارژ اصلی، به پایان رسیده است." },
+        "VBAT_LOW_FOR_OTG": { title: "ولتاژ باتری برای پاوربانک کم است", description: "ولتاژ باتری برای فعال کردن حالت پاوربانک (OTG) کافی نیست." },
+        "TS_COLD_EVENT": { title: "دمای باتری: سرد", description: "دمای باتری وارد محدوده سرد شده و شارژ طبق پروفایل JEITA متوقف یا محدود شده است." },
+        "TS_COOL_EVENT": { title: "دمای باتری: خنک", description: "دمای باتری وارد محدوده خنک شده و جریان شارژ طبق پروفایل JEITA کاهش یافته است." },
+        "TS_WARM_EVENT": { title: "دمای باتری: گرم", description: "دمای باتری وارد محدوده گرم شده و ولتاژ شارژ طبق پروفایل JEITA کاهش یافته است." },
+        "TS_HOT_EVENT": { title: "دمای باتری: داغ", description: "دمای باتری وارد محدوده داغ شده و شارژ برای ایمنی متوقف شده است." },
+        "IBAT_REG_EVENT": { title: "محدودیت جریان دشارژ", description: "جریان دشارژ باتری در حالت پاوربانک (OTG) به حد مجاز رسیده و محدود شده است." },
+        "VBUS_OVP_FAULT": { title: "خطای ولتاژ بالای ورودی", description: "ولتاژ آداپتور از حد مجاز فراتر رفته است. شارژ برای محافظت متوقف شد." },
+        "VBAT_OVP_FAULT": { title: "خطای ولتاژ بالای باتری", description: "ولتاژ باتری از حد مجاز تنظیم شده فراتر رفته است. شارژ برای محافظت متوقف شد." },
+        "IBUS_OCP_FAULT": { title: "خطای جریان بالای ورودی", description: "جریان کشیده شده از آداپتور از حد بحرانی فراتر رفته است. مبدل برای محافظت غیرفعال شد." },
+        "IBAT_OCP_FAULT": { title: "خطای جریان بالای باتری", description: "جریان کشیده شده از باتری (در حالت دشارژ) از حد بحرانی فراتر رفته است." },
+        "CONV_OCP_FAULT": { title: "خطای جریان بالای مبدل", description: "جریان داخلی مبدل DC-DC از حد مجاز فراتر رفته است." },
+        "VAC2_OVP_FAULT": { title: "خطای ولتاژ بالای ورودی ۲", description: "ولتاژ روی ورودی شماره ۲ از حد مجاز فراتر رفته است." },
+        "VAC1_OVP_FAULT": { title: "خطای ولتاژ بالای ورودی ۱", description: "ولتاژ روی ورودی شماره ۱ از حد مجاز فراتر رفته است." },
+        "VSYS_SHORT_FAULT": { title: "خطای اتصال کوتاه سیستم", description: "اتصال کوتاه در خروجی سیستم (SYS) تشخیص داده شده و جریان محدود شده است." },
+        "VSYS_OVP_FAULT": { title: "خطای ولتاژ بالای سیستم", description: "ولتاژ خروجی سیستم (SYS) از حد مجاز فراتر رفته است. مبدل برای محافظت متوقف شد." },
+        "OTG_OVP_FAULT": { title: "خطای ولتاژ بالای خروجی OTG", description: "ولتاژ خروجی در حالت پاوربانک (OTG) از حد مجاز فراتر رفته است." },
+        "OTG_UVP_FAULT": { title: "خطای ولتاژ پایین خروجی OTG", description: "ولتاژ خروجی در حالت پاوربانک (OTG) دچار افت شدید شده است." },
+        "THERMAL_SHUTDOWN": { title: "خاموشی حرارتی", description: "دمای چیپ به حد بحرانی رسیده و دستگاه برای جلوگیری از آسیب، به طور کامل خاموش شده است." },
         "FLAG_READ_ERROR": { title: "خطا در خواندن وقفه", description: "ارتباط با چیپ برای خواندن دلیل وقفه ناموفق بود." },
         "UNKNOWN_INTERRUPT": { title: "وقفه ناشناخته", description: "یک وقفه رخ داده است اما دلیل آن توسط نرم‌افزار قابل شناسایی نیست." }
     };
@@ -363,7 +363,6 @@ document.addEventListener('DOMContentLoaded', function() {
             setTimeout(initWebSocket, 2000);
         };
         
-        // MODIFIED: WebSocket onmessage handler to parse JSON
         websocket.onmessage = (event) => {
             console.log('Message from server: ', event.data);
             try {
@@ -386,7 +385,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         if(historyList) {
                             const newItem = createHistoryItem({
                                 timestamp: new Date().getTime(),
-                                message: event.data, // Store the raw JSON string
+                                message: event.data,
                                 seen: true
                             });
                             historyList.prepend(newItem);
@@ -395,7 +394,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             } catch (e) {
                 console.error("Failed to parse WebSocket message as JSON:", e);
-                showToast(event.data, 'interrupt'); // Fallback for non-JSON messages
+                showToast(event.data, 'interrupt');
             }
         };
     }
@@ -405,9 +404,8 @@ document.addEventListener('DOMContentLoaded', function() {
         if (toast) {
             toast.className = "show";
             toast.classList.add(type);
-            // The message now contains HTML, so we don't need a title prefix
             toast.innerHTML = message;
-            setTimeout(() => { toast.className = toast.className.replace("show", ""); }, 8000); // Increased duration
+            setTimeout(() => { toast.className = toast.className.replace("show", ""); }, 8000);
         }
     }
 
@@ -435,18 +433,161 @@ document.addEventListener('DOMContentLoaded', function() {
     // ===================================================================================
     // بخش ۳: مدیریت UI (رابط کاربری) و بارگذاری داده‌ها
     // ===================================================================================
+    
+    // NEW: Coloring Logic Implementation
+    const coloringRules = {
+        // دسته ۱: خطاها (قرمز)
+        'TSHUT_STAT': { condition: val => val == 1, className: 'status-error', affected: ['TSHUT_STAT', 'TDIE_ADC_15_0'], type: 'error', reasonKey: 'THERMAL_SHUTDOWN' },
+        'VBUS_OVP_STAT': { condition: val => val == 1, className: 'status-error', affected: ['VBUS_OVP_STAT', 'VBUS_ADC_15_0', 'VAC1_ADC_15_0', 'VAC2_ADC_15_0'], type: 'error', reasonKey: 'VBUS_OVP_FAULT' },
+        'VBAT_OVP_STAT': { condition: val => val == 1, className: 'status-error', affected: ['VBAT_OVP_STAT', 'VBAT_ADC_15_0'], type: 'error', reasonKey: 'VBAT_OVP_FAULT' },
+        'VSYS_OVP_STAT': { condition: val => val == 1, className: 'status-error', affected: ['VSYS_OVP_STAT', 'VSYS_ADC_15_0'], type: 'error', reasonKey: 'VSYS_OVP_FAULT' },
+        'VSYS_SHORT_STAT': { condition: val => val == 1, className: 'status-error', affected: ['VSYS_SHORT_STAT', 'VSYS_ADC_15_0'], type: 'error', reasonKey: 'VSYS_SHORT_FAULT' },
+        'IBUS_OCP_STAT': { condition: val => val == 1, className: 'status-error', affected: ['IBUS_OCP_STAT', 'IBUS_ADC_15_0'], type: 'error', reasonKey: 'IBUS_OCP_FAULT' },
+        'IBAT_OCP_STAT': { condition: val => val == 1, className: 'status-error', affected: ['IBAT_OCP_STAT', 'IBAT_ADC_15_0'], type: 'error', reasonKey: 'IBAT_OCP_FAULT' },
+        'CONV_OCP_STAT': { condition: val => val == 1, className: 'status-error', affected: ['CONV_OCP_STAT'], type: 'error', reasonKey: 'CONV_OCP_FAULT' },
+        'OTG_OVP_STAT': { condition: (val, data) => val == 1 && data.EN_OTG == 1, className: 'status-error', affected: ['OTG_OVP_STAT', 'VBUS_ADC_15_0'], type: 'error', reasonKey: 'OTG_OVP_FAULT' },
+        'OTG_UVP_STAT': { condition: (val, data) => val == 1 && data.EN_OTG == 1, className: 'status-error', affected: ['OTG_UVP_STAT', 'VBUS_ADC_15_0'], type: 'error', reasonKey: 'OTG_UVP_FAULT' },
+        'TS_HOT_STAT': { condition: val => val == 1, className: 'status-error', affected: ['TS_HOT_STAT', 'TS_ADC_15_0'], type: 'error', reasonKey: 'TS_HOT_EVENT' },
+        'TS_COLD_STAT': { condition: val => val == 1, className: 'status-error', affected: ['TS_COLD_STAT', 'TS_ADC_15_0'], type: 'error', reasonKey: 'TS_COLD_EVENT' },
+        'CHG_TMR_STAT': { condition: val => val == 1, className: 'status-error', affected: ['CHG_TMR_STAT'], type: 'error', reasonKey: 'FAST_CHARGE_TIMEOUT' },
+        'PRECHG_TMR_STAT': { condition: val => val == 1, className: 'status-error', affected: ['PRECHG_TMR_STAT'], type: 'error', reasonKey: 'PRECHARGE_TIMEOUT' },
+        'TRICHG_TMR_STAT': { condition: val => val == 1, className: 'status-error', affected: ['TRICHG_TMR_STAT'], type: 'error', reasonKey: 'TRICKLE_CHARGE_TIMEOUT' },
 
-    // REFACTORED: This function now only adds tooltips, as labels are set in HTML.
+        // دسته ۲: هشدارها (نارنجی)
+        'TREG_STAT': { condition: val => val == 1, className: 'status-warning', affected: ['TREG_STAT', 'TDIE_ADC_15_0'], type: 'warning', reasonKey: 'TREG_EVENT' },
+        'VINDPM_STAT': { condition: val => val == 1, className: 'status-warning', affected: ['VINDPM_STAT', 'VBUS_ADC_15_0'], type: 'warning', reasonKey: 'VINDPM_EVENT' },
+        'IINDPM_STAT': { condition: val => val == 1, className: 'status-warning', affected: ['IINDPM_STAT', 'IBUS_ADC_15_0'], type: 'warning', reasonKey: 'IINDPM_EVENT' },
+        'VSYS_STAT': { condition: val => val == 1, className: 'status-warning', affected: ['VSYS_STAT', 'VSYS_ADC_15_0'], type: 'warning', reasonKey: 'VSYS_REG_CHANGE' },
+        'WD_STAT': { condition: val => val == 1, className: 'status-warning', affected: ['WD_STAT'], type: 'warning', reasonKey: 'WD_EXPIRED' },
+        'TS_WARM_STAT': { condition: val => val == 1, className: 'status-warning', affected: ['TS_WARM_STAT', 'TS_ADC_15_0'], type: 'warning', reasonKey: 'TS_WARM_EVENT' },
+        'TS_COOL_STAT': { condition: val => val == 1, className: 'status-warning', affected: ['TS_COOL_STAT', 'TS_ADC_15_0'], type: 'warning', reasonKey: 'TS_COOL_EVENT' },
+        'IBAT_REG_STAT': { condition: (val, data) => val == 1 && data.EN_OTG == 1, className: 'status-warning', affected: ['IBAT_REG_STAT', 'IBAT_ADC_15_0'], type: 'warning', reasonKey: 'IBAT_REG_EVENT' },
+        'PG_STAT_POOR': { condition: (val, data) => data.PG_STAT == 0 && data.VBUS_PRESENT_STAT == 1, className: 'status-warning', affected: ['PG_STAT'], type: 'warning', reasonKey: 'POOR_SOURCE' },
+
+        // دسته ۳: عملیاتی (رنگ متن)
+        'CHG_STAT_2_0_OP': {
+            condition: (val, data) => [1, 2, 3, 4, 6].includes(data.CHG_STAT_2_0),
+            className: 'status-operational-charge',
+            affected: ['CHG_STAT_2_0', 'IBAT_ADC_15_0'],
+            target: 'value',
+            type: 'operational',
+            reasonKey: 'CHARGE_STATUS_CHANGE'
+        },
+        'CHG_STAT_2_0_DONE': {
+            condition: (val, data) => data.CHG_STAT_2_0 == 7,
+            className: 'status-operational-done',
+            affected: ['CHG_STAT_2_0'],
+            target: 'value'
+        },
+        'EN_OTG_OP': {
+            condition: (val, data) => data.EN_OTG == 1,
+            className: 'status-operational-charge',
+            affected: ['EN_OTG', 'VBUS_ADC_15_0', 'IBAT_ADC_15_0'],
+            target: 'value',
+            type: 'operational',
+            reasonKey: 'VBUS_TYPE_CHANGE'
+        },
+
+        // دسته ۴: فعال بودن (نقطه سبز)
+        'EN_CHG_ACTIVE': { condition: (val, data) => data.EN_CHG == 1, className: 'status-active', affected: ['EN_CHG'], target: 'label' },
+        'PG_STAT_ACTIVE': { condition: (val, data) => data.PG_STAT == 1, className: 'status-active', affected: ['PG_STAT'], target: 'label' },
+        'VBUS_PRESENT_STAT_ACTIVE': { condition: (val, data) => data.VBUS_PRESENT_STAT == 1, className: 'status-active', affected: ['VBUS_PRESENT_STAT'], target: 'label' },
+        'AC1_PRESENT_STAT_ACTIVE': { condition: (val, data) => data.AC1_PRESENT_STAT == 1, className: 'status-active', affected: ['AC1_PRESENT_STAT'], target: 'label' },
+        'AC2_PRESENT_STAT_ACTIVE': { condition: (val, data) => data.AC2_PRESENT_STAT == 1, className: 'status-active', affected: ['AC2_PRESENT_STAT'], target: 'label' },
+        'VBAT_PRESENT_STAT_ACTIVE': { condition: (val, data) => data.VBAT_PRESENT_STAT == 1, className: 'status-active', affected: ['VBAT_PRESENT_STAT'], target: 'label' },
+        'ADC_EN_ACTIVE': { condition: (val, data) => data.ADC_EN == 1, className: 'status-active', affected: ['ADC_EN'], target: 'label' },
+        'EN_ICO_ACTIVE': { condition: (val, data) => data.EN_ICO == 1, className: 'status-active', affected: ['EN_ICO'], target: 'label' },
+        'EN_MPPT_ACTIVE': { condition: (val, data) => data.EN_MPPT == 1, className: 'status-active', affected: ['EN_MPPT'], target: 'label' }
+    };
+
+    function applyConditionalStyles(data) {
+        const cardStatusPriorities = {};
+        const priorityMap = { 'error': 3, 'warning': 2, 'operational': 1 };
+
+        // First, determine the highest priority status for each card
+        for (const key in coloringRules) {
+            const rule = coloringRules[key];
+            const causeRegister = key.replace(/_OP|_DONE|_ACTIVE|_POOR/g, '');
+            
+            if (data[causeRegister] === undefined) continue;
+
+            const conditionMet = rule.condition(data[causeRegister], data);
+            if (conditionMet) {
+                rule.affected.forEach(regName => {
+                    const currentPriority = cardStatusPriorities[regName] ? priorityMap[cardStatusPriorities[regName].type] : 0;
+                    const newPriority = priorityMap[rule.type] || 0;
+
+                    if (newPriority > currentPriority) {
+                        cardStatusPriorities[regName] = {
+                            type: rule.type,
+                            reasonKey: rule.reasonKey,
+                            className: rule.className,
+                            target: rule.target
+                        };
+                    }
+                });
+            }
+        }
+        
+        // Now, apply styles and indicators based on the determined highest priority
+        document.querySelectorAll('.data-card').forEach(card => {
+            const regName = card.dataset.reg;
+
+            // --- Reset all visual states first ---
+            card.classList.remove('status-error', 'status-warning');
+            card.querySelector('.value')?.classList.remove('status-operational-charge', 'status-operational-done');
+            card.querySelector('.label-container')?.classList.remove('status-active');
+            const existingIndicator = card.querySelector('.status-reason-indicator');
+            if (existingIndicator) existingIndicator.remove();
+
+            // --- Apply main coloring based on highest priority ---
+            const status = cardStatusPriorities[regName];
+            if (status) {
+                if(status.target === 'value') {
+                    card.querySelector('.value')?.classList.add(status.className);
+                } else if (status.target === 'label') {
+                     card.querySelector('.label-container')?.classList.add(status.className);
+                } else { // Default target is the card itself
+                    card.classList.add(status.className);
+                }
+
+                // --- Add the status indicator ---
+                if (status.type && status.reasonKey) {
+                    const indicator = document.createElement('div');
+                    indicator.className = `status-reason-indicator ${status.type}`;
+                    
+                    const tooltip = document.createElement('div');
+                    tooltip.className = 'status-reason-tooltip';
+                    const reason = interruptExplanations[status.reasonKey];
+                    tooltip.textContent = reason ? `علت: ${reason.title}` : `وضعیت: ${status.reasonKey}`;
+
+                    indicator.appendChild(tooltip);
+                    card.appendChild(indicator);
+                }
+            }
+            
+            // --- Re-apply static 'active' statuses which are not priority-based ---
+             for (const key in coloringRules) {
+                const rule = coloringRules[key];
+                if (rule.target === 'label' && rule.affected.includes(regName)) {
+                    const causeRegister = key.replace('_ACTIVE', '');
+                     if (data[causeRegister] !== undefined && rule.condition(data[causeRegister], data)) {
+                        card.querySelector('.label-container')?.classList.add(rule.className);
+                    }
+                }
+            }
+        });
+    }
+
+
     function initializeUI() {
         document.querySelectorAll('.data-card').forEach(card => {
             const regName = card.dataset.reg;
             const explanation = registerExplanations[regName];
 
-            // Only proceed if there's an explanation for this register
             if (explanation) {
                 const labelSpan = card.querySelector('.label');
                 
-                // Ensure we don't add a tooltip twice and that a label exists
                 if (labelSpan && !labelSpan.parentElement.classList.contains('label-container')) {
                     const labelContainer = document.createElement('div');
                     labelContainer.className = 'label-container';
@@ -459,15 +600,12 @@ document.addEventListener('DOMContentLoaded', function() {
                     tooltipText.className = 'tooltip-text';
                     tooltipText.textContent = explanation;
                     
-                    // Clone the original label to keep its content
                     const existingLabel = labelSpan.cloneNode(true);
                     
-                    // Build the new structure
                     labelContainer.appendChild(existingLabel);
                     labelContainer.appendChild(tooltipIcon);
                     labelContainer.appendChild(tooltipText);
                     
-                    // Replace the old label span with the new structure
                     labelSpan.replaceWith(labelContainer);
                 }
             }
@@ -490,6 +628,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
             const pageData = await pageResponse.json();
             globalRegisterState = await globalStatusResponse.json();
+            
+            currentPageData = { ...pageData, ...globalRegisterState };
 
             if (isFirstLoad && loadingOverlay) {
                 loadingOverlay.style.opacity = '0';
@@ -533,6 +673,9 @@ document.addEventListener('DOMContentLoaded', function() {
                     element.textContent = displayValue;
                 }
             }
+            
+            applyConditionalStyles(currentPageData);
+
         } catch (error) {
             console.error("Failed to fetch data:", error);
             if (isFirstLoad && loadingOverlay) loadingOverlay.textContent = 'خطا در اتصال';
@@ -560,7 +703,6 @@ document.addEventListener('DOMContentLoaded', function() {
         return `روز ${days}، ${hours}:${minutes}:${seconds}`;
     }
 
-    // MODIFIED: createHistoryItem now parses the JSON message
     function createHistoryItem(item) {
         const li = document.createElement('li');
         li.className = 'history-item';
@@ -584,7 +726,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 });
             }
         } catch(e) {
-            // Fallback for old, non-JSON messages
             messageHtml = `<div class="history-event">${item.message}</div>`;
         }
 
@@ -652,7 +793,7 @@ document.addEventListener('DOMContentLoaded', function() {
             if (!config) return;
             const dependency = registerDependencies[currentEditingReg];
             if (dependency) {
-                const controllerValue = globalRegisterState[dependency.controller];
+                const controllerValue = currentPageData[dependency.controller];
                 if (controllerValue === undefined) {
                     showToast('وضعیت کنترل‌کننده هنوز بارگذاری نشده است.', 'warning');
                     return;

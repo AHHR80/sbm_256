@@ -435,15 +435,16 @@ void onEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventType 
 
 // --- API Handlers ---
 void handleApiData1(AsyncWebServerRequest *request) {
-    StaticJsonDocument<1024> doc;
+    StaticJsonDocument<1536> doc;
     uint16_t val16;
     uint8_t val8;
+
+    // --- Original Page 1 Data ---
     if (readByte(0x00, val8)) { doc["VSYSMIN_5_0"] = 2500 + ((val8 & 0x3F) * 250); } else { doc["VSYSMIN_5_0"] = -1; }
     if (readByte(0x0A, val8)) { doc["CELL_1_0"] = ((val8 >> 6) & 0x03) + 1; } else { doc["CELL_1_0"] = -1; }
     if (readWord(0x0B, val16)) { doc["VOTG_10_0"] = 2800 + ((val16 & 0x7FF) * 10); } else { doc["VOTG_10_0"] = -1; }
     if (readByte(0x0D, val8)) { doc["IOTG_6_0"] = (val8 & 0x7F) * 40; } else { doc["IOTG_6_0"] = -1; }
     if (readByte(0x0F, val8)) { doc["EN_CHG"] = (val8 >> 5) & 0x01; } else { doc["EN_CHG"] = -1; }
-    if (readByte(0x1B, val8)) { doc["VBUS_PRESENT_STAT"] = val8 & 0x01; } else { doc["VBUS_PRESENT_STAT"] = -1; }
     if (readByte(0x1C, val8)) {
         doc["CHG_STAT_2_0"] = (val8 >> 5) & 0x07;
         doc["VBUS_STAT_3_0"] = (val8 >> 1) & 0x0F;
@@ -459,10 +460,49 @@ void handleApiData1(AsyncWebServerRequest *request) {
     if(readWord(0x3D, val16)) { doc["VSYS_ADC_15_0"] = val16; } else { doc["VSYS_ADC_15_0"] = -1; }
     if(readWord(0x3F, val16)) { doc["TS_ADC_15_0"] = (float)val16 * 0.0976563; } else { doc["TS_ADC_15_0"] = -1.0; }
     if(readWord(0x41, val16)) { doc["TDIE_ADC_15_0"] = (float)((int16_t)val16) * 0.5; } else { doc["TDIE_ADC_15_0"] = -999.0; }
+    
+    // --- OPTIMIZED: Cause registers for Page 1 coloring (single reads) ---
+    if (readByte(0x1B, val8)) {
+        doc["VBUS_PRESENT_STAT"] = val8 & 0x01;
+        doc["IINDPM_STAT"] = (val8 >> 7) & 0x01;
+        doc["VINDPM_STAT"] = (val8 >> 6) & 0x01;
+    } else { 
+        doc["VBUS_PRESENT_STAT"] = -1;
+        doc["IINDPM_STAT"] = -1; 
+        doc["VINDPM_STAT"] = -1; 
+    }
+
+    if (readByte(0x12, val8)) { doc["EN_OTG"] = (val8 >> 6) & 0x01; } else { doc["EN_OTG"] = -1; }
+    if (readByte(0x1D, val8)) { doc["TREG_STAT"] = (val8 >> 2) & 0x01; } else { doc["TREG_STAT"] = -1; }
+
+    if (readByte(0x1F, val8)) {
+        doc["TS_COLD_STAT"] = (val8 >> 3) & 0x01;
+        doc["TS_COOL_STAT"] = (val8 >> 2) & 0x01;
+        doc["TS_WARM_STAT"] = (val8 >> 1) & 0x01;
+        doc["TS_HOT_STAT"] = val8 & 0x01;
+    } else { doc["TS_COLD_STAT"] = -1; doc["TS_COOL_STAT"] = -1; doc["TS_WARM_STAT"] = -1; doc["TS_HOT_STAT"] = -1; }
+
+    if (readByte(0x20, val8)) {
+        doc["IBAT_REG_STAT"] = (val8 >> 7) & 0x01;
+        doc["VBUS_OVP_STAT"] = (val8 >> 6) & 0x01;
+        doc["VBAT_OVP_STAT"] = (val8 >> 5) & 0x01;
+        doc["IBUS_OCP_STAT"] = (val8 >> 4) & 0x01;
+        doc["IBAT_OCP_STAT"] = (val8 >> 3) & 0x01;
+    } else { doc["IBAT_REG_STAT"] = -1; doc["VBUS_OVP_STAT"] = -1; doc["VBAT_OVP_STAT"] = -1; doc["IBUS_OCP_STAT"] = -1; doc["IBAT_OCP_STAT"] = -1; }
+
+    if (readByte(0x21, val8)) {
+        doc["VSYS_SHORT_STAT"] = (val8 >> 7) & 0x01;
+        doc["VSYS_OVP_STAT"] = (val8 >> 6) & 0x01;
+        doc["OTG_OVP_STAT"] = (val8 >> 5) & 0x01;
+        doc["OTG_UVP_STAT"] = (val8 >> 4) & 0x01;
+        doc["TSHUT_STAT"] = (val8 >> 2) & 0x01;
+    } else { doc["VSYS_SHORT_STAT"] = -1; doc["VSYS_OVP_STAT"] = -1; doc["OTG_OVP_STAT"] = -1; doc["OTG_UVP_STAT"] = -1; doc["TSHUT_STAT"] = -1; }
+
     String output; serializeJson(doc, output); request->send(200, "application/json", output);
 }
 
 void handleApiData2(AsyncWebServerRequest *request) {
+    // This function remains unchanged as per the plan
     StaticJsonDocument<1536> doc;
     uint16_t val16;
     uint8_t val8;
@@ -514,6 +554,8 @@ void handleApiData2(AsyncWebServerRequest *request) {
 void handleApiData3(AsyncWebServerRequest *request) {
     StaticJsonDocument<1024> doc;
     uint8_t val8;
+    
+    // --- Original Page 3 Data ---
     if (readByte(0x08, val8)) {
         doc["VBAT_LOWV_1_0"] = (val8 >> 6) & 0x03;
         doc["IPRECHG_5_0"] = (val8 & 0x3F) * 40;
@@ -531,17 +573,27 @@ void handleApiData3(AsyncWebServerRequest *request) {
         doc["EN_EXTILIM"] = (val8 >> 1) & 0x01;
     } else { doc["EN_IBAT"] = -1; doc["IBAT_REG_1_0"] = -1; doc["EN_IINDPM"] = -1; doc["EN_EXTILIM"] = -1; }
     if (readByte(0x1D, val8)) { doc["ICO_STAT_1_0"] = (val8 >> 6) & 0x03; } else { doc["ICO_STAT_1_0"] = -1; }
+    if (readByte(0x2E, val8)) { doc["ADC_SAMPLE_1_0"] = (val8 >> 4) & 0x03; } else { doc["ADC_SAMPLE_1_0"] = -1; }
+
+    // --- OPTIMIZED: Cause registers for Page 3 coloring (single read) ---
     if (readByte(0x20, val8)) {
+        doc["IBAT_REG_STAT"] = (val8 >> 7) & 0x01;
         doc["VAC2_OVP_STAT"] = (val8 >> 1) & 0x01;
         doc["VAC1_OVP_STAT"] = val8 & 0x01;
-    } else { doc["VAC2_OVP_STAT"] = -1; doc["VAC1_OVP_STAT"] = -1; }
-    if (readByte(0x2E, val8)) { doc["ADC_SAMPLE_1_0"] = (val8 >> 4) & 0x03; } else { doc["ADC_SAMPLE_1_0"] = -1; }
+    } else { 
+        doc["IBAT_REG_STAT"] = -1;
+        doc["VAC2_OVP_STAT"] = -1; 
+        doc["VAC1_OVP_STAT"] = -1; 
+    }
+
     String output; serializeJson(doc, output); request->send(200, "application/json", output);
 }
 
 void handleApiData4(AsyncWebServerRequest *request) {
     StaticJsonDocument<2048> doc;
     uint8_t val8;
+
+    // --- Original Page 4 Data ---
     if(readByte(0x09, val8)) { doc["STOP_WD_CHG"] = (val8 >> 5) & 0x01; } else { doc["STOP_WD_CHG"] = -1; }
     if(readByte(0x0D, val8)) { doc["PRECHG_TMR"] = (val8 >> 7) & 0x01; } else { doc["PRECHG_TMR"] = -1; }
     if(readByte(0x0E, val8)) {
@@ -635,10 +687,17 @@ void handleApiData4(AsyncWebServerRequest *request) {
         doc["PN_2_0"] = (val8 >> 3) & 0x07;
         doc["DEV_REV_2_0"] = val8 & 0x07;
     } else { doc["PN_2_0"] = -1; doc["DEV_REV_2_0"] = -1; }
+
+    // --- ADDED: Cause registers for Page 4 coloring ---
+    if (readByte(0x1B, val8)) {
+        doc["PG_STAT"] = (val8 >> 3) & 0x01;
+    } else { doc["PG_STAT"] = -1; }
+
     String output; serializeJson(doc, output); request->send(200, "application/json", output);
 }
 
 void handleApiData5(AsyncWebServerRequest *request) {
+    // This function remains unchanged as per the plan
     StaticJsonDocument<1024> doc;
     uint8_t val8;
     uint16_t val16;
