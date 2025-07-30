@@ -924,8 +924,27 @@ document.addEventListener('DOMContentLoaded', function() {
     // بخش ۶: راه‌اندازی اصلی
     // ===================================================================================
 
+    function initMobileMenu() {
+        const menuToggle = document.getElementById('menu-toggle-btn');
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('overlay');
+
+        if (menuToggle && sidebar && overlay) {
+            menuToggle.addEventListener('click', () => {
+                sidebar.classList.toggle('open');
+                overlay.classList.toggle('active');
+            });
+
+            overlay.addEventListener('click', () => {
+                sidebar.classList.remove('open');
+                overlay.classList.remove('active');
+            });
+        }
+    }
+
     initializeUI();
     initWebSocket();
+    initMobileMenu(); // NEW: Initialize the mobile menu functionality
 
     if (window.location.pathname.includes('history.html')) {
         loadHistory();

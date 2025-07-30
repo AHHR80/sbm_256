@@ -887,8 +887,8 @@ void setup() {
     ws.onEvent(onEvent);
     server.addHandler(&ws);
 
-    server.on("/", HTTP_GET, [](AsyncWebServerRequest *request) { request->send(LittleFS, "/index.html", "text/html"); });
-    server.on("/page1.html", HTTP_GET, [](AsyncWebServerRequest *request){ request->send(LittleFS, "/page1.html", "text/html"); });
+    // server.on("/", HTTP_GET, [](AsyncWebServerRequest *request) { request->send(LittleFS, "/index.html", "text/html"); });
+    server.on("/", HTTP_GET, [](AsyncWebServerRequest *request){ request->send(LittleFS, "/page1.html", "text/html"); });
     server.on("/page2.html", HTTP_GET, [](AsyncWebServerRequest *request){ request->send(LittleFS, "/page2.html", "text/html"); });
     server.on("/page3.html", HTTP_GET, [](AsyncWebServerRequest *request){ request->send(LittleFS, "/page3.html", "text/html"); });
     server.on("/page4.html", HTTP_GET, [](AsyncWebServerRequest *request){ request->send(LittleFS, "/page4.html", "text/html"); });
