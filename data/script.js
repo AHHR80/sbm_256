@@ -305,7 +305,7 @@ document.addEventListener('DOMContentLoaded', function() {
         'EN_BATOC': { controller: 'SFET_PRESENT', requiredValue: '1', message: 'برای فعال‌سازی حفاظت جریان باتری، ابتدا باید SFET_PRESENT فعال باشد.' },
         'EN_9V': { controller: 'HVDCP_EN', requiredValue: '1', message: 'برای درخواست ولتاژ 9V، ابتدا باید HVDCP_EN فعال باشد.' },
         'EN_12V': { controller: 'HVDCP_EN', requiredValue: '1', message: 'برای درخواست ولتاژ 12V، ابتدا باید HVDCP_EN فعال باشد.' },
-        'ADC_RATE': { controller: 'ADC_EN', requiredValue: '1', message: 'برای تغییر تنظیمات ADC، ابتدا باید ADC_EN فعال باشد.' },
+        // 'ADC_RATE': { controller: 'ADC_EN', requiredValue: '1', message: 'برای تغییر تنظیمات ADC، ابتدا باید ADC_EN فعال باشد.' },
         'ADC_SAMPLE_1_0': { controller: 'ADC_EN', requiredValue: '1', message: 'برای تغییر تنظیمات ADC، ابتدا باید ADC_EN فعال باشد.' },
         'ADC_AVG': { controller: 'ADC_EN', requiredValue: '1', message: 'برای تغییر تنظیمات ADC، ابتدا باید ADC_EN فعال باشد.' },
         'ADC_AVG_INIT': { controller: 'ADC_EN', requiredValue: '1', message: 'برای تغییر تنظیمات ADC، ابتدا باید ADC_EN فعال باشد.' },
