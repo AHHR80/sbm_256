@@ -563,8 +563,8 @@ header p {
 
 .status-reason-indicator {
     position: absolute;
-    top: 8px;
-    left: 8px;
+    top: 9px;
+    /* left: 8px; */
     width: 22px;
     height: 22px;
     border-radius: 50%;
@@ -617,7 +617,6 @@ header p {
     transform: translateX(-50%);
     transition: opacity 0.3s;
     font-size: 0.9em;
-    white-space: nowrap;
 }
 
 .status-reason-tooltip::after {
