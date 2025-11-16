@@ -209,7 +209,7 @@ bool writeBqRegister(const String& regName, long val) {
     else if (regName == "EN_CHG") { success = modifyByte(0x0F, (uint8_t)val << 5, 0b00100000); }
     else if (regName == "VREG_10_0") { uint16_t regVal = val / 10; success = writeWord(0x01, regVal); }
     else if (regName == "ICHG_8_0") { uint16_t regVal = val / 10; success = writeWord(0x03, regVal); }
-    else if (regName == "VINDPM_7_0") { uint8_t regVal = (val - 3600) / 100; success = writeByte(0x05, regVal); }
+    else if (regName == "VINDPM_7_0") { uint8_t regVal = (val) / 100; success = writeByte(0x05, regVal); }
     else if (regName == "IINDPM_8_0") { uint16_t regVal = val / 10; success = writeWord(0x06, regVal); }
     else if (regName == "EN_ICO") { success = modifyByte(0x0F, (uint8_t)val << 4, 0b00010000); }
     else if (regName == "FORCE_ICO") { success = modifyByte(0x0F, (uint8_t)val << 3, 0b00001000); }
@@ -511,7 +511,7 @@ void handleApiData2(AsyncWebServerRequest *request) {
     uint8_t val8;
     if(readWord(0x01, val16)) { doc["VREG_10_0"] = (val16 & 0x7FF) * 10; } else { doc["VREG_10_0"] = -1; }
     if(readWord(0x03, val16)) { doc["ICHG_8_0"] = (val16 & 0x1FF) * 10; } else { doc["ICHG_8_0"] = -1; }
-    if(readByte(0x05, val8)) { doc["VINDPM_7_0"] = val8 * 100 + 3600; } else { doc["VINDPM_7_0"] = -1; }
+    if(readByte(0x05, val8)) { doc["VINDPM_7_0"] = val8 * 100; } else { doc["VINDPM_7_0"] = -1; }
     if(readWord(0x06, val16)) { doc["IINDPM_8_0"] = (val16 & 0x1FF) * 10; } else { doc["IINDPM_8_0"] = -1; }
     if(readByte(0x0F, val8)) {
         doc["EN_ICO"] = (val8 >> 4) & 0x01;
