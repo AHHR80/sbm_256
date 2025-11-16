@@ -2,7 +2,7 @@
 #include <ESPAsyncWebServer.h>
 #include <LittleFS.h>
 #include <Wire.h>
-#include "ArduinoJson.h"
+#include <ArduinoJson.h>
 
 // I2C Address for BQ25672
 #define BQ25672_I2C_ADDR 0x6B
