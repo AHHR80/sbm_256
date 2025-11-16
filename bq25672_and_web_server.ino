@@ -89,6 +89,7 @@ bool readWord(uint8_t reg, uint16_t& value) {
     uint8_t lsb = Wire.read();
     uint8_t msb = Wire.read();
     value = (msb << 8) | lsb;
+    Serial.println(value);
     return true;
 }
 
