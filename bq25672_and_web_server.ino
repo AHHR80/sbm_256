@@ -86,10 +86,11 @@ bool readWord(uint8_t reg, uint16_t& value) {
     Wire.write(reg);
     if (Wire.endTransmission(false) != 0) { return false; }
     if (Wire.requestFrom((uint8_t)BQ25672_I2C_ADDR, (uint8_t)2) != 2) { return false; }
-    uint8_t lsb = Wire.read();
+    // دیتاشیت نشان می‌دهد رجیستر اول (مثلاً 0x35) = MSB، رجیستر بعدی = LSB.
     uint8_t msb = Wire.read();
-    value = (msb << 8) | lsb;
-    Serial.println(value);
+    uint8_t lsb = Wire.read();
+    value = ((uint16_t)msb << 8) | (uint16_t)lsb;
+    // حذف Serial.println(value) — اختیاری: در صورت نیاز لاگ جداگانه بزن
     return true;
 }
 
@@ -111,8 +112,9 @@ bool readByte(uint8_t reg, uint8_t& value) {
 bool writeWord(uint8_t reg, uint16_t value) {
     Wire.beginTransmission(BQ25672_I2C_ADDR);
     Wire.write(reg);
-    Wire.write(value & 0xFF); // LSB
-    Wire.write(value >> 8);   // MSB
+    // بنابر mapping رجیستر: آدرس اول -> MSB، پس MSB را اول بنویس
+    Wire.write((uint8_t)((value >> 8) & 0xFF)); // MSB
+    Wire.write((uint8_t)(value & 0xFF));        // LSB
     if (Wire.endTransmission() != 0) {
         Serial.printf("I2C writeWord error for reg 0x%02X\n", reg);
         return false;
