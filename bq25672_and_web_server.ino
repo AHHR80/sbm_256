@@ -62,7 +62,43 @@ const ValidationRule validationMap[] = {
     {"IBAT_ADC_DIS", 0, 1}, {"VBUS_ADC_DIS", 0, 1}, {"VBAT_ADC_DIS", 0, 1},
     {"VSYS_ADC_DIS", 0, 1}, {"TS_ADC_DIS", 0, 1}, {"TDIE_ADC_DIS", 0, 1},
     {"DP_ADC_DIS", 0, 1}, {"DM_ADC_DIS", 0, 1}, {"VAC2_ADC_DIS", 0, 1},
-    {"VAC1_ADC_DIS", 0, 1}, {"DPLUS_DAC_2_0", 0, 7}, {"DMINUS_DAC_2_0", 0, 7}
+    {"VAC1_ADC_DIS", 0, 1}, {"DPLUS_DAC_2_0", 0, 7}, {"DMINUS_DAC_2_0", 0, 7},
+
+    // --- ADDED: Action/Reset Bits (Single Bit R/W) ---
+    {"REG_RST", 0, 1},              // [cite: 100]
+    {"FORCE_IBATDIS", 0, 1},        // [cite: 239]
+    {"FORCE_ICO", 0, 1},            // [cite: 239]
+    {"WD_RST", 0, 1},               // [cite: 261]
+    {"FORCE_INDET", 0, 1},          // [cite: 278]
+    {"FORCE_VINDPM_DET", 0, 1},     // [cite: 316]
+
+    // --- ADDED: Interrupt Mask Registers (All are R/W, 0=INT, 1=No INT) ---
+    // REG28_Charger_Mask_0 [cite: 695]
+    {"IINDPM_MASK", 0, 1}, {"VINDPM_MASK", 0, 1}, {"WD_MASK", 0, 1},
+    {"POORSRC_MASK", 0, 1}, {"PG_MASK", 0, 1}, {"AC2_PRESENT_MASK", 0, 1},
+    {"AC1_PRESENT_MASK", 0, 1}, {"VBUS_PRESENT_MASK", 0, 1},
+
+    // REG29_Charger_Mask_1 [cite: 718]
+    {"CHG_MASK", 0, 1}, {"ICO_MASK", 0, 1}, {"VBUS_MASK", 0, 1},
+    {"TREG_MASK", 0, 1}, {"VBAT_PRESENT_MASK", 0, 1}, {"BC1.2_DONE_MASK", 0, 1},
+
+    // REG2A_Charger_Mask_2 [cite: 733]
+    {"DPDM_DONE_MASK", 0, 1}, {"ADC_DONE_MASK", 0, 1}, {"VSYS_MASK", 0, 1},
+    {"CHG_TMR_MASK", 0, 1}, {"TRICHG_TMR_MASK", 0, 1}, {"PRECHG_TMR_MASK", 0, 1},
+    {"TOPOFF_TMR_MASK", 0, 1},
+
+    // REG2B_Charger_Mask_3 [cite: 745]
+    {"VBATOTG_LOW_MASK", 0, 1}, {"TS_COLD_MASK", 0, 1},
+    {"TS_COOL_MASK", 0, 1}, {"TS_WARM_MASK", 0, 1}, {"TS_HOT_MASK", 0, 1},
+
+    // REG2C_FAULT_Mask_0 [cite: 762]
+    {"IBAT_REG_MASK", 0, 1}, {"VBUS_OVP_MASK", 0, 1}, {"VBAT_OVP_MASK", 0, 1},
+    {"IBUS_OCP_MASK", 0, 1}, {"IBAT_OCP_MASK", 0, 1}, {"CONV_OCP_MASK", 0, 1},
+    {"VAC2_OVP_MASK", 0, 1}, {"VAC1_OVP_MASK", 0, 1},
+
+    // REG2D_FAULT_Mask_1 [cite: 774]
+    {"VSYS_SHORT_MASK", 0, 1}, {"VSYS_OVP_MASK", 0, 1},
+    {"OTG_OVP_MASK", 0, 1}, {"OTG_UVP_MASK", 0, 1}, {"TSHUT_MASK", 0, 1}
 };
 
 bool isValueValid(const String& regName, long value) {
