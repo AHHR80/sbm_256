@@ -332,6 +332,63 @@ bool writeBqRegister(const String& regName, long val) {
     else if (regName == "VAC1_ADC_DIS") { success = modifyByte(0x30, (uint8_t)val << 4, 0b00010000); }
     else if (regName == "DPLUS_DAC_2_0") { success = modifyByte(0x47, (uint8_t)val << 5, 0b11100000); }
     else if (regName == "DMINUS_DAC_2_0") { success = modifyByte(0x47, (uint8_t)val << 2, 0b00011100); }
+    // ---------------------------------------------------------
+    // REG28_Charger_Mask_0 (Address: 0x28)
+    // ---------------------------------------------------------
+    else if (regName == "IINDPM_MASK") { success = modifyByte(0x28, (uint8_t)val << 7, 0b10000000); }
+    else if (regName == "VINDPM_MASK") { success = modifyByte(0x28, (uint8_t)val << 6, 0b01000000); }
+    else if (regName == "WD_MASK") { success = modifyByte(0x28, (uint8_t)val << 5, 0b00100000); }
+    else if (regName == "POORSRC_MASK") { success = modifyByte(0x28, (uint8_t)val << 4, 0b00010000); }
+    else if (regName == "PG_MASK") { success = modifyByte(0x28, (uint8_t)val << 3, 0b00001000); }
+    else if (regName == "AC2_PRESENT_MASK") { success = modifyByte(0x28, (uint8_t)val << 2, 0b00000100); }
+    else if (regName == "AC1_PRESENT_MASK") { success = modifyByte(0x28, (uint8_t)val << 1, 0b00000010); }
+    else if (regName == "VBUS_PRESENT_MASK") { success = modifyByte(0x28, (uint8_t)val, 0b00000001); }
+    // ---------------------------------------------------------
+    // REG29_Charger_Mask_1 (Address: 0x29)
+    // ---------------------------------------------------------
+    else if (regName == "CHG_MASK") { success = modifyByte(0x29, (uint8_t)val << 7, 0b10000000); }
+    else if (regName == "ICO_MASK") { success = modifyByte(0x29, (uint8_t)val << 6, 0b01000000); }
+    else if (regName == "VBUS_MASK") { success = modifyByte(0x29, (uint8_t)val << 4, 0b00010000); }
+    else if (regName == "TREG_MASK") { success = modifyByte(0x29, (uint8_t)val << 2, 0b00000100); }
+    else if (regName == "VBAT_PRESENT_MASK") { success = modifyByte(0x29, (uint8_t)val << 1, 0b00000010); }
+    else if (regName == "BC1.2_DONE_MASK") { success = modifyByte(0x29, (uint8_t)val, 0b00000001); }
+    // ---------------------------------------------------------
+    // REG2A_Charger_Mask_2 (Address: 0x2A)
+    // ---------------------------------------------------------
+    else if (regName == "DPDM_DONE_MASK") { success = modifyByte(0x2A, (uint8_t)val << 6, 0b01000000); }
+    else if (regName == "ADC_DONE_MASK") { success = modifyByte(0x2A, (uint8_t)val << 5, 0b00100000); }
+    else if (regName == "VSYS_MASK") { success = modifyByte(0x2A, (uint8_t)val << 4, 0b00010000); }
+    else if (regName == "CHG_TMR_MASK") { success = modifyByte(0x2A, (uint8_t)val << 3, 0b00001000); }
+    else if (regName == "TRICHG_TMR_MASK") { success = modifyByte(0x2A, (uint8_t)val << 2, 0b00000100); }
+    else if (regName == "PRECHG_TMR_MASK") { success = modifyByte(0x2A, (uint8_t)val << 1, 0b00000010); }
+    else if (regName == "TOPOFF_TMR_MASK") { success = modifyByte(0x2A, (uint8_t)val, 0b00000001); }
+    // ---------------------------------------------------------
+    // REG2B_Charger_Mask_3 (Address: 0x2B)
+    // ---------------------------------------------------------
+    else if (regName == "VBATOTG_LOW_MASK") { success = modifyByte(0x2B, (uint8_t)val << 4, 0b00010000); }
+    else if (regName == "TS_COLD_MASK") { success = modifyByte(0x2B, (uint8_t)val << 3, 0b00001000); }
+    else if (regName == "TS_COOL_MASK") { success = modifyByte(0x2B, (uint8_t)val << 2, 0b00000100); }
+    else if (regName == "TS_WARM_MASK") { success = modifyByte(0x2B, (uint8_t)val << 1, 0b00000010); }
+    else if (regName == "TS_HOT_MASK") { success = modifyByte(0x2B, (uint8_t)val, 0b00000001); }
+    // ---------------------------------------------------------
+    // REG2C_FAULT_Mask_0 (Address: 0x2C)
+    // ---------------------------------------------------------
+    else if (regName == "IBAT_REG_MASK") { success = modifyByte(0x2C, (uint8_t)val << 7, 0b10000000); }
+    else if (regName == "VBUS_OVP_MASK") { success = modifyByte(0x2C, (uint8_t)val << 6, 0b01000000); }
+    else if (regName == "VBAT_OVP_MASK") { success = modifyByte(0x2C, (uint8_t)val << 5, 0b00100000); }
+    else if (regName == "IBUS_OCP_MASK") { success = modifyByte(0x2C, (uint8_t)val << 4, 0b00010000); }
+    else if (regName == "IBAT_OCP_MASK") { success = modifyByte(0x2C, (uint8_t)val << 3, 0b00001000); }
+    else if (regName == "CONV_OCP_MASK") { success = modifyByte(0x2C, (uint8_t)val << 2, 0b00000100); }
+    else if (regName == "VAC2_OVP_MASK") { success = modifyByte(0x2C, (uint8_t)val << 1, 0b00000010); }
+    else if (regName == "VAC1_OVP_MASK") { success = modifyByte(0x2C, (uint8_t)val, 0b00000001); }
+    // ---------------------------------------------------------
+    // REG2D_FAULT_Mask_1 (Address: 0x2D)
+    // ---------------------------------------------------------
+    else if (regName == "VSYS_SHORT_MASK") { success = modifyByte(0x2D, (uint8_t)val << 7, 0b10000000); }
+    else if (regName == "VSYS_OVP_MASK") { success = modifyByte(0x2D, (uint8_t)val << 6, 0b01000000); }
+    else if (regName == "OTG_OVP_MASK") { success = modifyByte(0x2D, (uint8_t)val << 5, 0b00100000); }
+    else if (regName == "OTG_UVP_MASK") { success = modifyByte(0x2D, (uint8_t)val << 4, 0b00010000); }
+    else if (regName == "TSHUT_MASK") { success = modifyByte(0x2D, (uint8_t)val << 2, 0b00000100); }
     
     return success;
 }
