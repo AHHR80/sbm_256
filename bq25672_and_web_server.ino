@@ -669,7 +669,7 @@ void handleApiData3(AsyncWebServerRequest *request) {
         doc["EN_EXTILIM"] = (val8 >> 1) & 0x01;
     } else { doc["EN_IBAT"] = -1; doc["IBAT_REG_1_0"] = -1; doc["EN_IINDPM"] = -1; doc["EN_EXTILIM"] = -1; }
     if (readByte(0x1D, val8)) { doc["ICO_STAT_1_0"] = (val8 >> 6) & 0x03; } else { doc["ICO_STAT_1_0"] = -1; }
-    if (readByte(0x2E, val8)) { doc["ADC_SAMPLE_1_0"] = (val8 >> 4) & 0x03; } else { doc["ADC_SAMPLE_1_0"] = -1; }
+    // if (readByte(0x2E, val8)) { doc["ADC_SAMPLE_1_0"] = (val8 >> 4) & 0x03; } else { doc["ADC_SAMPLE_1_0"] = -1; }
 
     // --- OPTIMIZED: Cause registers for Page 3 coloring (single read) ---
     if (readByte(0x20, val8)) {
