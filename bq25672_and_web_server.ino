@@ -80,7 +80,7 @@ const ValidationRule validationMap[] = {
 
     // REG29_Charger_Mask_1 [cite: 718]
     {"CHG_MASK", 0, 1}, {"ICO_MASK", 0, 1}, {"VBUS_MASK", 0, 1},
-    {"TREG_MASK", 0, 1}, {"VBAT_PRESENT_MASK", 0, 1}, {"BC1.2_DONE_MASK", 0, 1},
+    {"TREG_MASK", 0, 1}, {"VBAT_PRESENT_MASK", 0, 1}, {"BC1_2_DONE_MASK", 0, 1},
 
     // REG2A_Charger_Mask_2 [cite: 733]
     {"DPDM_DONE_MASK", 0, 1}, {"ADC_DONE_MASK", 0, 1}, {"VSYS_MASK", 0, 1},
@@ -351,7 +351,7 @@ bool writeBqRegister(const String& regName, long val) {
     else if (regName == "VBUS_MASK") { success = modifyByte(0x29, (uint8_t)val << 4, 0b00010000); }
     else if (regName == "TREG_MASK") { success = modifyByte(0x29, (uint8_t)val << 2, 0b00000100); }
     else if (regName == "VBAT_PRESENT_MASK") { success = modifyByte(0x29, (uint8_t)val << 1, 0b00000010); }
-    else if (regName == "BC1.2_DONE_MASK") { success = modifyByte(0x29, (uint8_t)val, 0b00000001); }
+    else if (regName == "BC1_2_DONE_MASK") { success = modifyByte(0x29, (uint8_t)val, 0b00000001); }
     // ---------------------------------------------------------
     // REG2A_Charger_Mask_2 (Address: 0x2A)
     // ---------------------------------------------------------
