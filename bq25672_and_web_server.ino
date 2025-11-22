@@ -784,10 +784,10 @@ void handleApiData4(AsyncWebServerRequest *request) {
         doc["DEV_REV_2_0"] = val8 & 0x07;
     } else { doc["PN_2_0"] = -1; doc["DEV_REV_2_0"] = -1; }
 
-    // --- ADDED: Cause registers for Page 4 coloring ---
-    if (readByte(0x1B, val8)) {
-        doc["PG_STAT"] = (val8 >> 3) & 0x01;
-    } else { doc["PG_STAT"] = -1; }
+    // // --- ADDED: Cause registers for Page 4 coloring ---
+    // if (readByte(0x1B, val8)) {
+    //     doc["PG_STAT"] = (val8 >> 3) & 0x01;
+    // } else { doc["PG_STAT"] = -1; }
 
     String output; serializeJson(doc, output); request->send(200, "application/json", output);
 }
