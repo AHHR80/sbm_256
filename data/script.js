@@ -270,7 +270,7 @@ document.addEventListener('DOMContentLoaded', function() {
         ITERM_4_0: { type: 'number', range: { min: 40, max: 1000, step: 40 }, unit: 'mA' },
         TRECHG_1_0: { type: 'select', options: { '0': '64ms', '1': '256ms', '2': '1024ms', '3': '2048ms' } },
         VRECHG_3_0: { type: 'number', range: { min: 50, max: 800, step: 50 }, unit: 'mV' },
-        VAC_OVP_1_0: { type: 'select', options: { '0': '26V', '1': '18V', '2': '12V', '3': '7V' } },
+        VAC_OVP_1_0: { type: 'select', options: { '0': '26V', '1': '22V', '2': '12V', '3': '7V' } },
         EN_IBAT: { type: 'boolean', options: { '0': 'Disabled', '1': 'Enabled' } },
         IBAT_REG_1_0: { type: 'select', options: { '0': '3A', '1': '4A', '2': '5A', '3': 'Disabled' } },
         EN_IINDPM: { type: 'boolean', options: { '0': 'Disabled', '1': 'Enabled' } },
