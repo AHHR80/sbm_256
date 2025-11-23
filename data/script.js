@@ -35,7 +35,7 @@ document.addEventListener('DOMContentLoaded', function() {
         "TS_COOL_EVENT": { title: "دمای باتری: خنک (TS_COOL_STAT)", description: "دمای باتری وارد محدوده خنک شده و جریان شارژ طبق پروفایل JEITA کاهش یافته است." },
         "TS_WARM_EVENT": { title: "دمای باتری: گرم (TS_WARM_STAT)", description: "دمای باتری وارد محدوده گرم شده و ولتاژ شارژ طبق پروفایل JEITA کاهش یافته است." },
         "TS_HOT_EVENT": { title: "دمای باتری: داغ (TS_HOT_STAT)", description: "دمای باتری وارد محدوده داغ شده و شارژ برای ایمنی متوقف شده است." },
-        "IBAT_REG_EVENT": { title: "محدودیت جریان دشارژ (IBAT_REG_STAT)", description: "جریان دشارژ باتری در حالت پاوربانک (OTG) به حد مجاز رسیده و محدود شده است." },
+        "IBAT_REG_EVENT": { title: "محدودیت جریان دشارژ (IBAT_REG_STAT)", description: "جریان دشارژ باتری در حالت پاوربانک (OTG) به حد مجاز رسیده و محدود شده یا از آن خارج شده است." },
         "VBUS_OVP_FAULT": { title: "خطای ولتاژ بالای ورودی (VBUS_OVP_STAT)", description: "ولتاژ آداپتور از حد مجاز فراتر رفته است. شارژ برای محافظت متوقف شد." },
         "VBAT_OVP_FAULT": { title: "خطای ولتاژ بالای باتری (VBAT_OVP_STAT)", description: "ولتاژ باتری از حد مجاز تنظیم شده فراتر رفته است. شارژ برای محافظت متوقف شد." },
         "IBUS_OCP_FAULT": { title: "خطای جریان بالای ورودی (IBUS_OCP_STAT)", description: "جریان کشیده شده از آداپتور از حد بحرانی فراتر رفته است. مبدل برای محافظت غیرفعال شد." },
