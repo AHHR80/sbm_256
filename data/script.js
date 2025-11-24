@@ -202,45 +202,45 @@ document.addEventListener('DOMContentLoaded', function() {
         D_MINUS_ADC_15_0: "(D_MINUS_ADC_15_0): ولتاژ لحظه‌ای پین D- را برای دیباگ کردن نمایش می‌دهد.",
 
         // MASK Registers
-        IINDPM_MASK: "(IINDPM_MASK): این بیت وقفه (Interrupt) مربوط به محدودیت جریان ورودی را فعال یا غیرفعال می‌کند. اگر ۱ باشد، وقفه ماسک شده و به هاست ارسال نمی‌شود.",
-        VINDPM_MASK: "(VINDPM_MASK): این بیت وقفه مربوط به محدودیت ولتاژ ورودی را ماسک می‌کند.",
-        WD_MASK: "(WD_MASK): این بیت وقفه مربوط به انقضای تایمر Watchdog را ماسک می‌کند.",
-        POORSRC_MASK: "(POORSRC_MASK): این بیت وقفه مربوط به تشخیص منبع ضعیف را ماسک می‌کند.",
-        PG_MASK: "(PG_MASK): این بیت وقفه مربوط به تغییر وضعیت Power Good (خوب بودن منبع) را ماسک می‌کند.",
-        AC2_PRESENT_MASK: "(AC2_PRESENT_MASK): این بیت وقفه مربوط به اتصال یا قطع شدن منبع به ورودی VAC2 را ماسک می‌کند.",
-        AC1_PRESENT_MASK: "(AC1_PRESENT_MASK): این بیت وقفه مربوط به اتصال یا قطع شدن منبع به ورودی VAC1 را ماسک می‌کند.",
-        VBUS_PRESENT_MASK: "(VBUS_PRESENT_MASK): این بیت وقفه مربوط به اتصال یا قطع شدن منبع به VBUS را ماسک می‌کند.",
-        CHG_MASK: "(CHG_MASK): این بیت وقفه مربوط به تغییر وضعیت شارژ (شروع، پایان و...) را ماسک می‌کند.",
-        ICO_MASK: "(ICO_MASK): این بیت وقفه مربوط به تغییر وضعیت الگوریتم ICO را ماسک می‌کند.",
-        VBUS_MASK: "(VBUS_MASK): این بیت وقفه مربوط به تغییر نوع منبع ورودی (VBUS Type) را ماسک می‌کند.",
-        TREG_MASK: "(TREG_MASK): این بیت وقفه مربوط به ورود به حالت محدودیت حرارتی (Thermal Regulation) را ماسک می‌کند.",
-        VBAT_PRESENT_MASK: "(VBAT_PRESENT_MASK): این بیت وقفه مربوط به تغییر وضعیت اتصال باتری را ماسک می‌کند.",
-        BC1_2_DONE_MASK: "(BC1_2_DONE_MASK): این بیت وقفه مربوط به اتمام فرآیند تشخیص BC1.2 را ماسک می‌کند.",
-        DPDM_DONE_MASK: "(DPDM_DONE_MASK): این بیت وقفه مربوط به اتمام فرآیند تشخیص D+/D- را ماسک می‌کند.",
-        ADC_DONE_MASK: "(ADC_DONE_MASK): این بیت وقفه مربوط به اتمام تبدیل ADC (در حالت تک‌شات) را ماسک می‌کند.",
-        VSYS_MASK: "(VSYS_MASK): این بیت وقفه مربوط به ورود یا خروج از حالت رگولاسیون حداقل ولتاژ سیستم (VSYSMIN) را ماسک می‌کند.",
-        CHG_TMR_MASK: "(CHG_TMR_MASK): این بیت وقفه مربوط به انقضای تایمر شارژ سریع را ماسک می‌کند.",
-        TRICHG_TMR_MASK: "(TRICHG_TMR_MASK): این بیت وقفه مربوط به انقضای تایمر شارژ قطره‌ای را ماسک می‌کند.",
-        PRECHG_TMR_MASK: "(PRECHG_TMR_MASK): این بیت وقفه مربوط به انقضای تایمر پیش‌شارژ را ماسک می‌کند.",
-        TOPOFF_TMR_MASK: "(TOPOFF_TMR_MASK): این بیت وقفه مربوط به انقضای تایمر شارژ تکمیلی (Top-off) را ماسک می‌کند.",
-        VBATOTG_LOW_MASK: "(VBATOTG_LOW_MASK): این بیت وقفه مربوط به افت ولتاژ باتری به زیر حد مجاز OTG را ماسک می‌کند.",
-        TS_COLD_MASK: "(TS_COLD_MASK): این بیت وقفه مربوط به ورود یا خروج باتری از محدوده دمای سرد را ماسک می‌کند.",
-        TS_COOL_MASK: "(TS_COOL_MASK): این بیت وقفه مربوط به ورود یا خروج باتری از محدوده دمای خنک را ماسک می‌کند.",
-        TS_WARM_MASK: "(TS_WARM_MASK): این بیت وقفه مربوط به ورود یا خروج باتری از محدوده دمای گرم را ماسک می‌کند.",
-        TS_HOT_MASK: "(TS_HOT_MASK): این بیت وقفه مربوط به ورود یا خروج باتری از محدوده دمای داغ را ماسک می‌کند.",
-        IBAT_REG_MASK: "(IBAT_REG_MASK): این بیت وقفه مربوط به ورود یا خروج از حالت تنظیم جریان دشارژ باتری را ماسک می‌کند.",
-        VBUS_OVP_MASK: "(VBUS_OVP_MASK): این بیت وقفه مربوط به خطای ولتاژ بالای ورودی را ماسک می‌کند.",
-        VBAT_OVP_MASK: "(VBAT_OVP_MASK): این بیت وقفه مربوط به خطای ولتاژ بالای باتری را ماسک می‌کند.",
-        IBUS_OCP_MASK: "(IBUS_OCP_MASK): این بیت وقفه مربوط به خطای جریان بالای ورودی را ماسک می‌کند.",
-        IBAT_OCP_MASK: "(IBAT_OCP_MASK): این بیت وقفه مربوط به خطای جریان بالای دشارژ باتری را ماسک می‌کند.",
-        CONV_OCP_MASK: "(CONV_OCP_MASK): این بیت وقفه مربوط به خطای جریان بالای مبدل را ماسک می‌کند.",
-        VAC2_OVP_MASK: "(VAC2_OVP_MASK): این بیت وقفه مربوط به خطای ولتاژ بالای ورودی VAC2 را ماسک می‌کند.",
-        VAC1_OVP_MASK: "(VAC1_OVP_MASK): این بیت وقفه مربوط به خطای ولتاژ بالای ورودی VAC1 را ماسک می‌کند.",
-        VSYS_SHORT_MASK: "(VSYS_SHORT_MASK): این بیت وقفه مربوط به خطای اتصال کوتاه سیستم را ماسک می‌کند.",
-        VSYS_OVP_MASK: "(VSYS_OVP_MASK): این بیت وقفه مربوط به خطای ولتاژ بالای سیستم را ماسک می‌کند.",
-        OTG_OVP_MASK: "(OTG_OVP_MASK): این بیت وقفه مربوط به خطای ولتاژ بالای OTG را ماسک می‌کند.",
-        OTG_UVP_MASK: "(OTG_UVP_MASK): این بیت وقفه مربوط به خطای افت ولتاژ OTG را ماسک می‌کند.",
-        TSHUT_MASK: "(TSHUT_MASK): این بیت وقفه مربوط به خطای خاموشی حرارتی (Thermal Shutdown) را ماسک می‌کند."
+        IINDPM_MASK: "(IINDPM_MASK): اگر ۱ باشد، وقفه (Interrupt) مربوط به محدودیت جریان ورودی ماسک شده و ارسال نمی‌شود.",
+        VINDPM_MASK: "(VINDPM_MASK): اگر ۱ باشد، وقفه مربوط به محدودیت ولتاژ ورودی ماسک می‌شود.",
+        WD_MASK: "(WD_MASK): اگر ۱ باشد، وقفه مربوط به انقضای تایمر Watchdog ماسک می‌شود.",
+        POORSRC_MASK: "(POORSRC_MASK): اگر ۱ باشد، وقفه مربوط به تشخیص منبع ضعیف ماسک می‌شود.",
+        PG_MASK: "(PG_MASK): اگر ۱ باشد، وقفه تغییر وضعیت Power Good (خوب بودن منبع) را ماسک می‌کند.",
+        AC2_PRESENT_MASK: "(AC2_PRESENT_MASK): اگر ۱ باشد، وقفه اتصال یا قطع شدن منبع به ورودی VAC2 را ماسک می‌کند.",
+        AC1_PRESENT_MASK: "(AC1_PRESENT_MASK): اگر ۱ باشد، وقفه اتصال یا قطع شدن منبع به ورودی VAC1 را ماسک می‌کند.",
+        VBUS_PRESENT_MASK: "(VBUS_PRESENT_MASK): اگر ۱ باشد، وقفه اتصال یا قطع شدن منبع به VBUS را ماسک می‌کند.",
+        CHG_MASK: "(CHG_MASK): اگر ۱ باشد، وقفه تغییر وضعیت شارژ (شروع، پایان و...) را ماسک می‌کند.",
+        ICO_MASK: "(ICO_MASK): اگر ۱ باشد، وقفه تغییر وضعیت الگوریتم ICO را ماسک می‌کند.",
+        VBUS_MASK: "(VBUS_MASK): اگر ۱ باشد، وقفه تغییر نوع منبع ورودی (VBUS Type) را ماسک می‌کند.",
+        TREG_MASK: "(TREG_MASK): اگر ۱ باشد، وقفه ورود به حالت محدودیت حرارتی (Thermal Regulation) را ماسک می‌کند.",
+        VBAT_PRESENT_MASK: "(VBAT_PRESENT_MASK): اگر ۱ باشد، وقفه تغییر وضعیت اتصال باتری را ماسک می‌کند.",
+        BC1_2_DONE_MASK: "(BC1_2_DONE_MASK): اگر ۱ باشد، وقفه اتمام فرآیند تشخیص BC1.2 را ماسک می‌کند.",
+        DPDM_DONE_MASK: "(DPDM_DONE_MASK): اگر ۱ باشد، وقفه اتمام فرآیند تشخیص D+/D- را ماسک می‌کند.",
+        ADC_DONE_MASK: "(ADC_DONE_MASK): اگر ۱ باشد، وقفه اتمام تبدیل ADC (در حالت تک‌شات) را ماسک می‌کند.",
+        VSYS_MASK: "(VSYS_MASK): اگر ۱ باشد، وقفه ورود یا خروج از حالت رگولاسیون حداقل ولتاژ سیستم (VSYSMIN) را ماسک می‌کند.",
+        CHG_TMR_MASK: "(CHG_TMR_MASK): اگر ۱ باشد، وقفه انقضای تایمر شارژ سریع را ماسک می‌کند.",
+        TRICHG_TMR_MASK: "(TRICHG_TMR_MASK): اگر ۱ باشد، وقفه انقضای تایمر شارژ قطره‌ای را ماسک می‌کند.",
+        PRECHG_TMR_MASK: "(PRECHG_TMR_MASK): اگر ۱ باشد، وقفه انقضای تایمر پیش‌شارژ را ماسک می‌کند.",
+        TOPOFF_TMR_MASK: "(TOPOFF_TMR_MASK): اگر ۱ باشد، وقفه انقضای تایمر شارژ تکمیلی (Top-off) را ماسک می‌کند.",
+        VBATOTG_LOW_MASK: "(VBATOTG_LOW_MASK): اگر ۱ باشد، وقفه افت ولتاژ باتری به زیر حد مجاز OTG را ماسک می‌کند.",
+        TS_COLD_MASK: "(TS_COLD_MASK): اگر ۱ باشد، وقفه ورود یا خروج باتری از محدوده دمای سرد را ماسک می‌کند.",
+        TS_COOL_MASK: "(TS_COOL_MASK): اگر ۱ باشد، وقفه ورود یا خروج باتری از محدوده دمای خنک را ماسک می‌کند.",
+        TS_WARM_MASK: "(TS_WARM_MASK): اگر ۱ باشد، وقفه ورود یا خروج باتری از محدوده دمای گرم را ماسک می‌کند.",
+        TS_HOT_MASK: "(TS_HOT_MASK): اگر ۱ باشد، وقفه ورود یا خروج باتری از محدوده دمای داغ را ماسک می‌کند.",
+        IBAT_REG_MASK: "(IBAT_REG_MASK): اگر ۱ باشد، وقفه ورود یا خروج از حالت تنظیم جریان دشارژ باتری را ماسک می‌کند.",
+        VBUS_OVP_MASK: "(VBUS_OVP_MASK): اگر ۱ باشد، وقفه خطای ولتاژ بالای ورودی را ماسک می‌کند.",
+        VBAT_OVP_MASK: "(VBAT_OVP_MASK): اگر ۱ باشد، وقفه خطای ولتاژ بالای باتری را ماسک می‌کند.",
+        IBUS_OCP_MASK: "(IBUS_OCP_MASK): اگر ۱ باشد، وقفه خطای جریان بالای ورودی را ماسک می‌کند.",
+        IBAT_OCP_MASK: "(IBAT_OCP_MASK): اگر ۱ باشد، وقفه خطای جریان بالای دشارژ باتری را ماسک می‌کند.",
+        CONV_OCP_MASK: "(CONV_OCP_MASK): اگر ۱ باشد، وقفه خطای جریان بالای مبدل را ماسک می‌کند.",
+        VAC2_OVP_MASK: "(VAC2_OVP_MASK): اگر ۱ باشد، وقفه خطای ولتاژ بالای ورودی VAC2 را ماسک می‌کند.",
+        VAC1_OVP_MASK: "(VAC1_OVP_MASK): اگر ۱ باشد، وقفه خطای ولتاژ بالای ورودی VAC1 را ماسک می‌کند.",
+        VSYS_SHORT_MASK: "(VSYS_SHORT_MASK): اگر ۱ باشد، وقفه خطای اتصال کوتاه سیستم را ماسک می‌کند.",
+        VSYS_OVP_MASK: "(VSYS_OVP_MASK): اگر ۱ باشد، وقفه خطای ولتاژ بالای سیستم را ماسک می‌کند.",
+        OTG_OVP_MASK: "(OTG_OVP_MASK): اگر ۱ باشد، وقفه خطای ولتاژ بالای OTG را ماسک می‌کند.",
+        OTG_UVP_MASK: "(OTG_UVP_MASK): اگر ۱ باشد، وقفه خطای افت ولتاژ OTG را ماسک می‌کند.",
+        TSHUT_MASK: "(TSHUT_MASK): اگر ۱ باشد، وقفه خطای خاموشی حرارتی (Thermal Shutdown) را ماسک می‌کند."
     };
 
     const registerConfig = {
@@ -382,35 +382,31 @@ document.addEventListener('DOMContentLoaded', function() {
     };
 
     const registerDependencies = {
-        'FORCE_ICO': { controller: 'EN_ICO', requiredValue: '1', message: 'برای اجرای این دستور، ابتدا باید EN_ICO فعال باشد.' },
-        'SDRV_CTRL_1_0': { controller: 'SFET_PRESENT', requiredValue: '1', message: 'برای کنترل Ship FET، ابتدا باید SFET_PRESENT فعال باشد.' },
-        'EN_BATOC': { controller: 'SFET_PRESENT', requiredValue: '1', message: 'برای فعال‌سازی حفاظت جریان باتری، ابتدا باید SFET_PRESENT فعال باشد.' },
-        'EN_9V': { controller: 'HVDCP_EN', requiredValue: '1', message: 'برای درخواست ولتاژ 9V، ابتدا باید HVDCP_EN فعال باشد.' },
-        'EN_12V': { controller: 'HVDCP_EN', requiredValue: '1', message: 'برای درخواست ولتاژ 12V، ابتدا باید HVDCP_EN فعال باشد.' },
-        // 'ADC_RATE': { controller: 'ADC_EN', requiredValue: '1', message: 'برای تغییر تنظیمات ADC، ابتدا باید ADC_EN فعال باشد.' },
-        'ADC_SAMPLE_1_0': { controller: 'ADC_EN', requiredValue: '1', message: 'برای تغییر تنظیمات ADC، ابتدا باید ADC_EN فعال باشد.' },
-        'ADC_AVG': { controller: 'ADC_EN', requiredValue: '1', message: 'برای تغییر تنظیمات ADC، ابتدا باید ADC_EN فعال باشد.' },
-        'ADC_AVG_INIT': { controller: 'ADC_EN', requiredValue: '1', message: 'برای تغییر تنظیمات ADC، ابتدا باید ADC_EN فعال باشد.' },
-        'IBUS_ADC_DIS': { controller: 'ADC_EN', requiredValue: '1', message: 'برای کنترل کانال‌های ADC، ابتدا باید ADC_EN فعال باشد.' },
-        'IBAT_ADC_DIS': { controller: 'ADC_EN', requiredValue: '1', message: 'برای کنترل کانال‌های ADC، ابتدا باید ADC_EN فعال باشد.' },
-        'VBUS_ADC_DIS': { controller: 'ADC_EN', requiredValue: '1', message: 'برای کنترل کانال‌های ADC، ابتدا باید ADC_EN فعال باشد.' },
-        'VBAT_ADC_DIS': { controller: 'ADC_EN', requiredValue: '1', message: 'برای کنترل کانال‌های ADC، ابتدا باید ADC_EN فعال باشد.' },
-        'VSYS_ADC_DIS': { controller: 'ADC_EN', requiredValue: '1', message: 'برای کنترل کانال‌های ADC، ابتدا باید ADC_EN فعال باشد.' },
-        'TS_ADC_DIS': { controller: 'ADC_EN', requiredValue: '1', message: 'برای کنترل کانال‌های ADC، ابتدا باید ADC_EN فعال باشد.' },
-        'TDIE_ADC_DIS': { controller: 'ADC_EN', requiredValue: '1', message: 'برای کنترل کانال‌های ADC، ابتدا باید ADC_EN فعال باشد.' },
-        'DP_ADC_DIS': { controller: 'ADC_EN', requiredValue: '1', message: 'برای کنترل کانال‌های ADC، ابتدا باید ADC_EN فعال باشد.' },
-        'DM_ADC_DIS': { controller: 'ADC_EN', requiredValue: '1', message: 'برای کنترل کانال‌های ADC، ابتدا باید ADC_EN فعال باشد.' },
-        'VAC1_ADC_DIS': { controller: 'ADC_EN', requiredValue: '1', message: 'برای کنترل کانال‌های ADC، ابتدا باید ADC_EN فعال باشد.' },
-        'VAC2_ADC_DIS': { controller: 'ADC_EN', requiredValue: '1', message: 'برای کنترل کانال‌های ADC، ابتدا باید ADC_EN فعال باشد.' },
-        'JEITA_VSET_2_0': { controller: 'TS_IGNORE', requiredValue: '0', message: 'برای استفاده از تنظیمات JEITA، ابتدا باید TS_IGNORE غیرفعال باشد.' },
-        'JEITA_ISETH_1_0': { controller: 'TS_IGNORE', requiredValue: '0', message: 'برای استفاده از تنظیمات JEITA، ابتدا باید TS_IGNORE غیرفعال باشد.' },
-        'JEITA_ISETC_1_0': { controller: 'TS_IGNORE', requiredValue: '0', message: 'برای استفاده از تنظیمات JEITA، ابتدا باید TS_IGNORE غیرفعال باشد.' },
-        'TS_COOL_1_0': { controller: 'TS_IGNORE', requiredValue: '0', message: 'برای استفاده از تنظیمات JEITA، ابتدا باید TS_IGNORE غیرفعال باشد.' },
-        'TS_WARM_1_0': { controller: 'TS_IGNORE', requiredValue: '0', message: 'برای استفاده از تنظیمات JEITA، ابتدا باید TS_IGNORE غیرفعال باشد.' },
-        'BHOT_1_0': { controller: 'TS_IGNORE', requiredValue: '0', message: 'برای تنظیم دمای OTG، ابتدا باید TS_IGNORE غیرفعال باشد.' },
-        'BCOLD': { controller: 'TS_IGNORE', requiredValue: '0', message: 'برای تنظیم دمای OTG، ابتدا باید TS_IGNORE غیرفعال باشد.' },
-        'FORCE_VINDPM_DET': { controller: 'VSYS_STAT', requiredValue: '0', message: 'این دستور تنها زمانی مجاز است که ولتاژ باتری بالاتر از VSYSMIN باشد (VSYS_STAT=0).'},
-        'EN_MPPT': { controller: 'VSYS_STAT', requiredValue: '0', message: 'MPPT تنها زمانی مجاز است که ولتاژ باتری بالاتر از VSYSMIN باشد (VSYS_STAT=0).'}
+        'FORCE_ICO': [
+            { controller: 'EN_ICO', requiredValue: '1', message: 'برای اجرای این دستور، ابتدا باید EN_ICO فعال باشد.' },
+            { controller: 'EN_MPPT', requiredValue: '0', message: 'برای استفاده از ICO، باید MPPT غیرفعال باشد.' },
+            { controller: 'FORCE_VINDPM_DET', requiredValue: '0', message: 'قابلیت ICO نمی‌تواند همزمان با تشخیص VINDPM فعال باشد.' }
+        ],
+        'SDRV_CTRL_1_0': [
+            { controller: 'SFET_PRESENT', requiredValue: '1', message: 'برای کنترل Ship FET، ابتدا باید SFET_PRESENT فعال باشد.' }
+        ],
+        'EN_BATOC': [
+            { controller: 'SFET_PRESENT', requiredValue: '1', message: 'برای فعال‌سازی حفاظت جریان باتری، ابتدا باید SFET_PRESENT فعال باشد.' }
+        ],
+        'FORCE_VINDPM_DET': [
+            { controller: 'VSYS_STAT', requiredValue: '0', message: 'این دستور تنها زمانی مجاز است که ولتاژ باتری بالاتر از VSYSMIN باشد (VSYS_STAT=0).' },
+            { controller: 'EN_ICO', requiredValue: '0', message: 'تشخیص VINDPM نمی‌تواند همزمان با ICO فعال باشد.' },
+            { controller: 'EN_MPPT', requiredValue: '0', message: 'تشخیص VINDPM نمی‌تواند همزمان با MPPT فعال باشد.' }
+        ],
+        'EN_MPPT': [
+            { controller: 'VSYS_STAT', requiredValue: '0', message: 'MPPT تنها زمانی مجاز است که ولتاژ باتری بالاتر از VSYSMIN باشد (VSYS_STAT=0).' },
+            { controller: 'EN_ICO', requiredValue: '0', message: 'MPPT نمی‌تواند همزمان با ICO فعال باشد.' },
+            { controller: 'FORCE_VINDPM_DET', requiredValue: '0', message: 'MPPT نمی‌تواند همزمان با تشخیص VINDPM فعال باشد.' }
+        ],
+        'EN_ICO': [
+            { controller: 'EN_MPPT', requiredValue: '0', message: 'ICO نمی‌تواند همزمان با MPPT فعال باشد.' },
+            { controller: 'FORCE_VINDPM_DET', requiredValue: '0', message: 'ICO نمی‌تواند همزمان با تشخیص VINDPM فعال باشد.' }
+        ]
     };
 
     // ===================================================================================
@@ -876,18 +872,28 @@ document.addEventListener('DOMContentLoaded', function() {
             currentEditingReg = card.dataset.reg;
             const config = registerConfig[currentEditingReg];
             if (!config) return;
-            const dependency = registerDependencies[currentEditingReg];
-            if (dependency) {
-                const controllerValue = currentPageData[dependency.controller];
-                if (controllerValue === undefined) {
-                    showToast('وضعیت کنترل‌کننده هنوز بارگذاری نشده است.', 'warning');
-                    return;
-                }
-                if (String(controllerValue) !== dependency.requiredValue) {
-                    showToast(dependency.message, 'warning');
-                    return;
+
+            // --- START CHANGED SECTION ---
+            const dependencies = registerDependencies[currentEditingReg];
+            if (dependencies) {
+                // تبدیل به آرایه اگر قبلاً نبوده (برای پشتیبانی از ساختار قدیمی)
+                const rules = Array.isArray(dependencies) ? dependencies : [dependencies];
+
+                for (const rule of rules) {
+                    const controllerValue = currentPageData[rule.controller];
+                    if (controllerValue === undefined) {
+                        showToast(`وضعیت کنترل‌کننده (${rule.controller}) هنوز بارگذاری نشده است.`, 'warning');
+                        return;
+                    }
+                    // مقایسه به صورت رشته‌ای (چون مقادیر requiredValue رشته هستند)
+                    if (String(controllerValue) !== rule.requiredValue) {
+                        showToast(rule.message, 'warning');
+                        return;
+                    }
                 }
             }
+            // --- END CHANGED SECTION ---
+
             const rawValue = card.dataset.currentValue;
             
             const labelElement = card.querySelector('.label');
