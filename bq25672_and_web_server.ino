@@ -560,39 +560,39 @@ void handleApiData1(AsyncWebServerRequest *request) {
     // --- OPTIMIZED: Cause registers for Page 1 coloring (single reads) ---
     if (readByte(0x1B, val8)) {
         doc["VBUS_PRESENT_STAT"] = val8 & 0x01;
-        // doc["IINDPM_STAT"] = (val8 >> 7) & 0x01;
-        // doc["VINDPM_STAT"] = (val8 >> 6) & 0x01;
+        doc["IINDPM_STAT"] = (val8 >> 7) & 0x01;
+        doc["VINDPM_STAT"] = (val8 >> 6) & 0x01;
     } else { 
         doc["VBUS_PRESENT_STAT"] = -1;
-        // doc["IINDPM_STAT"] = -1; 
-        // doc["VINDPM_STAT"] = -1; 
+        doc["IINDPM_STAT"] = -1; 
+        doc["VINDPM_STAT"] = -1; 
     }
 
-    // if (readByte(0x12, val8)) { doc["EN_OTG"] = (val8 >> 6) & 0x01; } else { doc["EN_OTG"] = -1; }
-    // if (readByte(0x1D, val8)) { doc["TREG_STAT"] = (val8 >> 2) & 0x01; } else { doc["TREG_STAT"] = -1; }
+    if (readByte(0x12, val8)) { doc["EN_OTG"] = (val8 >> 6) & 0x01; } else { doc["EN_OTG"] = -1; }
+    if (readByte(0x1D, val8)) { doc["TREG_STAT"] = (val8 >> 2) & 0x01; } else { doc["TREG_STAT"] = -1; }
 
-    // if (readByte(0x1F, val8)) {
-    //     doc["TS_COLD_STAT"] = (val8 >> 3) & 0x01;
-    //     doc["TS_COOL_STAT"] = (val8 >> 2) & 0x01;
-    //     doc["TS_WARM_STAT"] = (val8 >> 1) & 0x01;
-    //     doc["TS_HOT_STAT"] = val8 & 0x01;
-    // } else { doc["TS_COLD_STAT"] = -1; doc["TS_COOL_STAT"] = -1; doc["TS_WARM_STAT"] = -1; doc["TS_HOT_STAT"] = -1; }
+    if (readByte(0x1F, val8)) {
+        doc["TS_COLD_STAT"] = (val8 >> 3) & 0x01;
+        doc["TS_COOL_STAT"] = (val8 >> 2) & 0x01;
+        doc["TS_WARM_STAT"] = (val8 >> 1) & 0x01;
+        doc["TS_HOT_STAT"] = val8 & 0x01;
+    } else { doc["TS_COLD_STAT"] = -1; doc["TS_COOL_STAT"] = -1; doc["TS_WARM_STAT"] = -1; doc["TS_HOT_STAT"] = -1; }
 
-    // if (readByte(0x20, val8)) {
-        // doc["IBAT_REG_STAT"] = (val8 >> 7) & 0x01;
-        // doc["VBUS_OVP_STAT"] = (val8 >> 6) & 0x01;
-        // doc["VBAT_OVP_STAT"] = (val8 >> 5) & 0x01;
-        // doc["IBUS_OCP_STAT"] = (val8 >> 4) & 0x01;
-        // doc["IBAT_OCP_STAT"] = (val8 >> 3) & 0x01;
-    // } else { doc["IBAT_REG_STAT"] = -1; doc["VBUS_OVP_STAT"] = -1; doc["VBAT_OVP_STAT"] = -1; doc["IBUS_OCP_STAT"] = -1; doc["IBAT_OCP_STAT"] = -1; }
+    if (readByte(0x20, val8)) {
+        doc["IBAT_REG_STAT"] = (val8 >> 7) & 0x01;
+        doc["VBUS_OVP_STAT"] = (val8 >> 6) & 0x01;
+        doc["VBAT_OVP_STAT"] = (val8 >> 5) & 0x01;
+        doc["IBUS_OCP_STAT"] = (val8 >> 4) & 0x01;
+        doc["IBAT_OCP_STAT"] = (val8 >> 3) & 0x01;
+    } else { doc["IBAT_REG_STAT"] = -1; doc["VBUS_OVP_STAT"] = -1; doc["VBAT_OVP_STAT"] = -1; doc["IBUS_OCP_STAT"] = -1; doc["IBAT_OCP_STAT"] = -1; }
 
-    // if (readByte(0x21, val8)) {
-    //     doc["VSYS_SHORT_STAT"] = (val8 >> 7) & 0x01;
-    //     doc["VSYS_OVP_STAT"] = (val8 >> 6) & 0x01;
-        // doc["OTG_OVP_STAT"] = (val8 >> 5) & 0x01;
-        // doc["OTG_UVP_STAT"] = (val8 >> 4) & 0x01;
-        // doc["TSHUT_STAT"] = (val8 >> 2) & 0x01;
-    // } else { doc["VSYS_SHORT_STAT"] = -1; doc["VSYS_OVP_STAT"] = -1; doc["OTG_OVP_STAT"] = -1; doc["OTG_UVP_STAT"] = -1; doc["TSHUT_STAT"] = -1; }
+    if (readByte(0x21, val8)) {
+        doc["VSYS_SHORT_STAT"] = (val8 >> 7) & 0x01;
+        doc["VSYS_OVP_STAT"] = (val8 >> 6) & 0x01;
+        doc["OTG_OVP_STAT"] = (val8 >> 5) & 0x01;
+        doc["OTG_UVP_STAT"] = (val8 >> 4) & 0x01;
+        doc["TSHUT_STAT"] = (val8 >> 2) & 0x01;
+    } else { doc["VSYS_SHORT_STAT"] = -1; doc["VSYS_OVP_STAT"] = -1; doc["OTG_OVP_STAT"] = -1; doc["OTG_UVP_STAT"] = -1; doc["TSHUT_STAT"] = -1; }
 
     String output; serializeJson(doc, output); request->send(200, "application/json", output);
 }
