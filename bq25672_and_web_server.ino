@@ -594,6 +594,23 @@ void handleApiData1(AsyncWebServerRequest *request) {
         doc["TSHUT_STAT"] = (val8 >> 2) & 0x01;
     } else { doc["VSYS_SHORT_STAT"] = -1; doc["VSYS_OVP_STAT"] = -1; doc["OTG_OVP_STAT"] = -1; doc["OTG_UVP_STAT"] = -1; doc["TSHUT_STAT"] = -1; }
 
+    if (readByte(0x20, val8)) {
+        doc["VAC2_OVP_STAT"] = (val8 >> 1) & 0x01;
+        doc["VAC1_OVP_STAT"] = val8 & 0x01;
+    } else { 
+        doc["VAC2_OVP_STAT"] = -1; 
+        doc["VAC1_OVP_STAT"] = -1; 
+    }
+    if(readByte(0x1F, val8)) { doc["VBATOTG_LOW_STAT"] = (val8 >> 4) & 0x01; } else { doc["VBATOTG_LOW_STAT"] = -1; }
+    if (readByte(0x1B, val8)) {
+        doc["PG_STAT"] = (val8 >> 3) & 0x01;
+    } else { doc["PG_STAT"] = -1; }
+    if(readByte(0x1E, val8)) {
+        doc["CHG_TMR_STAT"] = (val8 >> 3) & 0x01;
+        doc["TRICHG_TMR_STAT"] = (val8 >> 2) & 0x01;
+        doc["PRECHG_TMR_STAT"] = (val8 >> 1) & 0x01;
+    } else { doc["CHG_TMR_STAT"] = -1; doc["TRICHG_TMR_STAT"] = -1; doc["PRECHG_TMR_STAT"] = -1; }
+
     String output; serializeJson(doc, output); request->send(200, "application/json", output);
 }
 

@@ -523,13 +523,17 @@ document.addEventListener('DOMContentLoaded', function() {
         'IBUS_OCP_STAT': { condition: val => val == 1, className: 'status-error', affected: ['IBUS_OCP_STAT', 'IBUS_ADC_15_0'], type: 'error', reasonKey: 'IBUS_OCP_FAULT' },
         'IBAT_OCP_STAT': { condition: val => val == 1, className: 'status-error', affected: ['IBAT_OCP_STAT', 'IBAT_ADC_15_0'], type: 'error', reasonKey: 'IBAT_OCP_FAULT' },
         'CONV_OCP_STAT': { condition: val => val == 1, className: 'status-error', affected: ['CONV_OCP_STAT'], type: 'error', reasonKey: 'CONV_OCP_FAULT' },
-        'OTG_OVP_STAT': { condition: (val, data) => val == 1 && data.EN_OTG == 1, className: 'status-error', affected: ['OTG_OVP_STAT', 'VBUS_ADC_15_0'], type: 'error', reasonKey: 'OTG_OVP_FAULT' },
-        'OTG_UVP_STAT': { condition: (val, data) => val == 1 && data.EN_OTG == 1, className: 'status-error', affected: ['OTG_UVP_STAT', 'VBUS_ADC_15_0'], type: 'error', reasonKey: 'OTG_UVP_FAULT' },
+        'OTG_OVP_STAT': { condition: (val, data) => val == 1 && data.EN_OTG == 1, className: 'status-error', affected: ['OTG_OVP_STAT', 'VBUS_ADC_15_0', 'EN_OTG'], type: 'error', reasonKey: 'OTG_OVP_FAULT' },
+        'OTG_UVP_STAT': { condition: (val, data) => val == 1 && data.EN_OTG == 1, className: 'status-error', affected: ['OTG_UVP_STAT', 'VBUS_ADC_15_0', 'EN_OTG'], type: 'error', reasonKey: 'OTG_UVP_FAULT' },
         'TS_HOT_STAT': { condition: val => val == 1, className: 'status-error', affected: ['TS_HOT_STAT', 'TS_ADC_15_0'], type: 'error', reasonKey: 'TS_HOT_EVENT' },
         'TS_COLD_STAT': { condition: val => val == 1, className: 'status-error', affected: ['TS_COLD_STAT', 'TS_ADC_15_0'], type: 'error', reasonKey: 'TS_COLD_EVENT' },
-        'CHG_TMR_STAT': { condition: val => val == 1, className: 'status-error', affected: ['CHG_TMR_STAT'], type: 'error', reasonKey: 'FAST_CHARGE_TIMEOUT' },
-        'PRECHG_TMR_STAT': { condition: val => val == 1, className: 'status-error', affected: ['PRECHG_TMR_STAT'], type: 'error', reasonKey: 'PRECHARGE_TIMEOUT' },
-        'TRICHG_TMR_STAT': { condition: val => val == 1, className: 'status-error', affected: ['TRICHG_TMR_STAT'], type: 'error', reasonKey: 'TRICKLE_CHARGE_TIMEOUT' },
+        'CHG_TMR_STAT': { condition: val => val == 1, className: 'status-error', affected: ['CHG_TMR_STAT', 'CHG_STAT_2_0'], type: 'error', reasonKey: 'FAST_CHARGE_TIMEOUT' },
+        'PRECHG_TMR_STAT': { condition: val => val == 1, className: 'status-error', affected: ['PRECHG_TMR_STAT', 'CHG_STAT_2_0'], type: 'error', reasonKey: 'PRECHARGE_TIMEOUT' },
+        'TRICHG_TMR_STAT': { condition: val => val == 1, className: 'status-error', affected: ['TRICHG_TMR_STAT', 'CHG_STAT_2_0'], type: 'error', reasonKey: 'TRICKLE_CHARGE_TIMEOUT' },
+        'VAC1_OVP_STAT': { condition: val => val == 1, className: 'status-error', affected: ['VAC1_OVP_STAT', 'VAC1_ADC_15_0'], type: 'error', reasonKey: 'VAC1_OVP_FAULT' },
+        'VAC2_OVP_STAT': { condition: val => val == 1, className: 'status-error', affected: ['VAC2_OVP_STAT', 'VAC2_ADC_15_0'], type: 'error', reasonKey: 'VAC2_OVP_FAULT' },
+        'VBATOTG_LOW_STAT': { condition: (val, data) => val == 1 && data.EN_OTG == 1, className: 'status-error', affected: ['VBATOTG_LOW_STAT', 'EN_OTG', 'VBAT_ADC_15_0'], type: 'error', reasonKey: 'VBAT_LOW_FOR_OTG' },
+        'PG_STAT': { condition: (val, data) => val == 0 && data.VBUS_OVP_STAT == 0, className: 'status-error', affected: ['PG_STAT', 'VBUS_ADC_15_0'], type: 'error', reasonKey: 'POOR_SOURCE' },
 
         // دسته ۲: هشدارها (نارنجی)
         'TREG_STAT': { condition: val => val == 1, className: 'status-warning', affected: ['TREG_STAT', 'TDIE_ADC_15_0'], type: 'warning', reasonKey: 'TREG_EVENT' },
@@ -539,7 +543,7 @@ document.addEventListener('DOMContentLoaded', function() {
         'WD_STAT': { condition: val => val == 1, className: 'status-warning', affected: ['WD_STAT'], type: 'warning', reasonKey: 'WD_EXPIRED' },
         'TS_WARM_STAT': { condition: val => val == 1, className: 'status-warning', affected: ['TS_WARM_STAT', 'TS_ADC_15_0'], type: 'warning', reasonKey: 'TS_WARM_EVENT' },
         'TS_COOL_STAT': { condition: val => val == 1, className: 'status-warning', affected: ['TS_COOL_STAT', 'TS_ADC_15_0'], type: 'warning', reasonKey: 'TS_COOL_EVENT' },
-        'IBAT_REG_STAT': { condition: (val, data) => val == 1 && data.EN_OTG == 1, className: 'status-warning', affected: ['IBAT_REG_STAT', 'IBAT_ADC_15_0'], type: 'warning', reasonKey: 'IBAT_REG_EVENT' },
+        'IBAT_REG_STAT': { condition: (val, data) => val == 1 && data.EN_OTG == 1, className: 'status-warning', affected: ['IBAT_REG_STAT', 'IBAT_ADC_15_0', 'IBUS_ADC_15_0'], type: 'warning', reasonKey: 'IBAT_REG_EVENT' },
         'PG_STAT_POOR': { condition: (val, data) => data.PG_STAT == 0 && data.VBUS_PRESENT_STAT == 1, className: 'status-warning', affected: ['PG_STAT'], type: 'warning', reasonKey: 'POOR_SOURCE' },
 
         // دسته ۳: عملیاتی (رنگ متن)
