@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>صفحه ۶ - تنظیمات ماسک وقفه‌ها</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <button class="menu-toggle" id="menu-toggle-btn">☰</button>
+    <div class="overlay" id="overlay"></div>
+    
+    <div id="status-indicator">در حال اتصال...</div>
+    <div id="loading-overlay" class="loading-overlay">در حال بارگذاری داده‌ها...</div>
+
+    <div class="main-layout">
+        <aside class="sidebar" id="sidebar">
+            <h2 style="text-align: center; color: #fff; margin-top: 0;">منوی کنترل</h2>
+            <nav class="nav-grid">
+                <a href="/" class="nav-button">صفحه ۱: وضعیت اصلی</a>
+                <a href="/page2.html" class="nav-button">صفحه ۲: کنترل شارژ</a>
+                <a href="/page3.html" class="nav-button">صفحه ۳: پیش‌شارژ</a>
+                <a href="/page4.html" class="nav-button">صفحه ۴: کنترل‌های پیشرفته</a>
+                <a href="/page5.html" class="nav-button">صفحه ۵: وضعیت‌های خطا</a>
+                <a href="/page6.html" class="nav-button active">صفحه ۶: تنظیمات ماسک</a>
+                <a href="/history.html" class="nav-button" id="history-nav-button">
+                    <span>تاریخچه وقایع</span>
+                    <span class="notification-badge" style="display: none;"></span>
+                </a>
+            </nav>
+        </aside>
+
+        <div class="content">
+            <header>
+                <h1>صفحه ۶: تنظیمات ماسک وقفه‌ها</h1>
+                <p>در این صفحه می‌توانید وقفه‌ها (Interrupts) را فعال یا غیرفعال کنید. <br> 
+                   <strong>Masked (1):</strong> وقفه غیرفعال است. <strong>Unmasked (0):</strong> وقفه فعال است.</p>
+            </header>
+            <main id="data-container">
+
+                <div class="settings-group">
+                    <h3 class="group-title">ماسک‌های عمومی و وضعیت (Charger Mask 0 & 1)</h3>
+                    <div class="data-grid">
+                        <div class="data-card writable" data-reg="IINDPM_MASK"><span class="label">ماسک IINDPM/IOTG</span><span id="IINDPM_MASK" class="value">--</span></div>
+                        <div class="data-card writable" data-reg="VINDPM_MASK"><span class="label">ماسک VINDPM/VOTG</span><span id="VINDPM_MASK" class="value">--</span></div>
+                        <div class="data-card writable" data-reg="WD_MASK"><span class="label">ماسک Watchdog</span><span id="WD_MASK" class="value">--</span></div>
+                        <div class="data-card writable" data-reg="POORSRC_MASK"><span class="label">ماسک منبع ضعیف</span><span id="POORSRC_MASK" class="value">--</span></div>
+                        <div class="data-card writable" data-reg="PG_MASK"><span class="label">ماسک Power Good</span><span id="PG_MASK" class="value">--</span></div>
+                        <div class="data-card writable" data-reg="AC2_PRESENT_MASK"><span class="label">ماسک اتصال AC2</span><span id="AC2_PRESENT_MASK" class="value">--</span></div>
+                        <div class="data-card writable" data-reg="AC1_PRESENT_MASK"><span class="label">ماسک اتصال AC1</span><span id="AC1_PRESENT_MASK" class="value">--</span></div>
+                        <div class="data-card writable" data-reg="VBUS_PRESENT_MASK"><span class="label">ماسک اتصال VBUS</span><span id="VBUS_PRESENT_MASK" class="value">--</span></div>
+                        <div class="data-card writable" data-reg="CHG_MASK"><span class="label">ماسک وضعیت شارژ</span><span id="CHG_MASK" class="value">--</span></div>
+                        <div class="data-card writable" data-reg="ICO_MASK"><span class="label">ماسک ICO</span><span id="ICO_MASK" class="value">--</span></div>
+                        <div class="data-card writable" data-reg="VBUS_MASK"><span class="label">ماسک نوع VBUS</span><span id="VBUS_MASK" class="value">--</span></div>
+                        <div class="data-card writable" data-reg="TREG_MASK"><span class="label">ماسک تنظیم حرارتی</span><span id="TREG_MASK" class="value">--</span></div>
+                        <div class="data-card writable" data-reg="VBAT_PRESENT_MASK"><span class="label">ماسک اتصال باتری</span><span id="VBAT_PRESENT_MASK" class="value">--</span></div>
+                        <div class="data-card writable" data-reg="BC1_2_DONE_MASK"><span class="label">ماسک اتمام BC1.2</span><span id="BC1_2_DONE_MASK" class="value">--</span></div>
+                    </div>
+                </div>
+
+                <div class="settings-group">
+                    <h3 class="group-title">ماسک‌های تایمر و ADC (Charger Mask 2)</h3>
+                    <div class="data-grid">
+                        <div class="data-card writable" data-reg="DPDM_DONE_MASK"><span class="label">ماسک اتمام D+/D-</span><span id="DPDM_DONE_MASK" class="value">--</span></div>
+                        <div class="data-card writable" data-reg="ADC_DONE_MASK"><span class="label">ماسک اتمام ADC</span><span id="ADC_DONE_MASK" class="value">--</span></div>
+                        <div class="data-card writable" data-reg="VSYS_MASK"><span class="label">ماسک VSYS Min</span><span id="VSYS_MASK" class="value">--</span></div>
+                        <div class="data-card writable" data-reg="CHG_TMR_MASK"><span class="label">ماسک تایمر شارژ سریع</span><span id="CHG_TMR_MASK" class="value">--</span></div>
+                        <div class="data-card writable" data-reg="TRICHG_TMR_MASK"><span class="label">ماسک تایمر شارژ قطره‌ای</span><span id="TRICHG_TMR_MASK" class="value">--</span></div>
+                        <div class="data-card writable" data-reg="PRECHG_TMR_MASK"><span class="label">ماسک تایمر پیش‌شارژ</span><span id="PRECHG_TMR_MASK" class="value">--</span></div>
+                        <div class="data-card writable" data-reg="TOPOFF_TMR_MASK"><span class="label">ماسک تایمر Top-off</span><span id="TOPOFF_TMR_MASK" class="value">--</span></div>
+                    </div>
+                </div>
+
+                <div class="settings-group">
+                    <h3 class="group-title">ماسک‌های دما (Charger Mask 3)</h3>
+                    <div class="data-grid">
+                        <div class="data-card writable" data-reg="VBATOTG_LOW_MASK"><span class="label">ماسک باتری کم برای OTG</span><span id="VBATOTG_LOW_MASK" class="value">--</span></div>
+                        <div class="data-card writable" data-reg="TS_COLD_MASK"><span class="label">ماسک دمای سرد</span><span id="TS_COLD_MASK" class="value">--</span></div>
+                        <div class="data-card writable" data-reg="TS_COOL_MASK"><span class="label">ماسک دمای خنک</span><span id="TS_COOL_MASK" class="value">--</span></div>
+                        <div class="data-card writable" data-reg="TS_WARM_MASK"><span class="label">ماسک دمای گرم</span><span id="TS_WARM_MASK" class="value">--</span></div>
+                        <div class="data-card writable" data-reg="TS_HOT_MASK"><span class="label">ماسک دمای داغ</span><span id="TS_HOT_MASK" class="value">--</span></div>
+                    </div>
+                </div>
+
+                <div class="settings-group">
+                    <h3 class="group-title">ماسک‌های خطا (Fault Masks)</h3>
+                    <div class="data-grid">
+                        <div class="data-card writable" data-reg="IBAT_REG_MASK"><span class="label">ماسک رگولاسیون IBAT</span><span id="IBAT_REG_MASK" class="value">--</span></div>
+                        <div class="data-card writable" data-reg="VBUS_OVP_MASK"><span class="label">ماسک ولتاژ بالای VBUS</span><span id="VBUS_OVP_MASK" class="value">--</span></div>
+                        <div class="data-card writable" data-reg="VBAT_OVP_MASK"><span class="label">ماسک ولتاژ بالای باتری</span><span id="VBAT_OVP_MASK" class="value">--</span></div>
+                        <div class="data-card writable" data-reg="IBUS_OCP_MASK"><span class="label">ماسک جریان بالای ورودی</span><span id="IBUS_OCP_MASK" class="value">--</span></div>
+                        <div class="data-card writable" data-reg="IBAT_OCP_MASK"><span class="label">ماسک جریان بالای باتری</span><span id="IBAT_OCP_MASK" class="value">--</span></div>
+                        <div class="data-card writable" data-reg="CONV_OCP_MASK"><span class="label">ماسک جریان بالای مبدل</span><span id="CONV_OCP_MASK" class="value">--</span></div>
+                        <div class="data-card writable" data-reg="VAC2_OVP_MASK"><span class="label">ماسک ولتاژ بالای VAC2</span><span id="VAC2_OVP_MASK" class="value">--</span></div>
+                        <div class="data-card writable" data-reg="VAC1_OVP_MASK"><span class="label">ماسک ولتاژ بالای VAC1</span><span id="VAC1_OVP_MASK" class="value">--</span></div>
+                        <div class="data-card writable" data-reg="VSYS_SHORT_MASK"><span class="label">ماسک اتصال کوتاه سیستم</span><span id="VSYS_SHORT_MASK" class="value">--</span></div>
+                        <div class="data-card writable" data-reg="VSYS_OVP_MASK"><span class="label">ماسک ولتاژ بالای سیستم</span><span id="VSYS_OVP_MASK" class="value">--</span></div>
+                        <div class="data-card writable" data-reg="OTG_OVP_MASK"><span class="label">ماسک ولتاژ بالای OTG</span><span id="OTG_OVP_MASK" class="value">--</span></div>
+                        <div class="data-card writable" data-reg="OTG_UVP_MASK"><span class="label">ماسک ولتاژ پایین OTG</span><span id="OTG_UVP_MASK" class="value">--</span></div>
+                        <div class="data-card writable" data-reg="TSHUT_MASK"><span class="label">ماسک خاموشی حرارتی</span><span id="TSHUT_MASK" class="value">--</span></div>
+                    </div>
+                </div>
+
+            </main>
+        </div>
+    </div>
+
+    <div id="toast"></div>
+    <div id="edit-modal" class="modal">
+        <div class="modal-content">
+            <h3 id="modal-title">ویرایش رجیستر</h3>
+            <div id="modal-body"></div>
+            <div class="modal-footer">
+                <button id="modal-cancel" class="modal-button">لغو</button>
+                <button id="modal-save" class="modal-button">ذخیره</button>
+            </div>
+        </div>
+    </div>
+
+    <script> window.API_ENDPOINT = '/api/data6'; </script>
+    <script src="script.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const currentPage = window.location.pathname;
+            const navLinks = document.querySelectorAll('.sidebar .nav-button');
+            navLinks.forEach(link => {
+                if (link.getAttribute('href') === currentPage) {
+                    link.classList.add('active');
+                }
+            });
+        });
+    </script>
+</body>
+</html>

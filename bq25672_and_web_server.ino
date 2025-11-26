@@ -845,6 +845,94 @@ void handleApiData5(AsyncWebServerRequest *request) {
     String output; serializeJson(doc, output); request->send(200, "application/json", output);
 }
 
+void handleApiData6(AsyncWebServerRequest *request) {
+    StaticJsonDocument<1536> doc;
+    uint8_t val8;
+
+    // --- REG28_Charger_Mask_0 (0x28) [cite: 1121] ---
+    if (readByte(0x28, val8)) {
+        doc["IINDPM_MASK"] = (val8 >> 7) & 0x01;
+        doc["VINDPM_MASK"] = (val8 >> 6) & 0x01;
+        doc["WD_MASK"] = (val8 >> 5) & 0x01;
+        doc["POORSRC_MASK"] = (val8 >> 4) & 0x01;
+        doc["PG_MASK"] = (val8 >> 3) & 0x01;
+        doc["AC2_PRESENT_MASK"] = (val8 >> 2) & 0x01;
+        doc["AC1_PRESENT_MASK"] = (val8 >> 1) & 0x01;
+        doc["VBUS_PRESENT_MASK"] = val8 & 0x01;
+    } else {
+        doc["IINDPM_MASK"] = -1; doc["VINDPM_MASK"] = -1; doc["WD_MASK"] = -1; doc["POORSRC_MASK"] = -1;
+        doc["PG_MASK"] = -1; doc["AC2_PRESENT_MASK"] = -1; doc["AC1_PRESENT_MASK"] = -1; doc["VBUS_PRESENT_MASK"] = -1;
+    }
+
+    // --- REG29_Charger_Mask_1 (0x29) [cite: 1144] ---
+    if (readByte(0x29, val8)) {
+        doc["CHG_MASK"] = (val8 >> 7) & 0x01;
+        doc["ICO_MASK"] = (val8 >> 6) & 0x01;
+        doc["VBUS_MASK"] = (val8 >> 4) & 0x01; // Bit 5 is Reserved
+        doc["TREG_MASK"] = (val8 >> 2) & 0x01;
+        doc["VBAT_PRESENT_MASK"] = (val8 >> 1) & 0x01;
+        doc["BC1_2_DONE_MASK"] = val8 & 0x01;
+    } else {
+        doc["CHG_MASK"] = -1; doc["ICO_MASK"] = -1; doc["VBUS_MASK"] = -1;
+        doc["TREG_MASK"] = -1; doc["VBAT_PRESENT_MASK"] = -1; doc["BC1_2_DONE_MASK"] = -1;
+    }
+
+    // --- REG2A_Charger_Mask_2 (0x2A) [cite: 1159] ---
+    if (readByte(0x2A, val8)) {
+        doc["DPDM_DONE_MASK"] = (val8 >> 6) & 0x01;
+        doc["ADC_DONE_MASK"] = (val8 >> 5) & 0x01;
+        doc["VSYS_MASK"] = (val8 >> 4) & 0x01;
+        doc["CHG_TMR_MASK"] = (val8 >> 3) & 0x01;
+        doc["TRICHG_TMR_MASK"] = (val8 >> 2) & 0x01;
+        doc["PRECHG_TMR_MASK"] = (val8 >> 1) & 0x01;
+        doc["TOPOFF_TMR_MASK"] = val8 & 0x01;
+    } else {
+        doc["DPDM_DONE_MASK"] = -1; doc["ADC_DONE_MASK"] = -1; doc["VSYS_MASK"] = -1;
+        doc["CHG_TMR_MASK"] = -1; doc["TRICHG_TMR_MASK"] = -1; doc["PRECHG_TMR_MASK"] = -1; doc["TOPOFF_TMR_MASK"] = -1;
+    }
+
+    // --- REG2B_Charger_Mask_3 (0x2B) [cite: 1171] ---
+    if (readByte(0x2B, val8)) {
+        doc["VBATOTG_LOW_MASK"] = (val8 >> 4) & 0x01;
+        doc["TS_COLD_MASK"] = (val8 >> 3) & 0x01;
+        doc["TS_COOL_MASK"] = (val8 >> 2) & 0x01;
+        doc["TS_WARM_MASK"] = (val8 >> 1) & 0x01;
+        doc["TS_HOT_MASK"] = val8 & 0x01;
+    } else {
+        doc["VBATOTG_LOW_MASK"] = -1; doc["TS_COLD_MASK"] = -1; doc["TS_COOL_MASK"] = -1;
+        doc["TS_WARM_MASK"] = -1; doc["TS_HOT_MASK"] = -1;
+    }
+
+    // --- REG2C_FAULT_Mask_0 (0x2C) [cite: 1187] ---
+    if (readByte(0x2C, val8)) {
+        doc["IBAT_REG_MASK"] = (val8 >> 7) & 0x01;
+        doc["VBUS_OVP_MASK"] = (val8 >> 6) & 0x01;
+        doc["VBAT_OVP_MASK"] = (val8 >> 5) & 0x01;
+        doc["IBUS_OCP_MASK"] = (val8 >> 4) & 0x01;
+        doc["IBAT_OCP_MASK"] = (val8 >> 3) & 0x01;
+        doc["CONV_OCP_MASK"] = (val8 >> 2) & 0x01;
+        doc["VAC2_OVP_MASK"] = (val8 >> 1) & 0x01;
+        doc["VAC1_OVP_MASK"] = val8 & 0x01;
+    } else {
+        doc["IBAT_REG_MASK"] = -1; doc["VBUS_OVP_MASK"] = -1; doc["VBAT_OVP_MASK"] = -1; doc["IBUS_OCP_MASK"] = -1;
+        doc["IBAT_OCP_MASK"] = -1; doc["CONV_OCP_MASK"] = -1; doc["VAC2_OVP_MASK"] = -1; doc["VAC1_OVP_MASK"] = -1;
+    }
+
+    // --- REG2D_FAULT_Mask_1 (0x2D) [cite: 1200] ---
+    if (readByte(0x2D, val8)) {
+        doc["VSYS_SHORT_MASK"] = (val8 >> 7) & 0x01;
+        doc["VSYS_OVP_MASK"] = (val8 >> 6) & 0x01;
+        doc["OTG_OVP_MASK"] = (val8 >> 5) & 0x01;
+        doc["OTG_UVP_MASK"] = (val8 >> 4) & 0x01;
+        doc["TSHUT_MASK"] = (val8 >> 2) & 0x01;
+    } else {
+        doc["VSYS_SHORT_MASK"] = -1; doc["VSYS_OVP_MASK"] = -1; doc["OTG_OVP_MASK"] = -1;
+        doc["OTG_UVP_MASK"] = -1; doc["TSHUT_MASK"] = -1;
+    }
+
+    String output; serializeJson(doc, output); request->send(200, "application/json", output);
+}
+
 void handleApiGlobalStatus(AsyncWebServerRequest *request) {
     StaticJsonDocument<256> doc;
     uint8_t val8;
@@ -1006,6 +1094,7 @@ void setup() {
     server.on("/page3.html", HTTP_GET, [](AsyncWebServerRequest *request){ request->send(LittleFS, "/page3.html", "text/html"); });
     server.on("/page4.html", HTTP_GET, [](AsyncWebServerRequest *request){ request->send(LittleFS, "/page4.html", "text/html"); });
     server.on("/page5.html", HTTP_GET, [](AsyncWebServerRequest *request){ request->send(LittleFS, "/page5.html", "text/html"); });
+    server.on("/page6.html", HTTP_GET, [](AsyncWebServerRequest *request){ request->send(LittleFS, "/page6.html", "text/html"); });
     server.on("/history.html", HTTP_GET, [](AsyncWebServerRequest *request){ request->send(LittleFS, "/history.html", "text/html"); });
     server.on("/style.css", HTTP_GET, [](AsyncWebServerRequest *request) { request->send(LittleFS, "/style.css", "text/css"); });
     server.on("/script.js", HTTP_GET, [](AsyncWebServerRequest *request) { request->send(LittleFS, "/script.js", "text/javascript"); });
@@ -1015,6 +1104,7 @@ void setup() {
     server.on("/api/data3", HTTP_GET, handleApiData3);
     server.on("/api/data4", HTTP_GET, handleApiData4);
     server.on("/api/data5", HTTP_GET, handleApiData5);
+    server.on("/api/data6", HTTP_GET, handleApiData6);
     server.on("/api/global_status", HTTP_GET, handleApiGlobalStatus);
     server.on("/api/history", HTTP_GET, handleGetHistory);
     server.on("/api/unseen_count", HTTP_GET, handleGetUnseenCount);
