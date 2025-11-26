@@ -1045,7 +1045,10 @@ document.addEventListener('DOMContentLoaded', function() {
         const dataContainer = document.getElementById('data-container');
         if (dataContainer) {
             fetchPageData();
-            setInterval(fetchPageData, 5000);
+            setInterval(() => {
+                    fetchPageData();
+                    checkUnseenCount();
+            }, 5000);
             setupModalEventListeners();
         }
     }
