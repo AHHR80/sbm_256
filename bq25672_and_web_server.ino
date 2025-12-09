@@ -1268,6 +1268,7 @@ void setup() {
     server.on("/script.js", HTTP_GET, [](AsyncWebServerRequest *request) { request->send(LittleFS, "/script.js", "text/javascript"); });
     server.on("/style_path.css", HTTP_GET, [](AsyncWebServerRequest *request) { request->send(LittleFS, "/style_path.css", "text/css"); });
     server.on("/script_path.js", HTTP_GET, [](AsyncWebServerRequest *request) { request->send(LittleFS, "/script_path.js", "text/javascript"); });
+    server.on("/tailwind.js", HTTP_GET, [](AsyncWebServerRequest *request) { request->send(LittleFS, "/tailwind.js", "text/javascript"); });
     
     server.on("/api/data1", HTTP_GET, handleApiData1);
     server.on("/api/data2", HTTP_GET, handleApiData2);
