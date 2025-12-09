@@ -934,8 +934,8 @@ void handleApiData6(AsyncWebServerRequest *request) {
 }
 
 void handleApiIndex(AsyncWebServerRequest *request) {
-    // افزایش سایز بافر برای ۴۶ آیتم داده
-    StaticJsonDocument<2048> doc;
+    // افزایش سایز بافر برای اطمینان (حدود 55 کلید)
+    StaticJsonDocument<2560> doc;
     uint8_t val8;
     uint16_t val16;
 
@@ -950,36 +950,36 @@ void handleApiIndex(AsyncWebServerRequest *request) {
         doc["EN_HIZ"] = (val8 >> 2) & 0x01;
     } else { doc["EN_CHG"] = -1; doc["EN_HIZ"] = -1; }
 
-    // --- REG11: Charger Control 2 [cite: 278] ---
+    // --- REG11: Charger Control 2 ---
     if (readByte(0x11, val8)) {
-        doc["SDRV_CTRL"] = (val8 >> 1) & 0x03; // SDRV_CTRL_1:0
+        doc["SDRV_CTRL"] = (val8 >> 1) & 0x03;
     } else { doc["SDRV_CTRL"] = -1; }
 
-    // --- REG12: Charger Control 3 [cite: 302] ---
+    // --- REG12: Charger Control 3 ---
     if (readByte(0x12, val8)) {
         doc["EN_OTG"] = (val8 >> 6) & 0x01;
     } else { doc["EN_OTG"] = -1; }
 
-    // --- REG13: Charger Control 4 [cite: 316] ---
+    // --- REG13: Charger Control 4 ---
     if (readByte(0x13, val8)) {
         doc["EN_ACDRV2"] = (val8 >> 7) & 0x01;
         doc["EN_ACDRV1"] = (val8 >> 6) & 0x01;
     } else { doc["EN_ACDRV2"] = -1; doc["EN_ACDRV1"] = -1; }
 
-    // --- REG14: Charger Control 5 [cite: 339, 347] ---
+    // --- REG14: Charger Control 5 ---
     if (readByte(0x14, val8)) {
         doc["SFET_PRESENT"] = (val8 >> 7) & 0x01;
-        doc["EN_BATOCP"] = val8 & 0x01; // Maps to EN_BATOC
+        doc["EN_BATOCP"] = val8 & 0x01;
     } else { doc["SFET_PRESENT"] = -1; doc["EN_BATOCP"] = -1; }
 
-    // --- REG17: NTC Control 0 [cite: 391] ---
+    // --- REG17: NTC Control 0 ---
     if (readByte(0x17, val8)) {
         doc["JEITA_VSET_2"] = (val8 >> 5) & 0x07;
         doc["JEITA_ISETH_1"] = (val8 >> 3) & 0x03;
         doc["JEITA_ISETC_1"] = (val8 >> 1) & 0x03;
     } else { doc["JEITA_VSET_2"] = -1; doc["JEITA_ISETH_1"] = -1; doc["JEITA_ISETC_1"] = -1; }
 
-    // --- REG1B: Charger Status 0 [cite: 434, 444] ---
+    // --- REG1B: Charger Status 0 ---
     if (readByte(0x1B, val8)) {
         doc["IINDPM_STAT"] = (val8 >> 7) & 0x01;
         doc["VINDPM_STAT"] = (val8 >> 6) & 0x01;
@@ -994,31 +994,32 @@ void handleApiIndex(AsyncWebServerRequest *request) {
         doc["VBUS_PRESENT_STAT"] = -1;
     }
 
-    // --- REG1C: Charger Status 1 [cite: 460] ---
+    // --- REG1C: Charger Status 1 ---
     if (readByte(0x1C, val8)) {
         doc["CHG_STAT_2_0"] = (val8 >> 5) & 0x07;
         doc["VBUS_STAT_3_0"] = (val8 >> 1) & 0x0F;
     } else { doc["CHG_STAT_2_0"] = -1; doc["VBUS_STAT_3_0"] = -1; }
 
-    // --- REG1D: Charger Status 2 [cite: 485] ---
+    // --- REG1D: Charger Status 2 ---
     if (readByte(0x1D, val8)) {
         doc["TREG_STAT"] = (val8 >> 2) & 0x01;
         doc["VBAT_PRESENT_STAT"] = val8 & 0x01;
     } else { doc["TREG_STAT"] = -1; doc["VBAT_PRESENT_STAT"] = -1; }
 
-    // --- REG1E: Charger Status 3 [cite: 497, 508] ---
+    // --- REG1E: Charger Status 3 ---
     if (readByte(0x1E, val8)) {
         doc["ACRB2_STAT"] = (val8 >> 7) & 0x01;
         doc["ACRB1_STAT"] = (val8 >> 6) & 0x01;
+        doc["VSYS_STAT"]  = (val8 >> 4) & 0x01; // ADDED: Required for status-sys
         doc["CHG_TMR_STAT"] = (val8 >> 3) & 0x01;
         doc["TRICHG_TMR_STAT"] = (val8 >> 2) & 0x01;
         doc["PRECHG_TMR_STAT"] = (val8 >> 1) & 0x01;
     } else {
-        doc["ACRB2_STAT"] = -1; doc["ACRB1_STAT"] = -1; doc["CHG_TMR_STAT"] = -1;
-        doc["TRICHG_TMR_STAT"] = -1; doc["PRECHG_TMR_STAT"] = -1;
+        doc["ACRB2_STAT"] = -1; doc["ACRB1_STAT"] = -1; doc["VSYS_STAT"] = -1;
+        doc["CHG_TMR_STAT"] = -1; doc["TRICHG_TMR_STAT"] = -1; doc["PRECHG_TMR_STAT"] = -1;
     }
 
-    // --- REG1F: Charger Status 4 [cite: 520] ---
+    // --- REG1F: Charger Status 4 ---
     if (readByte(0x1F, val8)) {
         doc["VBATOTG_LOW_STAT"] = (val8 >> 4) & 0x01;
         doc["TS_COLD_STAT"] = (val8 >> 3) & 0x01;
@@ -1030,23 +1031,27 @@ void handleApiIndex(AsyncWebServerRequest *request) {
         doc["TS_WARM_STAT"] = -1; doc["TS_HOT_STAT"] = -1;
     }
 
-    // --- REG20: FAULT Status 0 [cite: 536, 545] ---
+    // --- REG20: FAULT Status 0 ---
     if (readByte(0x20, val8)) {
         doc["IBAT_REG_STAT"] = (val8 >> 7) & 0x01;
         doc["VBUS_OVP_STAT"] = (val8 >> 6) & 0x01;
         doc["VBAT_OVP_STAT"] = (val8 >> 5) & 0x01;
         doc["IBUS_OCP_STAT"] = (val8 >> 4) & 0x01;
         doc["IBAT_OCP_STAT"] = (val8 >> 3) & 0x01;
-        // Mapping VAC_OVP to individual bits for precision
-        doc["VAC2_OVP_STAT"] = (val8 >> 1) & 0x01;
-        doc["VAC1_OVP_STAT"] = val8 & 0x01;
+        
+        // ADDED: Composite VAC_OVP_STAT for JS logic
+        uint8_t vac2 = (val8 >> 1) & 0x01;
+        uint8_t vac1 = val8 & 0x01;
+        doc["VAC2_OVP_STAT"] = vac2;
+        doc["VAC1_OVP_STAT"] = vac1;
+        doc["VAC_OVP_STAT"] = (vac1 | vac2); 
     } else {
         doc["IBAT_REG_STAT"] = -1; doc["VBUS_OVP_STAT"] = -1; doc["VBAT_OVP_STAT"] = -1;
         doc["IBUS_OCP_STAT"] = -1; doc["IBAT_OCP_STAT"] = -1;
-        doc["VAC2_OVP_STAT"] = -1; doc["VAC1_OVP_STAT"] = -1;
+        doc["VAC2_OVP_STAT"] = -1; doc["VAC1_OVP_STAT"] = -1; doc["VAC_OVP_STAT"] = -1;
     }
 
-    // --- REG21: FAULT Status 1 [cite: 561] ---
+    // --- REG21: FAULT Status 1 ---
     if (readByte(0x21, val8)) {
         doc["VSYS_SHORT_STAT"] = (val8 >> 7) & 0x01;
         doc["VSYS_OVP_STAT"] = (val8 >> 6) & 0x01;
@@ -1058,17 +1063,37 @@ void handleApiIndex(AsyncWebServerRequest *request) {
         doc["OTG_UVP_STAT"] = -1; doc["TSHUT_STAT"] = -1;
     }
 
-    // --- ADC Readings ---
+    // --- ADC Readings (ADDED & Existing) ---
     
-    // REG3B: VBAT ADC [cite: 907]
+    // REG31: IBUS ADC (ADDED)
+    if (readWord(0x31, val16)) {
+        doc["IBUS_ADC_15_0"] = (int16_t)val16;
+    } else { doc["IBUS_ADC_15_0"] = -1; }
+
+    // REG33: IBAT ADC (ADDED)
+    if (readWord(0x33, val16)) {
+        doc["IBAT_ADC_15_0"] = (int16_t)val16;
+    } else { doc["IBAT_ADC_15_0"] = -1; }
+
+    // REG35: VBUS ADC (ADDED)
+    if (readWord(0x35, val16)) {
+        doc["VBUS_ADC_15_0"] = val16;
+    } else { doc["VBUS_ADC_15_0"] = -1; }
+
+    // REG3B: VBAT ADC (Existing)
     if (readWord(0x3B, val16)) {
         doc["VBAT_ADC_15_0"] = val16;
     } else { doc["VBAT_ADC_15_0"] = -1; }
 
-    // REG3D: VSYS ADC [cite: 921]
+    // REG3D: VSYS ADC (Existing)
     if (readWord(0x3D, val16)) {
         doc["VSYS_ADC_15_0"] = val16;
     } else { doc["VSYS_ADC_15_0"] = -1; }
+
+    // REG41: TDIE ADC (ADDED) - Requires 0.5 scaling
+    if (readWord(0x41, val16)) {
+        doc["TDIE_ADC_15_0"] = (float)((int16_t)val16) * 0.5;
+    } else { doc["TDIE_ADC_15_0"] = -999; }
 
 
     String output;
