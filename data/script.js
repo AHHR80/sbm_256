@@ -458,7 +458,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     showToast(fullMessage.trim(), 'interrupt');
                     checkUnseenCount(); 
 
-                    if (window.location.pathname.includes('history.html')) {
+                    if (window.location.pathname.includes('history')) {
                         const historyList = document.getElementById('history-list');
                         if(historyList) {
                             const newItem = createHistoryItem({
@@ -996,7 +996,7 @@ document.addEventListener('DOMContentLoaded', function() {
             });
             if (response.ok) {
                 showToast(`<strong>${displayName}</strong><br>دستور با موفقیت ارسال شد.`, 'success');
-                if(window.location.pathname.includes('history.html')) {
+                if(window.location.pathname.includes('history')) {
                 } else {
                     setTimeout(fetchPageData, 500);
                 }
@@ -1038,7 +1038,7 @@ document.addEventListener('DOMContentLoaded', function() {
     initWebSocket();
     initMobileMenu(); // NEW: Initialize the mobile menu functionality
 
-    if (window.location.pathname.includes('history.html')) {
+    if (window.location.pathname.includes('history')) {
         loadHistory();
     } else {
         checkUnseenCount();

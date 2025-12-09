@@ -1258,12 +1258,12 @@ void setup() {
 
     server.on("/", HTTP_GET, [](AsyncWebServerRequest *request) { request->send(LittleFS, "/index.html", "text/html"); });
     server.on("/page1", HTTP_GET, [](AsyncWebServerRequest *request){ request->send(LittleFS, "/page1.html", "text/html"); });
-    server.on("/page2.html", HTTP_GET, [](AsyncWebServerRequest *request){ request->send(LittleFS, "/page2.html", "text/html"); });
-    server.on("/page3.html", HTTP_GET, [](AsyncWebServerRequest *request){ request->send(LittleFS, "/page3.html", "text/html"); });
-    server.on("/page4.html", HTTP_GET, [](AsyncWebServerRequest *request){ request->send(LittleFS, "/page4.html", "text/html"); });
-    server.on("/page5.html", HTTP_GET, [](AsyncWebServerRequest *request){ request->send(LittleFS, "/page5.html", "text/html"); });
-    server.on("/page6.html", HTTP_GET, [](AsyncWebServerRequest *request){ request->send(LittleFS, "/page6.html", "text/html"); });
-    server.on("/history.html", HTTP_GET, [](AsyncWebServerRequest *request){ request->send(LittleFS, "/history.html", "text/html"); });
+    server.on("/page2", HTTP_GET, [](AsyncWebServerRequest *request){ request->send(LittleFS, "/page2.html", "text/html"); });
+    server.on("/page3", HTTP_GET, [](AsyncWebServerRequest *request){ request->send(LittleFS, "/page3.html", "text/html"); });
+    server.on("/page4", HTTP_GET, [](AsyncWebServerRequest *request){ request->send(LittleFS, "/page4.html", "text/html"); });
+    server.on("/page5", HTTP_GET, [](AsyncWebServerRequest *request){ request->send(LittleFS, "/page5.html", "text/html"); });
+    server.on("/page6", HTTP_GET, [](AsyncWebServerRequest *request){ request->send(LittleFS, "/page6.html", "text/html"); });
+    server.on("/history", HTTP_GET, [](AsyncWebServerRequest *request){ request->send(LittleFS, "/history.html", "text/html"); });
     server.on("/style.css", HTTP_GET, [](AsyncWebServerRequest *request) { request->send(LittleFS, "/style.css", "text/css"); });
     server.on("/script.js", HTTP_GET, [](AsyncWebServerRequest *request) { request->send(LittleFS, "/script.js", "text/javascript"); });
     server.on("/style_path.css", HTTP_GET, [](AsyncWebServerRequest *request) { request->send(LittleFS, "/style_path.css", "text/css"); });
