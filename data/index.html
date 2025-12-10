@@ -11,6 +11,10 @@
     <link rel="stylesheet" href="style_path.css">
 </head>
 <body class="overflow-hidden">
+
+    <!-- عناصر ثابت در بالای صفحه -->
+    <div id="status-indicator">در حال اتصال...</div>
+
     <!-- Main container for the application -->
     <div class="relative w-screen h-screen">
         <!-- Main Schematic View -->
@@ -93,6 +97,8 @@
             </div>
         </main>
     </div>
+
+    <div id="toast"></div>
 
     <script> window.API_ENDPOINT = '/api/index'; </script>
     <script src="script_path.js"></script>

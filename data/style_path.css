@@ -11,6 +11,10 @@
     --error-color: #c0392b;
     --info-color: #3498db;
     --idle-color: #555;
+    --command-color: #3498db;
+    --status-connected: #27ae60;
+    --status-connecting: #f39c12;
+    --status-disconnected: #c0392b;
 }
 
 /* --- استایل‌های پایه --- */
@@ -111,3 +115,50 @@ body {
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
 }
+
+/* استایل‌های مربوط به پیام شناور (Toast) */
+#toast {
+    visibility: hidden;
+    min-width: 250px;
+    max-width: 90%;
+    color: #fff;
+    text-align: center;
+    border-radius: 8px;
+    padding: 16px;
+    position: fixed;
+    z-index: 1001;
+    left: 50%;
+    transform: translateX(-50%);
+    bottom: 30px;
+    font-size: 17px;
+    opacity: 0;
+    transition: opacity 0.5s, bottom 0.5s, visibility 0.5s;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+}
+
+#toast.show {
+    visibility: visible;
+    opacity: 1;
+    bottom: 50px;
+}
+
+/* انواع رنگ‌بندی توست */
+#toast.interrupt { background-color: var(--command-color); }
+#toast.warning { background-color: var(--status-connecting); }
+#toast.success { background-color: var(--status-connected); }
+
+.status-indicator {
+    position: fixed;
+    top: 15px;
+    left: 15px;
+    padding: 5px 12px;
+    border-radius: 15px;
+    color: white;
+    font-size: 0.9em;
+    z-index: 1002;
+    transition: background-color 0.5s ease;
+}
+
+.status-indicator.connected { background-color: var(--status-connected); }
+.status-indicator.connecting { background-color: var(--status-connecting); }
+.status-indicator.disconnected { background-color: var(--status-disconnected); }
