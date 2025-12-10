@@ -344,5 +344,5 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     fetchPageData();
-    setInterval(fetchPageData(), 5000);
+    setInterval(fetchPageData, 5000);
 });
