@@ -358,8 +358,8 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // const loadingOverlay = document.getElementById('loading-overlay');
-    // let isFirstLoad = true;
+    const loadingOverlay = document.getElementById('loading-overlay');
+    let isFirstLoad = true;
 
     async function fetchPageData() {
         if (typeof window.API_ENDPOINT === 'undefined') return;
@@ -377,11 +377,11 @@ document.addEventListener('DOMContentLoaded', function() {
             
             currentPageData = { ...pageData, ...globalRegisterState };
 
-            // if (isFirstLoad && loadingOverlay) {
-            //     loadingOverlay.style.opacity = '0';
-            //     setTimeout(() => loadingOverlay.style.display = 'none', 500);
-            //     isFirstLoad = false;
-            // }
+            if (isFirstLoad && loadingOverlay) {
+                loadingOverlay.style.opacity = '0';
+                setTimeout(() => loadingOverlay.style.display = 'none', 500);
+                isFirstLoad = false;
+            }
             
             updateUI(currentPageData);
 
