@@ -4,6 +4,7 @@
     --card-bg-color: #16213e;
     --primary-color: #0f3460;
     --secondary-color: #e945bd;
+    --bg-secondary-color: #e94560;
     --font-color: #e0e0e0;
     --font-color-label: #a0a0c0;
     --success-color: #2ecc71;
@@ -181,3 +182,118 @@ body {
 .status-indicator.connected { background-color: var(--status-connected); }
 .status-indicator.connecting { background-color: var(--status-connecting); }
 .status-indicator.disconnected { background-color: var(--status-disconnected); }
+
+
+/* استایل سایدبار (دسکتاپ) */
+.nav-button {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    padding: 20px;
+    background-color: var(--card-bg-color);
+    color: var(--font-color);
+    text-decoration: none;
+    border-radius: 10px;
+    text-align: center;
+    font-size: 1.1em;
+    transition: transform 0.2s ease, background-color 0.2s ease;
+    border: 2px solid transparent;
+    position: relative;
+}
+
+.nav-button:hover {
+    transform: translateY(-5px);
+    background-color: var(--bg-secondary-color);
+    border-color: #fff;
+}
+
+.sidebar {
+    position: fixed;
+    top: 0;
+    right: 0;
+    width: 280px;
+    height: 100%;
+    z-index: 999;
+    background-color: var(--primary-color);
+    padding: 20px;
+    box-shadow: -5px 0 15px rgba(0, 0, 0, 0.5); /* سایه به سمت چپ */
+    transition: transform 0.3s ease-in-out;
+    transform: translateX(100%); /* پیش‌فرض: مخفی در سمت راست */
+    border-radius: 0;
+    overflow-y: auto;
+}
+
+/* کلاس برای باز کردن منو */
+.sidebar.open {
+    transform: translateX(0);
+}
+
+.sidebar .nav-grid {
+    display: flex;
+    flex-direction: column; /* چیدمان عمودی دکمه‌ها */
+    gap: 15px;
+}
+
+.sidebar .nav-button {
+    font-size: 1em;
+    padding: 15px;
+}
+
+/* استایل دکمه فعال (صفحه جاری) */
+.sidebar .nav-button.active {
+    background-color: var(--secondary-color);
+    color: #fff;
+    border-color: #fff;
+    transform: translateY(-2px);
+}
+
+/* دکمه همبرگری */
+.menu-toggle {
+    display: block; /* همیشه نمایش داده شود */
+    position: fixed;
+    top: 15px;
+    right: 15px;
+    z-index: 1100;
+    width: 40px;
+    height: 40px;
+    background: var(--bg-secondary-color);
+    color: white;
+    border: none;
+    border-radius: 50%;
+    font-size: 24px;
+    cursor: pointer;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+}
+
+/* لایه تاریک پشت منو */
+.overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.5);
+    z-index: 998;
+}
+
+.overlay.active {
+    display: block;
+}
+
+/* کدهای مربوط به بخش notification counter */
+.notification-badge {
+    background-color: #e94560; /* رنگ قرمز (secondary-color) */
+    color: white;
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 0.8em;
+    font-weight: bold;
+    border: 2px solid #0f3460; /* همرنگ پس‌زمینه منو برای ایجاد حاشیه */
+    /* اگر در حالت absolute می‌خواهید گوشه دکمه باشد، استایل‌های position را اضافه کنید */
+}

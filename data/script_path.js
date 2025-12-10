@@ -469,6 +469,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         }
                     });
                     showToast(fullMessage.trim(), 'interrupt');
+                    checkUnseenCount();
                 }
                 // =============================================
 
@@ -480,7 +481,52 @@ document.addEventListener('DOMContentLoaded', function() {
         };
     }
 
+    async function checkUnseenCount() {
+        const historyNavButton = document.getElementById('history-nav-button');
+        if (!historyNavButton) return;
+        
+        const badge = historyNavButton.querySelector('.notification-badge');
+        try {
+            const response = await fetch('/api/unseen_count');
+            if(response.ok) {
+                const data = await response.json();
+                if (data.unseen_count > 0) {
+                    badge.textContent = data.unseen_count;
+                    badge.style.display = 'flex';
+                } else {
+                    badge.style.display = 'none';
+                }
+            }
+        } catch (error) {
+            console.error("Could not fetch unseen count:", error);
+        }
+    }
+
+    // ===================================================================================
+    // بخش ۶: راه‌اندازی اصلی
+    // ===================================================================================
+
+    function initMobileMenu() {
+        const menuToggle = document.getElementById('menu-toggle-btn');
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('overlay');
+
+        if (menuToggle && sidebar && overlay) {
+            menuToggle.addEventListener('click', () => {
+                sidebar.classList.toggle('open');
+                overlay.classList.toggle('active');
+            });
+
+            overlay.addEventListener('click', () => {
+                sidebar.classList.remove('open');
+                overlay.classList.remove('active');
+            });
+        }
+    }
+
     initWebSocket();
+    initMobileMenu();
     fetchPageData();
-    setInterval(fetchPageData, 5000);
+    checkUnseenCount();
+    setInterval(() => {fetchPageData(); checkUnseenCount();}, 5000);
 });
