@@ -137,6 +137,19 @@
 
     <script> window.API_ENDPOINT = '/api/index'; </script>
     <script src="script_path.js"></script>
+    <script>
+        // کدی برای فعال کردن دکمه منوی صفحه فعلی
+        document.addEventListener('DOMContentLoaded', function () {
+            const currentPage = window.location.pathname;
+            const navLinks = document.querySelectorAll('.sidebar .nav-button');
+            navLinks.forEach(link => {
+                // For the root page, the href is "/"
+                if (link.getAttribute('href') === currentPage || (currentPage === '/' && link.getAttribute('href') === '/')) {
+                    link.classList.add('active');
+                }
+            });
+        });
+    </script>
 </body>
 
 </html>
