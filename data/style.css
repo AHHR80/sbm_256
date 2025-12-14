@@ -510,6 +510,8 @@ header p {
     flex-grow: 1;
     text-align: right;
     font-size: 1.1em;
+    word-break: break-word;
+    overflow-wrap: anywhere;
 }
 
 /* --- Settings Group Styles --- */
