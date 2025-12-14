@@ -1,4 +1,4 @@
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
 
     let globalRegisterState = {};
     let currentPageData = {}; // برای نگهداری آخرین داده‌های صفحه فعلی
@@ -88,10 +88,10 @@ document.addEventListener('DOMContentLoaded', function() {
         UIElements.batteryVoltageText.textContent = `${(data.VBAT_ADC_15_0 / 1000).toFixed(2) || '--'} V`;
         UIElements.batteryCurrentText.textContent = `${(data.IBAT_ADC_15_0 / 1000).toFixed(2) || '--'} A`;
         UIElements.chipTempText.textContent = `${data.TDIE_ADC_15_0 || '--'} °C`;
-        
+
         const statusInterpreters = {
             CHG_STAT_2_0: v => ["شارژ نمی‌شود", "قطره‌ای", "پیش‌شارژ", "شارژ سریع", "جریان پایانی", "رزرو شده", "تکمیلی", "کامل شد"][v] || "نامشخص",
-            VBUS_STAT_3_0: v => ({0:"بدون ورودی",1:"SDP",2:"CDP",3:"DCP",4:"HVDCP",5:"ناشناخته",6:"غیراستاندارد",7:"OTG",8:"نامعتبر"})[v]||"رزرو شده",
+            VBUS_STAT_3_0: v => ({ 0: "بدون ورودی", 1: "SDP", 2: "CDP", 3: "DCP", 4: "HVDCP", 5: "ناشناخته", 6: "غیراستاندارد", 7: "OTG", 8: "نامعتبر" })[v] || "رزرو شده",
         };
 
         const chargeStatus = statusInterpreters.CHG_STAT_2_0(data.CHG_STAT_2_0);
@@ -100,7 +100,7 @@ document.addEventListener('DOMContentLoaded', function() {
         UIElements.statusAdapter.textContent = statusInterpreters.VBUS_STAT_3_0(data.VBUS_STAT_3_0);
         UIElements.statusIbus.textContent = `${data.IBUS_ADC_15_0 || '--'} mA`;
         UIElements.statusSys.textContent = data.VSYS_STAT == 1 ? 'تنظیم ولتاژ' : 'عادی';
-        
+
         const overallStatus = getOverallStatus(data);
         UIElements.overallStatusText.textContent = overallStatus.text;
         UIElements.overallStatusContainer.className = `mb-4 p-3 rounded-lg flex items-center justify-center space-x-3 space-x-reverse text-lg md:text-xl font-bold transition-all duration-300 ${overallStatus.colorClass}`;
@@ -130,7 +130,7 @@ document.addEventListener('DOMContentLoaded', function() {
         updateSysPath(data); // تابع جدید برای مسیر SYS
         updateVbusIcon(data);
         updateVbatIcon(data);
-        
+
         UIElements.faultIndicator.style.visibility = (data.VBUS_OVP_STAT || data.VSYS_OVP_STAT || data.VBAT_OVP_STAT || data.TSHUT_STAT) ? 'visible' : 'hidden';
         if (data.TS_COOL_STAT == 1 || data.TS_COLD_STAT == 1) {
             UIElements.tempIndicator.style.visibility = 'visible';
@@ -140,13 +140,13 @@ document.addEventListener('DOMContentLoaded', function() {
             UIElements.tempIndicatorCircle.style.fill = 'var(--warning-color)';
         }
     }
-    
+
     function setPathStyle(path, { color, isAnimated, isReversed = false, isStatic = false }) {
         path.style.stroke = color;
         path.style.opacity = '1';
         // Reset classes
         path.classList.remove('flow-active', 'flow-otg', 'hiz-mode');
-        
+
         if (isAnimated) {
             path.classList.add('flow-active');
             if (isReversed) path.classList.add('flow-otg');
@@ -164,12 +164,12 @@ document.addEventListener('DOMContentLoaded', function() {
             p.style.stroke = 'transparent';
             p.style.opacity = '0';
         });
-        
+
         UIElements.vbusComponentRect.style.stroke = '';
         UIElements.batteryRect.style.stroke = '';
         UIElements.batteryCap.style.stroke = '';
         UIElements.chipRect.style.stroke = '';
-        
+
         UIElements.faultIndicator.style.visibility = 'hidden';
         UIElements.tempIndicator.style.visibility = 'hidden';
         UIElements.batteryComponent.style.opacity = '1';
@@ -178,7 +178,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // --- تابع جدید برای مسیر SYS ---
     function updateSysPath(data) {
         const path = UIElements.pathChipToSys;
-        
+
         // اطمینان از وجود مقادیر برای جلوگیری از خطا
         const vbat = data.VBAT_ADC_15_0 || 0;
         const vsys = data.VSYS_ADC_15_0 || 0;
@@ -202,9 +202,9 @@ document.addEventListener('DOMContentLoaded', function() {
     function updateVbusPath(data) {
         const path = UIElements.pathVbusToChip;
         const d = data; // shorthand
-        
+
         // Priority List: قطع, قرمز(رفت), قرمز(برگشت), خاکستری, صورتی, زرد(رفت), زرد(برگشت), بنفش, سبز, آبی
-        
+
         // 1. قطع
         if ((d.VBUS_PRESENT_STAT == 0 && d.AC1_PRESENT_STAT == 0 && d.AC2_PRESENT_STAT == 0) && d.EN_OTG == 0) {
             console.log("VBUS Path: قطع");
@@ -225,7 +225,7 @@ document.addEventListener('DOMContentLoaded', function() {
             setPathStyle(path, { color: 'var(--idle-color)', isAnimated: false, isStatic: true });
         }
         // 5. صورتی (رفت و برگشت)
-        else if (!(d.VBUS_OVP_STAT == 1 || d.VSYS_OVP_STAT == 1 || d.VBAT_OVP_STAT == 1 || d.IBUS_OCP_STAT == 1 || d.PG_STAT == 0 || d.TSHUT_STAT == 1 || d.OTG_OVP_STAT == 1 || d.OTG_UVP_STAT == 1 || (d.EN_OTG == 1 && (d.TS_COLD_STAT == 1 || d.TS_HOT_STAT == 1)) || d.EN_HIZ == 1 || d.SDRV_CTRL != 0 || d.VAC_OVP_STAT == 1 || d.VSYS_SHORT_STAT == 1) && d.TS_COLD_STAT == 0 && d.TS_HOT_STAT == 0 && d.OTG_OVP_STAT == 0 && d.OTG_UVP_STAT == 0 && d.VBATOTG_LOW_STAT == 0 && ((d.ACRB1_STAT == 1 || d.ACRB2_STAT == 1) && (d.EN_ACDRV1 == 0 && d.EN_ACDRV2 == 0)) && d.CHG_STAT_2_0 == 0) {
+        else if (!(d.VBUS_OVP_STAT == 1 || d.VSYS_OVP_STAT == 1 || d.VBAT_OVP_STAT == 1 || d.IBUS_OCP_STAT == 1 || d.TSHUT_STAT == 1 || d.OTG_OVP_STAT == 1 || d.OTG_UVP_STAT == 1 || (d.EN_OTG == 1 && (d.TS_COLD_STAT == 1 || d.TS_HOT_STAT == 1)) || d.EN_HIZ == 1 || d.SDRV_CTRL != 0 || d.VAC_OVP_STAT == 1 || d.VSYS_SHORT_STAT == 1) && d.TS_COLD_STAT == 0 && d.TS_HOT_STAT == 0 && d.OTG_OVP_STAT == 0 && d.OTG_UVP_STAT == 0 && d.VBATOTG_LOW_STAT == 0 && ((d.ACRB1_STAT == 1 || d.ACRB2_STAT == 1) && (d.EN_ACDRV1 == 0 && d.EN_ACDRV2 == 0)) && d.CHG_STAT_2_0 == 0) {
             console.log("VBUS Path: صورتی (برگشت)");
             setPathStyle(path, { color: 'var(--secondary-color)', isAnimated: true, isReversed: true });
         }
@@ -262,7 +262,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const d = data; // shorthand
 
         // Priority List: قطع, خاکستری, قرمز, مشکی, صورتی, زرد(رفت), زرد(برگشت), آبی, بنفش, سبز
-        
+
         // 1. قطع
         if (d.VBAT_PRESENT_STAT == 0 || d.SDRV_CTRL != 0 || (!(d.VBUS_OVP_STAT == 1 || d.VSYS_OVP_STAT == 1 || d.VBAT_OVP_STAT == 1 || d.IBUS_OCP_STAT == 1 || d.PG_STAT == 0 || d.TSHUT_STAT == 1 || d.OTG_OVP_STAT == 1 || d.OTG_UVP_STAT == 1 || (d.EN_OTG == 1 && (d.TS_COLD_STAT == 1 || d.TS_HOT_STAT == 1)) || d.EN_HIZ == 1 || d.SDRV_CTRL != 0 || d.VAC_OVP_STAT == 1 || d.VSYS_SHORT_STAT == 1) && (d.VBUS_PRESENT_STAT == 1) && d.VBAT_PRESENT_STAT == 1 && d.CHG_STAT_2_0 == 7 && d.EN_OTG == 0 && d.VBATOTG_LOW_STAT == 0 && d.TS_COLD_STAT == 0 && d.TS_HOT_STAT == 0 && d.VBAT_OVP_STAT == 0 && d.IBAT_OCP_STAT == 0 && d.TSHUT_STAT == 0 && d.OTG_OVP_STAT == 0 && d.OTG_UVP_STAT == 0 && d.VINDPM_STAT == 0 && d.IINDPM_STAT == 0 && d.IBAT_REG_STAT == 0 && d.TREG_STAT == 0 && ((d.ACRB1_STAT == 0 && d.ACRB2_STAT == 0) || (d.EN_ACDRV1 == 1 || d.EN_ACDRV2 == 1)) && (d.TS_WARM_STAT == 0 || (d.JEITA_VSET_2 != 0 && d.JEITA_ISETH_1 != 0)) && (d.TS_COOL_STAT == 0 || (d.JEITA_ISETC_1 != 0)))) {
             console.log("VBAT Path: قطع");
@@ -283,7 +283,7 @@ document.addEventListener('DOMContentLoaded', function() {
             setPathStyle(pathFromBat, { color: '#a855f7', isAnimated: true });
         }
         // 5. صورتی
-        else if (!(d.VBUS_OVP_STAT == 1 || d.VSYS_OVP_STAT == 1 || d.VBAT_OVP_STAT == 1 || d.IBUS_OCP_STAT == 1 || d.PG_STAT == 0 || d.TSHUT_STAT == 1 || d.OTG_OVP_STAT == 1 || d.OTG_UVP_STAT == 1 || (d.EN_OTG == 1 && (d.TS_COLD_STAT == 1 || d.TS_HOT_STAT == 1)) || d.EN_HIZ == 1 || d.SDRV_CTRL != 0 || d.VAC_OVP_STAT == 1 || d.VSYS_SHORT_STAT == 1) && d.EN_OTG == 1 && d.VBAT_PRESENT_STAT == 1 && d.VBATOTG_LOW_STAT == 0 && d.TS_COLD_STAT == 0 && d.TS_HOT_STAT == 0 && d.VBAT_OVP_STAT == 0 && d.IBAT_OCP_STAT == 0 && d.TSHUT_STAT == 0 && d.OTG_OVP_STAT == 0 && d.OTG_UVP_STAT == 0 && ((d.ACRB1_STAT == 1 || d.ACRB2_STAT == 1) && (d.EN_ACDRV1 == 0 && d.EN_ACDRV2 == 0)) && d.CHG_STAT_2_0 == 0 && d.SDRV_CTRL == 0) {
+        else if (!(d.VBUS_OVP_STAT == 1 || d.VSYS_OVP_STAT == 1 || d.VBAT_OVP_STAT == 1 || d.IBUS_OCP_STAT == 1 || d.TSHUT_STAT == 1 || d.OTG_OVP_STAT == 1 || d.OTG_UVP_STAT == 1 || (d.EN_OTG == 1 && (d.TS_COLD_STAT == 1 || d.TS_HOT_STAT == 1)) || d.EN_HIZ == 1 || d.SDRV_CTRL != 0 || d.VAC_OVP_STAT == 1 || d.VSYS_SHORT_STAT == 1) && d.EN_OTG == 1 && d.VBAT_PRESENT_STAT == 1 && d.VBATOTG_LOW_STAT == 0 && d.TS_COLD_STAT == 0 && d.TS_HOT_STAT == 0 && d.VBAT_OVP_STAT == 0 && d.IBAT_OCP_STAT == 0 && d.TSHUT_STAT == 0 && d.OTG_OVP_STAT == 0 && d.OTG_UVP_STAT == 0 && ((d.ACRB1_STAT == 1 || d.ACRB2_STAT == 1) && (d.EN_ACDRV1 == 0 && d.EN_ACDRV2 == 0)) && d.CHG_STAT_2_0 == 0 && d.SDRV_CTRL == 0) {
             console.log("VBAT Path: صورتی");
             setPathStyle(pathFromBat, { color: 'var(--secondary-color)', isAnimated: true });
         }
@@ -294,7 +294,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         // 7. زرد (برگشت)
         else if (!(d.VBUS_OVP_STAT == 1 || d.VSYS_OVP_STAT == 1 || d.VBAT_OVP_STAT == 1 || d.IBUS_OCP_STAT == 1 || d.PG_STAT == 0 || d.TSHUT_STAT == 1 || d.OTG_OVP_STAT == 1 || d.OTG_UVP_STAT == 1 || (d.EN_OTG == 1 && (d.TS_COLD_STAT == 1 || d.TS_HOT_STAT == 1)) || d.EN_HIZ == 1 || d.SDRV_CTRL != 0 || d.VAC_OVP_STAT == 1 || d.VSYS_SHORT_STAT == 1) && d.VBAT_PRESENT_STAT == 1 && ((d.EN_OTG == 1 && d.TS_COLD_STAT == 0 && d.TSHUT_STAT == 0 && d.OTG_OVP_STAT == 0 && d.OTG_UVP_STAT == 0 && (d.VINDPM_STAT == 1 || d.IINDPM_STAT == 1 || d.IBAT_REG_STAT == 1 || d.TREG_STAT == 1) && d.CHG_STAT_2_0 == 0) || (d.VBUS_PRESENT_STAT == 1 && d.EN_OTG == 0 && d.TS_COLD_STAT == 0 && ((d.VINDPM_STAT == 1 || d.IINDPM_STAT == 1 || d.IBAT_REG_STAT == 1 || d.TREG_STAT == 1) && (d.VSYS_ADC_15_0 <= d.VBAT_ADC_15_0)))) && d.TS_HOT_STAT == 0 && d.VBATOTG_LOW_STAT == 0 && d.VBAT_OVP_STAT == 0 && d.IBAT_OCP_STAT == 0 && ((d.ACRB1_STAT == 0 && d.ACRB2_STAT == 0) || (d.EN_ACDRV1 == 1 || d.EN_ACDRV2 == 1)) && d.SDRV_CTRL == 0) {
-            if (d.EN_OTG == 1){
+            if (d.EN_OTG == 1) {
                 console.log("VBAT Path: زرد (برگشت) حالت OTG");
             } else {
                 console.log("VBAT Path: زرد (برگشت) حالت supplement.");
@@ -374,7 +374,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
             const pageData = await pageResponse.json();
             globalRegisterState = await globalStatusResponse.json();
-            
+
             currentPageData = { ...pageData, ...globalRegisterState };
 
             if (isFirstLoad && loadingOverlay) {
@@ -382,7 +382,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 setTimeout(() => loadingOverlay.style.display = 'none', 500);
                 isFirstLoad = false;
             }
-            
+
             updateUI(currentPageData);
 
         } catch (error) {
@@ -406,11 +406,11 @@ document.addEventListener('DOMContentLoaded', function() {
         if (!statusIndicator) return;
         statusIndicator.className = 'status-indicator'; // ریست کردن کلاس‌ها
         statusIndicator.classList.add(status);
-        
-        const textMap = { 
-            connecting: 'در حال اتصال...', 
-            connected: 'متصل', 
-            disconnected: 'قطع' 
+
+        const textMap = {
+            connecting: 'در حال اتصال...',
+            connected: 'متصل',
+            disconnected: 'قطع'
         };
         statusIndicator.textContent = textMap[status];
     }
@@ -422,10 +422,10 @@ document.addEventListener('DOMContentLoaded', function() {
             toast.className = "show"; // نمایش دادن
             toast.classList.add(type); // افزودن نوع (رنگ)
             toast.innerHTML = message;
-            
+
             // مخفی کردن بعد از 8 ثانیه
-            setTimeout(() => { 
-                toast.className = toast.className.replace("show", ""); 
+            setTimeout(() => {
+                toast.className = toast.className.replace("show", "");
             }, 8000);
         }
     }
@@ -435,27 +435,27 @@ document.addEventListener('DOMContentLoaded', function() {
         console.log('Trying to open a WebSocket connection...');
         updateStatusIndicator('connecting');
         websocket = new WebSocket(gateway);
-        
+
         // وقتی اتصال برقرار شد
         websocket.onopen = () => {
             console.log('Connection opened');
             updateStatusIndicator('connected');
         };
-        
+
         // وقتی اتصال قطع شد (تلاش مجدد بعد از 2 ثانیه)
         websocket.onclose = () => {
             console.log('Connection closed');
             updateStatusIndicator('disconnected');
             setTimeout(initWebSocket, 2000);
         };
-        
+
         // وقتی پیامی از سرور دریافت شد
         websocket.onmessage = (event) => {
             console.log('Message from server: ', event.data);
             try {
                 // تلاش برای پارس کردن JSON (مخصوص پروژه فعلی شما)
                 const data = JSON.parse(event.data);
-                
+
                 // === منطق نمایش پیام بر اساس داده‌های پروژه ===
                 // اگر پروژه جدید فرمت متفاوتی دارد، این قسمت را تغییر دهید
                 if (data.events && Array.isArray(data.events)) {
@@ -484,11 +484,11 @@ document.addEventListener('DOMContentLoaded', function() {
     async function checkUnseenCount() {
         const historyNavButton = document.getElementById('history-nav-button');
         if (!historyNavButton) return;
-        
+
         const badge = historyNavButton.querySelector('.notification-badge');
         try {
             const response = await fetch('/api/unseen_count');
-            if(response.ok) {
+            if (response.ok) {
                 const data = await response.json();
                 if (data.unseen_count > 0) {
                     badge.textContent = data.unseen_count;
@@ -528,5 +528,5 @@ document.addEventListener('DOMContentLoaded', function() {
     initMobileMenu();
     fetchPageData();
     checkUnseenCount();
-    setInterval(() => {fetchPageData(); checkUnseenCount();}, 5000);
+    setInterval(() => { fetchPageData(); checkUnseenCount(); }, 5000);
 });
