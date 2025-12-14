@@ -1,16 +1,18 @@
 <!DOCTYPE html>
 <html lang="fa" dir="rtl">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>داشبورد شماتیک BQ25672</title>
-    
-    
+
+
     <script src="tailwind.js"></script>
-    
+
     <link rel="stylesheet" href="style_path.css">
 </head>
-<body class="overflow-hidden">
+
+<body class="overflow-y-auto">
 
     <button class="menu-toggle" id="menu-toggle-btn">☰</button>
     <div class="overlay" id="overlay"></div>
@@ -38,12 +40,13 @@
     </aside>
 
     <!-- Main container for the application -->
-    <div class="relative w-screen h-screen">
+    <div class="relative w-screen min-h-screen">
         <!-- Main Schematic View -->
-        <main class="w-full h-full flex flex-col items-center justify-center schematic-bg p-4">
-            
+        <main class="w-full min-h-full flex flex-col items-center justify-center schematic-bg p-4 pb-32">
+
             <!-- Overall Status Display -->
-            <div id="overall-status-container" class="mb-4 p-3 rounded-lg flex items-center justify-center space-x-3 space-x-reverse text-lg md:text-xl font-bold transition-all duration-300">
+            <div id="overall-status-container"
+                class="mb-4 p-3 rounded-lg flex items-center justify-center space-x-3 space-x-reverse text-lg md:text-xl font-bold transition-all duration-300">
                 <div id="overall-status-indicator" class="w-4 h-4 rounded-full"></div>
                 <span id="overall-status-text">--</span>
             </div>
@@ -58,27 +61,32 @@
 
                 <!-- VBUS Component -->
                 <g id="vbus-component" class="component">
-                    <rect x="20" y="125" width="80" height="50" rx="10" class="component-bg component-stroke-info"/>
+                    <rect x="20" y="125" width="80" height="50" rx="10" class="component-bg component-stroke-info" />
                     <text x="60" y="145" text-anchor="middle" class="label-text">VBUS</text>
                     <text id="vbus-voltage-text" x="60" y="170" text-anchor="middle" class="data-text">-- V</text>
                 </g>
 
                 <!-- BQ25672 Chip -->
                 <g id="chip-component" class="component">
-                    <rect id="chip-rect" x="320" y="100" width="160" height="100" rx="10" class="component-bg component-stroke-secondary"/>
+                    <rect id="chip-rect" x="320" y="100" width="160" height="100" rx="10"
+                        class="component-bg component-stroke-secondary" />
                     <text x="400" y="140" text-anchor="middle" class="data-text">BQ25672</text>
                     <text id="chip-temp-text" x="400" y="170" text-anchor="middle" class="label-text">-- °C</text>
-                    <text id="charge-status-text" x="400" y="190" text-anchor="middle" class="label-text">درحال شارژ نیست</text>
+                    <text id="charge-status-text" x="400" y="190" text-anchor="middle" class="label-text">درحال شارژ
+                        نیست</text>
                     <g id="fault-indicator" class="fault-icon" style="visibility: hidden;">
-                        <circle cx="465" cy="115" r="12" fill="var(--error-color)"/>
-                        <text x="465" y="120" text-anchor="middle" fill="white" font-size="18" font-weight="bold">!</text>
+                        <circle cx="465" cy="115" r="12" fill="var(--error-color)" />
+                        <text x="465" y="120" text-anchor="middle" fill="white" font-size="18"
+                            font-weight="bold">!</text>
                     </g>
                 </g>
 
                 <!-- Battery Component -->
                 <g id="battery-component" class="component">
-                    <rect id="battery-rect" x="360" y="280" width="80" height="100" rx="10" class="component-bg component-stroke-success"/>
-                    <rect id="battery-cap" x="385" y="270" width="30" height="10" rx="3" class="component-bg component-stroke-success"/>
+                    <rect id="battery-rect" x="360" y="280" width="80" height="100" rx="10"
+                        class="component-bg component-stroke-success" />
+                    <rect id="battery-cap" x="385" y="270" width="30" height="10" rx="3"
+                        class="component-bg component-stroke-success" />
                     <text x="400" y="320" text-anchor="middle" class="label-text">BAT</text>
                     <text id="battery-voltage-text" x="400" y="345" text-anchor="middle" class="data-text">-- V</text>
                     <text id="battery-current-text" x="400" y="370" text-anchor="middle" class="label-text">-- A</text>
@@ -90,14 +98,16 @@
 
                 <!-- SYS Load Component -->
                 <g id="sys-component" class="component">
-                    <rect x="700" y="125" width="80" height="50" rx="10" class="component-bg component-stroke-warning"/>
+                    <rect x="700" y="125" width="80" height="50" rx="10"
+                        class="component-bg component-stroke-warning" />
                     <text x="740" y="145" text-anchor="middle" class="label-text">SYS</text>
                     <text id="sys-voltage-text" x="740" y="170" text-anchor="middle" class="data-text">-- V</text>
                 </g>
             </svg>
-            
+
             <!-- Bottom Status Panel -->
-            <div class="absolute bottom-4 left-4 right-4 mx-auto max-w-4xl p-2 rounded-xl bg-black/20 status-panel-card border border-gray-700">
+            <div
+                class="absolute bottom-4 left-4 right-4 mx-auto max-w-4xl p-2 rounded-xl bg-black/20 status-panel-card border border-gray-700">
                 <div id="status-grid" class="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-4 text-center">
                     <div class="p-2">
                         <p class="text-xs md:text-sm text-gray-400">وضعیت شارژ</p>
@@ -125,4 +135,5 @@
     <script> window.API_ENDPOINT = '/api/index'; </script>
     <script src="script_path.js"></script>
 </body>
+
 </html>
