@@ -40,9 +40,9 @@
     </aside>
 
     <!-- Main container for the application -->
-    <div class="relative w-screen min-h-screen">
+    <div class="flex flex-col w-screen min-h-screen schematic-bg">
         <!-- Main Schematic View -->
-        <main class="w-full min-h-full flex flex-col items-center justify-center schematic-bg p-4 pb-32">
+        <main class="w-full flex flex-col items-center p-4 pt-16">
 
             <!-- Overall Status Display -->
             <div id="overall-status-container"
@@ -104,30 +104,33 @@
                     <text id="sys-voltage-text" x="740" y="170" text-anchor="middle" class="data-text">-- V</text>
                 </g>
             </svg>
+        </main>
 
-            <!-- Bottom Status Panel -->
-            <div
-                class="absolute bottom-4 left-4 right-4 mx-auto max-w-4xl p-2 rounded-xl bg-black/20 status-panel-card border border-gray-700">
-                <div id="status-grid" class="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-4 text-center">
-                    <div class="p-2">
-                        <p class="text-xs md:text-sm text-gray-400">وضعیت شارژ</p>
-                        <p id="status-charge" class="text-base md:text-lg font-bold">--</p>
-                    </div>
-                    <div class="p-2">
-                        <p class="text-xs md:text-sm text-gray-400">نوع آداپتور</p>
-                        <p id="status-adapter" class="text-base md:text-lg font-bold">--</p>
-                    </div>
-                    <div class="p-2">
-                        <p class="text-xs md:text-sm text-gray-400">جریان ورودی</p>
-                        <p id="status-ibus" class="text-base md:text-lg font-bold">-- mA</p>
-                    </div>
-                    <div class="p-2">
-                        <p class="text-xs md:text-sm text-gray-400">وضعیت سیستم</p>
-                        <p id="status-sys" class="text-base md:text-lg font-bold">--</p>
-                    </div>
+        <!-- Spacer to push status panel to bottom -->
+        <div class="flex-grow"></div>
+
+        <!-- Bottom Status Panel -->
+        <div class="w-full max-w-4xl mx-auto p-2 mb-4 rounded-xl bg-black/20 status-panel-card border border-gray-700">
+            <div id="status-grid" class="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-4 text-center">
+                <div class="p-2">
+                    <p class="text-xs md:text-sm text-gray-400">وضعیت شارژ</p>
+                    <p id="status-charge" class="text-base md:text-lg font-bold">--</p>
+                </div>
+                <div class="p-2">
+                    <p class="text-xs md:text-sm text-gray-400">نوع آداپتور</p>
+                    <p id="status-adapter" class="text-base md:text-lg font-bold">--</p>
+                </div>
+                <div class="p-2">
+                    <p class="text-xs md:text-sm text-gray-400">جریان ورودی</p>
+                    <p id="status-ibus" class="text-base md:text-lg font-bold">-- mA</p>
+                </div>
+                <div class="p-2">
+                    <p class="text-xs md:text-sm text-gray-400">وضعیت سیستم</p>
+                    <p id="status-sys" class="text-base md:text-lg font-bold">--</p>
                 </div>
             </div>
-        </main>
+        </div>
+    </div>
     </div>
 
     <div id="toast"></div>
