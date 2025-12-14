@@ -1,5 +1,5 @@
 // صبر می‌کند تا تمام محتوای HTML صفحه بارگذاری شود و سپس کد را اجرا می‌کند
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
 
     // ===================================================================================
     // بخش ۱: توضیحات، پیکربندی و وابستگی‌های رجیسترها
@@ -406,6 +406,14 @@ document.addEventListener('DOMContentLoaded', function() {
         'EN_ICO': [
             { controller: 'EN_MPPT', requiredValue: '0', message: 'ICO نمی‌تواند همزمان با MPPT فعال باشد.' },
             { controller: 'FORCE_VINDPM_DET', requiredValue: '0', message: 'ICO نمی‌تواند همزمان با تشخیص VINDPM فعال باشد.' }
+        ],
+        'EN_ACDRV1': [
+            { controller: 'ACRB1_STAT', requiredValue: '1', message: 'ACRB1_STAT باید 1 باشد تا بتوان EN_ACDRV1 را فعال کرد.' },
+            { controller: 'EN_ACDRV2', requiredValue: '0', message: 'EN_ACDRV1 و EN_ACDRV2 نمی‌توانند همزمان فعال باشند.' }
+        ],
+        'EN_ACDRV2': [
+            { controller: 'ACRB2_STAT', requiredValue: '1', message: 'ACRB2_STAT باید 1 باشد تا بتوان EN_ACDRV2 را فعال کرد.' },
+            { controller: 'EN_ACDRV1', requiredValue: '0', message: 'EN_ACDRV1 و EN_ACDRV2 نمی‌توانند همزمان فعال باشند.' }
         ]
     };
 
@@ -429,18 +437,18 @@ document.addEventListener('DOMContentLoaded', function() {
         console.log('Trying to open a WebSocket connection...');
         updateStatusIndicator('connecting');
         websocket = new WebSocket(gateway);
-        
+
         websocket.onopen = () => {
             console.log('Connection opened');
             updateStatusIndicator('connected');
         };
-        
+
         websocket.onclose = () => {
             console.log('Connection closed');
             updateStatusIndicator('disconnected');
             setTimeout(initWebSocket, 2000);
         };
-        
+
         websocket.onmessage = (event) => {
             console.log('Message from server: ', event.data);
             try {
@@ -456,11 +464,11 @@ document.addEventListener('DOMContentLoaded', function() {
                         }
                     });
                     showToast(fullMessage.trim(), 'interrupt');
-                    checkUnseenCount(); 
+                    checkUnseenCount();
 
                     if (window.location.pathname.includes('history')) {
                         const historyList = document.getElementById('history-list');
-                        if(historyList) {
+                        if (historyList) {
                             const newItem = createHistoryItem({
                                 timestamp: new Date().getTime(),
                                 message: event.data,
@@ -476,7 +484,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         };
     }
-    
+
     function showToast(message, type = 'interrupt') {
         const toast = document.getElementById("toast");
         if (toast) {
@@ -490,11 +498,11 @@ document.addEventListener('DOMContentLoaded', function() {
     async function checkUnseenCount() {
         const historyNavButton = document.getElementById('history-nav-button');
         if (!historyNavButton) return;
-        
+
         const badge = historyNavButton.querySelector('.notification-badge');
         try {
             const response = await fetch('/api/unseen_count');
-            if(response.ok) {
+            if (response.ok) {
                 const data = await response.json();
                 if (data.unseen_count > 0) {
                     badge.textContent = data.unseen_count;
@@ -511,7 +519,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // ===================================================================================
     // بخش ۳: مدیریت UI (رابط کاربری) و بارگذاری داده‌ها
     // ===================================================================================
-    
+
     // NEW: Coloring Logic Implementation
     const coloringRules = {
         // دسته ۱: خطاها (قرمز)
@@ -590,7 +598,7 @@ document.addEventListener('DOMContentLoaded', function() {
         for (const key in coloringRules) {
             const rule = coloringRules[key];
             const causeRegister = key.replace(/_OP|_DONE|_ACTIVE|_POOR/g, '');
-            
+
             if (data[causeRegister] === undefined) continue;
 
             const conditionMet = rule.condition(data[causeRegister], data);
@@ -610,7 +618,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 });
             }
         }
-        
+
         // Now, apply styles and indicators based on the determined highest priority
         document.querySelectorAll('.data-card').forEach(card => {
             const regName = card.dataset.reg;
@@ -625,10 +633,10 @@ document.addEventListener('DOMContentLoaded', function() {
             // --- Apply main coloring based on highest priority ---
             const status = cardStatusPriorities[regName];
             if (status) {
-                if(status.target === 'value') {
+                if (status.target === 'value') {
                     card.querySelector('.value')?.classList.add(status.className);
                 } else if (status.target === 'label') {
-                     card.querySelector('.label-container')?.classList.add(status.className);
+                    card.querySelector('.label-container')?.classList.add(status.className);
                 } else { // Default target is the card itself
                     card.classList.add(status.className);
                 }
@@ -637,11 +645,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (status.type && status.reasonKey) {
                     const indicator = document.createElement('div');
                     indicator.className = `status-reason-indicator ${status.type}`;
-                    
+
                     const tooltip = document.createElement('div');
                     tooltip.className = 'status-reason-tooltip';
                     const reason = interruptExplanations[status.reasonKey];
-                    
+
                     // --- UPDATED LINE ---
                     // از innerHTML استفاده می‌کنیم تا بتوانیم از تگ‌های HTML مانند <strong> و <br> استفاده کنیم
                     tooltip.innerHTML = reason ? `<strong>${reason.title}</strong><br>${reason.description}` : `وضعیت: ${status.reasonKey}`;
@@ -650,13 +658,13 @@ document.addEventListener('DOMContentLoaded', function() {
                     card.appendChild(indicator);
                 }
             }
-            
+
             // --- Re-apply static 'active' statuses which are not priority-based ---
-             for (const key in coloringRules) {
+            for (const key in coloringRules) {
                 const rule = coloringRules[key];
                 if (rule.target === 'label' && rule.affected.includes(regName)) {
                     const causeRegister = key.replace('_ACTIVE', '');
-                     if (data[causeRegister] !== undefined && rule.condition(data[causeRegister], data)) {
+                    if (data[causeRegister] !== undefined && rule.condition(data[causeRegister], data)) {
                         card.querySelector('.label-container')?.classList.add(rule.className);
                     }
                 }
@@ -672,25 +680,25 @@ document.addEventListener('DOMContentLoaded', function() {
 
             if (explanation) {
                 const labelSpan = card.querySelector('.label');
-                
+
                 if (labelSpan && !labelSpan.parentElement.classList.contains('label-container')) {
                     const labelContainer = document.createElement('div');
                     labelContainer.className = 'label-container';
-                    
+
                     const tooltipIcon = document.createElement('span');
                     tooltipIcon.className = 'tooltip-icon';
                     tooltipIcon.textContent = '?';
-                    
+
                     const tooltipText = document.createElement('div');
                     tooltipText.className = 'tooltip-text';
                     tooltipText.textContent = explanation;
-                    
+
                     const existingLabel = labelSpan.cloneNode(true);
-                    
+
                     labelContainer.appendChild(existingLabel);
                     labelContainer.appendChild(tooltipIcon);
                     labelContainer.appendChild(tooltipText);
-                    
+
                     labelSpan.replaceWith(labelContainer);
                 }
             }
@@ -713,7 +721,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
             const pageData = await pageResponse.json();
             globalRegisterState = await globalStatusResponse.json();
-            
+
             currentPageData = { ...pageData, ...globalRegisterState };
 
             if (isFirstLoad && loadingOverlay) {
@@ -727,7 +735,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
             const statusInterpreters = {
                 CHG_STAT_2_0: v => ["Not Charging", "Trickle", "Pre-charge", "Fast Charge", "Taper", "Reserved", "Top-off", "Done"][v] || "Unknown",
-                VBUS_STAT_3_0: v => ({0:"No Input",1:"SDP",2:"CDP",3:"DCP",4:"HVDCP",5:"Unknown",6:"Non-Standard",7:"OTG",8:"Not Qualified"})[v]||"Reserved",
+                VBUS_STAT_3_0: v => ({ 0: "No Input", 1: "SDP", 2: "CDP", 3: "DCP", 4: "HVDCP", 5: "Unknown", 6: "Non-Standard", 7: "OTG", 8: "Not Qualified" })[v] || "Reserved",
                 ICO_STAT_1_0: v => ["Disabled", "In Progress", "Done", "Reserved"][v] || "Unknown",
             };
 
@@ -758,7 +766,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     element.textContent = displayValue;
                 }
             }
-            
+
             applyConditionalStyles(currentPageData);
 
         } catch (error) {
@@ -770,7 +778,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // ===================================================================================
     // بخش ۴: منطق ویژه صفحه تاریخچه
     // ===================================================================================
-    
+
     function formatUptime(milliseconds) {
         if (typeof milliseconds !== 'number' || milliseconds < 0) {
             return "زمان نامعتبر";
@@ -810,7 +818,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     }
                 });
             }
-        } catch(e) {
+        } catch (e) {
             messageHtml = `<div class="history-event">${item.message}</div>`;
         }
 
@@ -843,7 +851,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 setTimeout(() => loadingOverlay.style.display = 'none', 500);
                 isFirstLoad = false;
             }
-            
+
             await fetch('/api/mark_history_seen', { method: 'POST' });
 
         } catch (error) {
@@ -899,10 +907,10 @@ document.addEventListener('DOMContentLoaded', function() {
             // --- END CHANGED SECTION ---
 
             const rawValue = card.dataset.currentValue;
-            
+
             const labelElement = card.querySelector('.label');
             const labelText = labelElement ? labelElement.textContent.trim() : currentEditingReg;
-            
+
             modalTitle.textContent = `ویرایش ${labelText}`;
             modalBody.innerHTML = '';
             if (config.type === 'boolean') {
@@ -979,7 +987,7 @@ document.addEventListener('DOMContentLoaded', function() {
     async function sendWriteRequest(reg, val) {
         const card = document.querySelector(`.data-card[data-reg="${reg}"]`);
         if (card) card.classList.add('saving');
-        
+
         let displayName = reg;
         if (card) {
             const labelElement = card.querySelector('.label');
@@ -996,7 +1004,7 @@ document.addEventListener('DOMContentLoaded', function() {
             });
             if (response.ok) {
                 showToast(`<strong>${displayName}</strong><br>دستور با موفقیت ارسال شد.`, 'success');
-                if(window.location.pathname.includes('history')) {
+                if (window.location.pathname.includes('history')) {
                 } else {
                     setTimeout(fetchPageData, 500);
                 }
@@ -1011,7 +1019,7 @@ document.addEventListener('DOMContentLoaded', function() {
             if (card) setTimeout(() => card.classList.remove('saving'), 500);
         }
     }
-    
+
     // ===================================================================================
     // بخش ۶: راه‌اندازی اصلی
     // ===================================================================================
@@ -1046,8 +1054,8 @@ document.addEventListener('DOMContentLoaded', function() {
         if (dataContainer) {
             fetchPageData();
             setInterval(() => {
-                    fetchPageData();
-                    checkUnseenCount();
+                fetchPageData();
+                checkUnseenCount();
             }, 5000);
             setupModalEventListeners();
         }
