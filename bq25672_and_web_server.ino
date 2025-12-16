@@ -26,6 +26,12 @@ const long watchdogInterval = 30000; // 30 seconds (less than the default 40s ti
 #define MAX_HISTORY_ENTRIES 50 // Keep the last 50 events
 #define SETTINGS_FILE "/settings.json" // File for persistent settings
 
+// --- Battery Removal Detection Globals ---
+#define INT_BUFFER_SIZE 10
+unsigned long interruptTimestamps[INT_BUFFER_SIZE];
+uint8_t interruptHead = 0;
+bool bufferFilled = false;
+
 // ===================================================================================
 // بخش اعتبارسنجی ورودی در سمت سرور
 // ===================================================================================
@@ -1225,6 +1231,46 @@ void handleApiWrite(AsyncWebServerRequest *request) {
 }
 
 
+void checkBatteryRemovalCondition(const String& reasonJson) {
+    // Only track if charge status is changing (toggling between Charging, Taper, Termination, etc.)
+    if (reasonJson.indexOf("CHARGE_STATUS_CHANGE") == -1) {
+        return;
+    }
+
+    interruptTimestamps[interruptHead] = millis();
+    interruptHead = (interruptHead + 1) % INT_BUFFER_SIZE;
+    if (interruptHead == 0) bufferFilled = true;
+
+    if (bufferFilled) {
+        unsigned long newest = interruptTimestamps[(interruptHead + INT_BUFFER_SIZE - 1) % INT_BUFFER_SIZE];
+        unsigned long oldest = interruptTimestamps[interruptHead];
+        
+        // If 10 events happened in less than 1 second (Rapid Toggling)
+        if (newest - oldest < 4000) {
+            Serial.println("!!! BATTERY REMOVAL / MISSING DETECTED !!!");
+            Serial.printf("Events frequency: %d events in %lu ms\n", INT_BUFFER_SIZE, newest - oldest);
+            
+            // Disable Charging
+            if (writeBqRegister("EN_CHG", 0)) {
+               Serial.println("-> PROTECTION ACTIVATED: Charging Disabled (EN_CHG=0)");
+               
+               // Alert WebSocket Clients
+               String alertJson = "{\"alert\": \"BATTERY_REMOVED_PROTECTION\", \"message\": \"Rapid charge status toggling detected! Charging disabled.\"}";
+               ws.textAll(alertJson);
+               
+               // Log to history
+               logInterrupt("AUTO_PROTECTION: Charging Disabled due to rapid toggling");
+            } else {
+               Serial.println("-> PROTECTION FAILED: Could not write to register!");
+            }
+            
+            // Reset buffer to prevent spamming
+            bufferFilled = false; 
+            for(int i=0; i<INT_BUFFER_SIZE; i++) interruptTimestamps[i] = 0; // Clear buffer
+        }
+    }
+}
+
 void setup() {
     Serial.begin(115200);
     Wire.begin();
@@ -1299,6 +1345,7 @@ void loop() {
             Serial.println(reasonJson);
             ws.textAll(reasonJson);
             logInterrupt(reasonJson); 
+            checkBatteryRemovalCondition(reasonJson); 
         }
     }
 
