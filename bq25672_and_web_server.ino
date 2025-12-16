@@ -651,6 +651,10 @@ void handleApiData2(AsyncWebServerRequest *request) {
         doc["AC2_PRESENT_STAT"] = (val8 >> 2) & 0x01;
         doc["AC1_PRESENT_STAT"] = (val8 >> 1) & 0x01;
     } else { doc["AC2_PRESENT_STAT"] = -1; doc["AC1_PRESENT_STAT"] = -1; }
+    if(readByte(0x1E, val8)) {
+        doc["ACRB2_STAT"] = (val8 >> 7) & 0x01;
+        doc["ACRB1_STAT"] = (val8 >> 6) & 0x01;
+    } else { doc["ACRB2_STAT"] = -1; doc["ACRB1_STAT"] = -1; }
     if(readByte(0x1F, val8)) { doc["VBATOTG_LOW_STAT"] = (val8 >> 4) & 0x01; } else { doc["VBATOTG_LOW_STAT"] = -1; }
     if(readByte(0x2E, val8)) { doc["ADC_EN"] = (val8 >> 7) & 0x01; } else { doc["ADC_EN"] = -1; }
     if(readByte(0x20, val8)) {
@@ -832,13 +836,11 @@ void handleApiData5(AsyncWebServerRequest *request) {
         doc["DPDM_STAT"] = (val8 >> 1) & 0x01;
     } else { doc["TREG_STAT"] = -1; doc["DPDM_STAT"] = -1; }
     if(readByte(0x1E, val8)) {
-        doc["ACRB2_STAT"] = (val8 >> 7) & 0x01;
-        doc["ACRB1_STAT"] = (val8 >> 6) & 0x01;
         doc["ADC_DONE_STAT"] = (val8 >> 5) & 0x01;
         doc["CHG_TMR_STAT"] = (val8 >> 3) & 0x01;
         doc["TRICHG_TMR_STAT"] = (val8 >> 2) & 0x01;
         doc["PRECHG_TMR_STAT"] = (val8 >> 1) & 0x01;
-    } else { doc["ACRB2_STAT"] = -1; doc["ACRB1_STAT"] = -1; doc["ADC_DONE_STAT"] = -1; doc["CHG_TMR_STAT"] = -1; doc["TRICHG_TMR_STAT"] = -1; doc["PRECHG_TMR_STAT"] = -1; }
+    } else { doc["ADC_DONE_STAT"] = -1; doc["CHG_TMR_STAT"] = -1; doc["TRICHG_TMR_STAT"] = -1; doc["PRECHG_TMR_STAT"] = -1; }
     if(readByte(0x1F, val8)) {
         doc["TS_COLD_STAT"] = (val8 >> 3) & 0x01;
         doc["TS_COOL_STAT"] = (val8 >> 2) & 0x01;

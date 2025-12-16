@@ -1,11 +1,13 @@
 <!DOCTYPE html>
 <html lang="fa" dir="rtl">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>صفحه ۲ - کنترل شارژ</title>
     <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
     <button class="menu-toggle" id="menu-toggle-btn">☰</button>
     <div class="overlay" id="overlay"></div>
@@ -43,36 +45,72 @@
                 <p>برای ویرایش، روی کارت‌های قابل نوشتن کلیک کنید. برای راهنمایی، موس را روی (?) نگه دارید.</p>
             </header>
             <main class="data-grid" id="data-container">
-                <div class="data-card writable" data-reg="VREG_10_0" data-current-value=""><span class="label">ولتاژ نهایی شارژ (mV)</span><span id="VREG_10_0" class="value">--</span></div>
-                <div class="data-card writable" data-reg="ICHG_8_0" data-current-value=""><span class="label">جریان اصلی شارژ (mA)</span><span id="ICHG_8_0" class="value">--</span></div>
-                <div class="data-card writable" data-reg="VINDPM_7_0" data-current-value=""><span class="label">آستانه افت ولتاژ ورودی (mV)</span><span id="VINDPM_7_0" class="value">--</span></div>
-                <div class="data-card writable" data-reg="IINDPM_8_0" data-current-value=""><span class="label">حداکثر جریان ورودی (mA)</span><span id="IINDPM_8_0" class="value">--</span></div>
-                <div class="data-card writable" data-reg="EN_ICO" data-current-value=""><span class="label">بهینه‌ساز خودکار جریان</span><span id="EN_ICO" class="value">--</span></div>
-                <div class="data-card writable command" data-reg="FORCE_ICO" data-current-value=""><span class="label">اجرای بهینه‌ساز جریان</span><span id="FORCE_ICO" class="value">--</span></div>
-                <div class="data-card writable" data-reg="EN_HIZ" data-current-value=""><span class="label">حالت ایزوله از ورودی</span><span id="EN_HIZ" class="value">--</span></div>
-                <div class="data-card writable" data-reg="SDRV_CTRL_1_0" data-current-value=""><span class="label">کنترل ماسفت خارجی</span><span id="SDRV_CTRL_1_0" class="value">--</span></div>
-                <div class="data-card writable" data-reg="EN_OTG" data-current-value=""><span class="label">فعال‌سازی حالت پاوربانک</span><span id="EN_OTG" class="value">--</span></div>
-                <div class="data-card writable" data-reg="EN_ACDRV2" data-current-value=""><span class="label">فعال‌سازی ورودی ۲</span><span id="EN_ACDRV2" class="value">--</span></div>
-                <div class="data-card writable" data-reg="EN_ACDRV1" data-current-value=""><span class="label">فعال‌سازی ورودی ۱</span><span id="EN_ACDRV1" class="value">--</span></div>
-                <div class="data-card writable" data-reg="DIS_ACDRV" data-current-value=""><span class="label">غیرفعال‌سازی درایور ورودی‌ها</span><span id="DIS_ACDRV" class="value">--</span></div>
-                <div class="data-card writable command" data-reg="FORCE_VINDPM_DET" data-current-value=""><span class="label">تشخیص مجدد ولتاژ ورودی</span><span id="FORCE_VINDPM_DET" class="value">--</span></div>
-                <div class="data-card writable" data-reg="SFET_PRESENT" data-current-value=""><span class="label">ماسفت خارجی نصب است؟</span><span id="SFET_PRESENT" class="value">--</span></div>
-                <div class="data-card writable" data-reg="EN_MPPT" data-current-value=""><span class="label">فعال‌سازی حالت پنل خورشیدی</span><span id="EN_MPPT" class="value">--</span></div>
-                <div class="data-card" data-reg="ICO_ILIM_8_0"><span class="label">جریان بهینه ورودی (mA)</span><span id="ICO_ILIM_8_0" class="value">--</span></div>
-                <div class="data-card" data-reg="AC2_PRESENT_STAT"><span class="label">وضعیت اتصال ورودی ۲</span><span id="AC2_PRESENT_STAT" class="value">--</span></div>
-                <div class="data-card" data-reg="AC1_PRESENT_STAT"><span class="label">وضعیت اتصال ورودی ۱</span><span id="AC1_PRESENT_STAT" class="value">--</span></div>
-                <div class="data-card" data-reg="VBATOTG_LOW_STAT"><span class="label">ولتاژ باتری برای OTG پایین است</span><span id="VBATOTG_LOW_STAT" class="value">--</span></div>
-                <div class="data-card writable" data-reg="ADC_EN" data-current-value=""><span class="label">فعال‌سازی ADC</span><span id="ADC_EN" class="value">--</span></div>
-                <div class="data-card" data-reg="VBUS_OVP_STAT"><span class="label">خطای ولتاژ بالای ورودی</span><span id="VBUS_OVP_STAT" class="value">--</span></div>
-                <div class="data-card" data-reg="VBAT_OVP_STAT"><span class="label">خطای ولتاژ بالای باتری</span><span id="VBAT_OVP_STAT" class="value">--</span></div>
-                <div class="data-card" data-reg="IBUS_OCP_STAT"><span class="label">خطای جریان بالای ورودی</span><span id="IBUS_OCP_STAT" class="value">--</span></div>
-                <div class="data-card" data-reg="IBAT_OCP_STAT"><span class="label">خطای جریان بالای باتری</span><span id="IBAT_OCP_STAT" class="value">--</span></div>
-                <div class="data-card" data-reg="CONV_OCP_STAT"><span class="label">خطای جریان بالای مبدل</span><span id="CONV_OCP_STAT" class="value">--</span></div>
-                <div class="data-card" data-reg="VSYS_SHORT_STAT"><span class="label">خطای اتصال کوتاه سیستم</span><span id="VSYS_SHORT_STAT" class="value">--</span></div>
-                <div class="data-card" data-reg="VSYS_OVP_STAT"><span class="label">خطای ولتاژ بالای سیستم</span><span id="VSYS_OVP_STAT" class="value">--</span></div>
-                <div class="data-card" data-reg="OTG_OVP_STAT"><span class="label">خطای ولتاژ بالای خروجی OTG</span><span id="OTG_OVP_STAT" class="value">--</span></div>
-                <div class="data-card" data-reg="OTG_UVP_STAT"><span class="label">خطای ولتاژ پایین خروجی OTG</span><span id="OTG_UVP_STAT" class="value">--</span></div>
-                <div class="data-card" data-reg="TSHUT_STAT"><span class="label">خطای خاموشی حرارتی</span><span id="TSHUT_STAT" class="value">--</span></div>
+                <div class="data-card writable" data-reg="VREG_10_0" data-current-value=""><span class="label">ولتاژ
+                        نهایی شارژ (mV)</span><span id="VREG_10_0" class="value">--</span></div>
+                <div class="data-card writable" data-reg="ICHG_8_0" data-current-value=""><span class="label">جریان اصلی
+                        شارژ (mA)</span><span id="ICHG_8_0" class="value">--</span></div>
+                <div class="data-card writable" data-reg="VINDPM_7_0" data-current-value=""><span class="label">آستانه
+                        افت ولتاژ ورودی (mV)</span><span id="VINDPM_7_0" class="value">--</span></div>
+                <div class="data-card writable" data-reg="IINDPM_8_0" data-current-value=""><span class="label">حداکثر
+                        جریان ورودی (mA)</span><span id="IINDPM_8_0" class="value">--</span></div>
+                <div class="data-card writable" data-reg="EN_ICO" data-current-value=""><span class="label">بهینه‌ساز
+                        خودکار جریان</span><span id="EN_ICO" class="value">--</span></div>
+                <div class="data-card writable command" data-reg="FORCE_ICO" data-current-value=""><span
+                        class="label">اجرای بهینه‌ساز جریان</span><span id="FORCE_ICO" class="value">--</span></div>
+                <div class="data-card writable" data-reg="EN_HIZ" data-current-value=""><span class="label">حالت ایزوله
+                        از ورودی</span><span id="EN_HIZ" class="value">--</span></div>
+                <div class="data-card writable" data-reg="SDRV_CTRL_1_0" data-current-value=""><span class="label">کنترل
+                        ماسفت خارجی</span><span id="SDRV_CTRL_1_0" class="value">--</span></div>
+                <div class="data-card writable" data-reg="EN_OTG" data-current-value=""><span class="label">فعال‌سازی
+                        حالت پاوربانک</span><span id="EN_OTG" class="value">--</span></div>
+                <div class="data-card writable" data-reg="EN_ACDRV2" data-current-value=""><span class="label">فعال‌سازی
+                        ورودی ۲</span><span id="EN_ACDRV2" class="value">--</span></div>
+                <div class="data-card writable" data-reg="EN_ACDRV1" data-current-value=""><span class="label">فعال‌سازی
+                        ورودی ۱</span><span id="EN_ACDRV1" class="value">--</span></div>
+                <div class="data-card writable" data-reg="DIS_ACDRV" data-current-value=""><span
+                        class="label">غیرفعال‌سازی درایور ورودی‌ها</span><span id="DIS_ACDRV" class="value">--</span>
+                </div>
+                <div class="data-card writable command" data-reg="FORCE_VINDPM_DET" data-current-value=""><span
+                        class="label">تشخیص مجدد ولتاژ ورودی</span><span id="FORCE_VINDPM_DET" class="value">--</span>
+                </div>
+                <div class="data-card writable" data-reg="SFET_PRESENT" data-current-value=""><span class="label">ماسفت
+                        خارجی نصب است؟</span><span id="SFET_PRESENT" class="value">--</span></div>
+                <div class="data-card writable" data-reg="EN_MPPT" data-current-value=""><span class="label">فعال‌سازی
+                        حالت پنل خورشیدی</span><span id="EN_MPPT" class="value">--</span></div>
+                <div class="data-card" data-reg="ICO_ILIM_8_0"><span class="label">جریان بهینه ورودی (mA)</span><span
+                        id="ICO_ILIM_8_0" class="value">--</span></div>
+                <div class="data-card" data-reg="AC2_PRESENT_STAT"><span class="label">وضعیت اتصال ورودی ۲</span><span
+                        id="AC2_PRESENT_STAT" class="value">--</span></div>
+                <div class="data-card" data-reg="AC1_PRESENT_STAT"><span class="label">وضعیت اتصال ورودی ۱</span><span
+                        id="AC1_PRESENT_STAT" class="value">--</span></div>
+                <div class="data-card" data-reg="ACRB2_STAT"><span class="label">وضعیت شناسایی ماسفت ورودی ۲</span><span
+                        id="ACRB2_STAT" class="value">--</span></div>
+                <div class="data-card" data-reg="ACRB1_STAT"><span class="label">وضعیت شناسایی ماسفت ورودی ۱</span><span
+                        id="ACRB1_STAT" class="value">--</span></div>
+                <div class="data-card" data-reg="VBATOTG_LOW_STAT"><span class="label">ولتاژ باتری برای OTG پایین
+                        است</span><span id="VBATOTG_LOW_STAT" class="value">--</span></div>
+                <div class="data-card writable" data-reg="ADC_EN" data-current-value=""><span class="label">فعال‌سازی
+                        ADC</span><span id="ADC_EN" class="value">--</span></div>
+                <div class="data-card" data-reg="VBUS_OVP_STAT"><span class="label">خطای ولتاژ بالای ورودی</span><span
+                        id="VBUS_OVP_STAT" class="value">--</span></div>
+                <div class="data-card" data-reg="VBAT_OVP_STAT"><span class="label">خطای ولتاژ بالای باتری</span><span
+                        id="VBAT_OVP_STAT" class="value">--</span></div>
+                <div class="data-card" data-reg="IBUS_OCP_STAT"><span class="label">خطای جریان بالای ورودی</span><span
+                        id="IBUS_OCP_STAT" class="value">--</span></div>
+                <div class="data-card" data-reg="IBAT_OCP_STAT"><span class="label">خطای جریان بالای باتری</span><span
+                        id="IBAT_OCP_STAT" class="value">--</span></div>
+                <div class="data-card" data-reg="CONV_OCP_STAT"><span class="label">خطای جریان بالای مبدل</span><span
+                        id="CONV_OCP_STAT" class="value">--</span></div>
+                <div class="data-card" data-reg="VSYS_SHORT_STAT"><span class="label">خطای اتصال کوتاه سیستم</span><span
+                        id="VSYS_SHORT_STAT" class="value">--</span></div>
+                <div class="data-card" data-reg="VSYS_OVP_STAT"><span class="label">خطای ولتاژ بالای سیستم</span><span
+                        id="VSYS_OVP_STAT" class="value">--</span></div>
+                <div class="data-card" data-reg="OTG_OVP_STAT"><span class="label">خطای ولتاژ بالای خروجی
+                        OTG</span><span id="OTG_OVP_STAT" class="value">--</span></div>
+                <div class="data-card" data-reg="OTG_UVP_STAT"><span class="label">خطای ولتاژ پایین خروجی
+                        OTG</span><span id="OTG_UVP_STAT" class="value">--</span></div>
+                <div class="data-card" data-reg="TSHUT_STAT"><span class="label">خطای خاموشی حرارتی</span><span
+                        id="TSHUT_STAT" class="value">--</span></div>
             </main>
             <!-- ====================================================== -->
         </div>
@@ -95,7 +133,7 @@
     <script src="script.js"></script>
     <script>
         // کدی برای فعال کردن دکمه منوی صفحه فعلی
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
             const currentPage = window.location.pathname;
             const navLinks = document.querySelectorAll('.sidebar .nav-button');
             navLinks.forEach(link => {
@@ -106,4 +144,5 @@
         });
     </script>
 </body>
+
 </html>

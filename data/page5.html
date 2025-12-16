@@ -1,11 +1,13 @@
 <!DOCTYPE html>
 <html lang="fa" dir="rtl">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>صفحه ۵ - وضعیت‌های خطا</title>
     <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
     <button class="menu-toggle" id="menu-toggle-btn">☰</button>
     <div class="overlay" id="overlay"></div>
@@ -43,26 +45,43 @@
                 <p>این مقادیر فقط خواندنی هستند. برای راهنمایی، موس را روی (?) نگه دارید.</p>
             </header>
             <main class="data-grid" id="data-container">
-                <div class="data-card" data-reg="IINDPM_STAT"><span class="label">وضعیت محدودیت جریان ورودی</span><span id="IINDPM_STAT" class="value">--</span></div>
-                <div class="data-card" data-reg="VINDPM_STAT"><span class="label">وضعیت محدودیت ولتاژ ورودی</span><span id="VINDPM_STAT" class="value">--</span></div>
-                <div class="data-card" data-reg="WD_STAT"><span class="label">وضعیت تایمر Watchdog</span><span id="WD_STAT" class="value">--</span></div>
-                <div class="data-card" data-reg="PG_STAT"><span class="label">وضعیت پایداری منبع تغذیه</span><span id="PG_STAT" class="value">--</span></div>
-                <div class="data-card" data-reg="BC1_2_DONE_STAT"><span class="label">وضعیت اتمام تشخیص BC1.2</span><span id="BC1_2_DONE_STAT" class="value">--</span></div>
-                <div class="data-card" data-reg="TREG_STAT"><span class="label">وضعیت محدودیت حرارتی</span><span id="TREG_STAT" class="value">--</span></div>
-                <div class="data-card" data-reg="DPDM_STAT"><span class="label">وضعیت تشخیص D+/D-</span><span id="DPDM_STAT" class="value">--</span></div>
-                <div class="data-card" data-reg="ACRB2_STAT"><span class="label">وضعیت شناسایی ماسفت ورودی ۲</span><span id="ACRB2_STAT" class="value">--</span></div>
-                <div class="data-card" data-reg="ACRB1_STAT"><span class="label">وضعیت شناسایی ماسفت ورودی ۱</span><span id="ACRB1_STAT" class="value">--</span></div>
-                <div class="data-card" data-reg="ADC_DONE_STAT"><span class="label">وضعیت اتمام نمونه‌برداری ADC</span><span id="ADC_DONE_STAT" class="value">--</span></div>
-                <div class="data-card" data-reg="CHG_TMR_STAT"><span class="label">وضعیت تایمر شارژ سریع</span><span id="CHG_TMR_STAT" class="value">--</span></div>
-                <div class="data-card" data-reg="TRICHG_TMR_STAT"><span class="label">وضعیت تایمر شارژ قطره‌ای</span><span id="TRICHG_TMR_STAT" class="value">--</span></div>
-                <div class="data-card" data-reg="PRECHG_TMR_STAT"><span class="label">وضعیت تایمر پیش‌شارژ</span><span id="PRECHG_TMR_STAT" class="value">--</span></div>
-                <div class="data-card" data-reg="TS_COLD_STAT"><span class="label">وضعیت دمای سرد</span><span id="TS_COLD_STAT" class="value">--</span></div>
-                <div class="data-card" data-reg="TS_COOL_STAT"><span class="label">وضعیت دمای خنک</span><span id="TS_COOL_STAT" class="value">--</span></div>
-                <div class="data-card" data-reg="TS_WARM_STAT"><span class="label">وضعیت دمای گرم</span><span id="TS_WARM_STAT" class="value">--</span></div>
-                <div class="data-card" data-reg="TS_HOT_STAT"><span class="label">وضعیت دمای داغ</span><span id="TS_HOT_STAT" class="value">--</span></div>
-                <div class="data-card" data-reg="IBAT_REG_STAT"><span class="label">وضعیت محدودیت جریان دشارژ</span><span id="IBAT_REG_STAT" class="value">--</span></div>
-                <div class="data-card" data-reg="D_PLUS_ADC_15_0"><span class="label">ولتاژ لحظه‌ای پین D+ (mV)</span><span id="D_PLUS_ADC_15_0" class="value">--</span></div>
-                <div class="data-card" data-reg="D_MINUS_ADC_15_0"><span class="label">ولتاژ لحظه‌ای پین D- (mV)</span><span id="D_MINUS_ADC_15_0" class="value">--</span></div>
+                <div class="data-card" data-reg="IINDPM_STAT"><span class="label">وضعیت محدودیت جریان ورودی</span><span
+                        id="IINDPM_STAT" class="value">--</span></div>
+                <div class="data-card" data-reg="VINDPM_STAT"><span class="label">وضعیت محدودیت ولتاژ ورودی</span><span
+                        id="VINDPM_STAT" class="value">--</span></div>
+                <div class="data-card" data-reg="WD_STAT"><span class="label">وضعیت تایمر Watchdog</span><span
+                        id="WD_STAT" class="value">--</span></div>
+                <div class="data-card" data-reg="PG_STAT"><span class="label">وضعیت پایداری منبع تغذیه</span><span
+                        id="PG_STAT" class="value">--</span></div>
+                <div class="data-card" data-reg="BC1_2_DONE_STAT"><span class="label">وضعیت اتمام تشخیص
+                        BC1.2</span><span id="BC1_2_DONE_STAT" class="value">--</span></div>
+                <div class="data-card" data-reg="TREG_STAT"><span class="label">وضعیت محدودیت حرارتی</span><span
+                        id="TREG_STAT" class="value">--</span></div>
+                <div class="data-card" data-reg="DPDM_STAT"><span class="label">وضعیت تشخیص D+/D-</span><span
+                        id="DPDM_STAT" class="value">--</span></div>
+
+                <div class="data-card" data-reg="ADC_DONE_STAT"><span class="label">وضعیت اتمام نمونه‌برداری
+                        ADC</span><span id="ADC_DONE_STAT" class="value">--</span></div>
+                <div class="data-card" data-reg="CHG_TMR_STAT"><span class="label">وضعیت تایمر شارژ سریع</span><span
+                        id="CHG_TMR_STAT" class="value">--</span></div>
+                <div class="data-card" data-reg="TRICHG_TMR_STAT"><span class="label">وضعیت تایمر شارژ
+                        قطره‌ای</span><span id="TRICHG_TMR_STAT" class="value">--</span></div>
+                <div class="data-card" data-reg="PRECHG_TMR_STAT"><span class="label">وضعیت تایمر پیش‌شارژ</span><span
+                        id="PRECHG_TMR_STAT" class="value">--</span></div>
+                <div class="data-card" data-reg="TS_COLD_STAT"><span class="label">وضعیت دمای سرد</span><span
+                        id="TS_COLD_STAT" class="value">--</span></div>
+                <div class="data-card" data-reg="TS_COOL_STAT"><span class="label">وضعیت دمای خنک</span><span
+                        id="TS_COOL_STAT" class="value">--</span></div>
+                <div class="data-card" data-reg="TS_WARM_STAT"><span class="label">وضعیت دمای گرم</span><span
+                        id="TS_WARM_STAT" class="value">--</span></div>
+                <div class="data-card" data-reg="TS_HOT_STAT"><span class="label">وضعیت دمای داغ</span><span
+                        id="TS_HOT_STAT" class="value">--</span></div>
+                <div class="data-card" data-reg="IBAT_REG_STAT"><span class="label">وضعیت محدودیت جریان
+                        دشارژ</span><span id="IBAT_REG_STAT" class="value">--</span></div>
+                <div class="data-card" data-reg="D_PLUS_ADC_15_0"><span class="label">ولتاژ لحظه‌ای پین D+
+                        (mV)</span><span id="D_PLUS_ADC_15_0" class="value">--</span></div>
+                <div class="data-card" data-reg="D_MINUS_ADC_15_0"><span class="label">ولتاژ لحظه‌ای پین D-
+                        (mV)</span><span id="D_MINUS_ADC_15_0" class="value">--</span></div>
             </main>
             <!-- ====================================================== -->
         </div>
@@ -85,7 +104,7 @@
     <script src="script.js"></script>
     <script>
         // کدی برای فعال کردن دکمه منوی صفحه فعلی
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
             const currentPage = window.location.pathname;
             const navLinks = document.querySelectorAll('.sidebar .nav-button');
             navLinks.forEach(link => {
@@ -96,4 +115,5 @@
         });
     </script>
 </body>
+
 </html>
