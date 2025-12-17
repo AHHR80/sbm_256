@@ -421,27 +421,26 @@ document.addEventListener('DOMContentLoaded', function () {
                     const DIS_ACDRV = parseInt(data.DIS_ACDRV);
                     const ACRB1_STAT = parseInt(data.ACRB1_STAT);
                     const ACRB2_STAT = parseInt(data.ACRB2_STAT);
-                    const EN_ACDRV1 = parseInt(data.EN_ACDRV1);
-                    const EN_ACDRV2 = parseInt(data.EN_ACDRV2);
 
-                    // If DIS_ACDRV = 1, the ACDRV is disabled. The converter starts up with 5ms delay...
-                    // Regardless of ACRB1_STAT and ACRB2_STAT.
-                    if (DIS_ACDRV === 1) return true;
 
                     // If both ACRB1_STAT = 1 AND ACRB2_STAT = 1
                     if (ACRB1_STAT === 1 && ACRB2_STAT === 1) {
-                        return (EN_ACDRV1 === 1 || EN_ACDRV2 === 1);
+                        return "لطفا بعد از فعال سازی EN_OTG یکی از دو جفت ماسفت ها را فعال کنید تا خروجی بگیرید.";
                     }
 
                     // If only ACRB1_STAT = 1
                     if (ACRB1_STAT === 1 && ACRB2_STAT === 0) {
-                        return EN_ACDRV1 === 1;
+                        return "لطفا بعد از فعال سازی EN_OTG جفت ماسفت 1 را فعال کنید تا خروجی بگیرید.";
                     }
 
                     // If only ACRB2_STAT = 1
                     if (ACRB2_STAT === 1 && ACRB1_STAT === 0) {
-                        return EN_ACDRV2 === 1;
+                        return "لطفا بعد از فعال سازی EN_OTG جفت ماسفت 2 را فعال کنید تا خروجی بگیرید.";
                     }
+
+                    // If DIS_ACDRV = 1, the ACDRV is disabled. The converter starts up with 5ms delay...
+                    // Regardless of ACRB1_STAT and ACRB2_STAT.
+                    if (DIS_ACDRV === 1) return true;
 
                     // Fallback: If neither are present (Logic implies operation is same as not detected)
                     // If ACFETs are not detected, maybe OTG is allowed freely? 
@@ -449,7 +448,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     // which refers to the DIS_ACDRV behavior (starts up immediately).
                     return true;
                 },
-                dependencies: ['DIS_ACDRV', 'ACRB1_STAT', 'ACRB2_STAT', 'EN_ACDRV1', 'EN_ACDRV2'],
+                dependencies: ['DIS_ACDRV', 'ACRB1_STAT', 'ACRB2_STAT'],
                 message: "برای فعال‌سازی OTG در حالت حضور منابع ورودی (ACRB)، باید یکی از ورودی‌ها (ACDRV) فعال باشد یا DIS_ACDRV یک باشد."
             }
         ]
@@ -941,11 +940,20 @@ document.addEventListener('DOMContentLoaded', function () {
                             }
                         }
 
-                        // New Logic: Execute condition function
-                        if (!rule.condition(currentPageData)) {
+                        // Execute condition ONCE and store the result
+                        const conditionResult = rule.condition(currentPageData);
+
+                        // If false → block and show warning message
+                        if (conditionResult === false) {
                             showToast(rule.message, 'warning');
                             return;
                         }
+                        // If string → show as info/guidance but DON'T block the modal
+                        else if (typeof conditionResult === 'string') {
+                            showToast(conditionResult, 'warning');
+                            // Continue - let the modal open
+                        }
+                        // If true → continue normally
                     } else if (rule.controller) {
                         // Fallback Logic: Old string matching (though we removed it from data, keeping safety)
                         const controllerValue = currentPageData[rule.controller];
