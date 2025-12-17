@@ -383,37 +383,75 @@ document.addEventListener('DOMContentLoaded', function () {
 
     const registerDependencies = {
         'FORCE_ICO': [
-            { controller: 'EN_ICO', requiredValue: '1', message: 'برای اجرای این دستور، ابتدا باید EN_ICO فعال باشد.' },
-            { controller: 'EN_MPPT', requiredValue: '0', message: 'برای استفاده از ICO، باید MPPT غیرفعال باشد.' },
-            { controller: 'FORCE_VINDPM_DET', requiredValue: '0', message: 'قابلیت ICO نمی‌تواند همزمان با تشخیص VINDPM فعال باشد.' }
+            { condition: (data) => data.EN_ICO == 1, dependencies: ['EN_ICO'], message: 'برای اجرای این دستور، ابتدا باید EN_ICO فعال باشد.' },
+            { condition: (data) => data.EN_MPPT == 0, dependencies: ['EN_MPPT'], message: 'برای استفاده از ICO، باید MPPT غیرفعال باشد.' },
+            { condition: (data) => data.FORCE_VINDPM_DET == 0, dependencies: ['FORCE_VINDPM_DET'], message: 'قابلیت ICO نمی‌تواند همزمان با تشخیص VINDPM فعال باشد.' }
         ],
         'SDRV_CTRL_1_0': [
-            { controller: 'SFET_PRESENT', requiredValue: '1', message: 'برای کنترل Ship FET، ابتدا باید SFET_PRESENT فعال باشد.' }
+            { condition: (data) => data.SFET_PRESENT == 1, dependencies: ['SFET_PRESENT'], message: 'برای کنترل Ship FET، ابتدا باید SFET_PRESENT فعال باشد.' }
         ],
         'EN_BATOC': [
-            { controller: 'SFET_PRESENT', requiredValue: '1', message: 'برای فعال‌سازی حفاظت جریان باتری، ابتدا باید SFET_PRESENT فعال باشد.' }
+            { condition: (data) => data.SFET_PRESENT == 1, dependencies: ['SFET_PRESENT'], message: 'برای فعال‌سازی حفاظت جریان باتری، ابتدا باید SFET_PRESENT فعال باشد.' }
         ],
         'FORCE_VINDPM_DET': [
-            { controller: 'VSYS_STAT', requiredValue: '0', message: 'این دستور تنها زمانی مجاز است که ولتاژ باتری بالاتر از VSYSMIN باشد (VSYS_STAT=0).' },
-            { controller: 'EN_ICO', requiredValue: '0', message: 'تشخیص VINDPM نمی‌تواند همزمان با ICO فعال باشد.' },
-            { controller: 'EN_MPPT', requiredValue: '0', message: 'تشخیص VINDPM نمی‌تواند همزمان با MPPT فعال باشد.' }
+            { condition: (data) => data.VSYS_STAT == 0, dependencies: ['VSYS_STAT'], message: 'این دستور تنها زمانی مجاز است که ولتاژ باتری بالاتر از VSYSMIN باشد (VSYS_STAT=0).' },
+            { condition: (data) => data.EN_ICO == 0, dependencies: ['EN_ICO'], message: 'تشخیص VINDPM نمی‌تواند همزمان با ICO فعال باشد.' },
+            { condition: (data) => data.EN_MPPT == 0, dependencies: ['EN_MPPT'], message: 'تشخیص VINDPM نمی‌تواند همزمان با MPPT فعال باشد.' }
         ],
         'EN_MPPT': [
-            { controller: 'VSYS_STAT', requiredValue: '0', message: 'MPPT تنها زمانی مجاز است که ولتاژ باتری بالاتر از VSYSMIN باشد (VSYS_STAT=0).' },
-            { controller: 'EN_ICO', requiredValue: '0', message: 'MPPT نمی‌تواند همزمان با ICO فعال باشد.' },
-            { controller: 'FORCE_VINDPM_DET', requiredValue: '0', message: 'MPPT نمی‌تواند همزمان با تشخیص VINDPM فعال باشد.' }
+            { condition: (data) => data.VSYS_STAT == 0, dependencies: ['VSYS_STAT'], message: 'MPPT تنها زمانی مجاز است که ولتاژ باتری بالاتر از VSYSMIN باشد (VSYS_STAT=0).' },
+            { condition: (data) => data.EN_ICO == 0, dependencies: ['EN_ICO'], message: 'MPPT نمی‌تواند همزمان با ICO فعال باشد.' },
+            { condition: (data) => data.FORCE_VINDPM_DET == 0, dependencies: ['FORCE_VINDPM_DET'], message: 'MPPT نمی‌تواند همزمان با تشخیص VINDPM فعال باشد.' }
         ],
         'EN_ICO': [
-            { controller: 'EN_MPPT', requiredValue: '0', message: 'ICO نمی‌تواند همزمان با MPPT فعال باشد.' },
-            { controller: 'FORCE_VINDPM_DET', requiredValue: '0', message: 'ICO نمی‌تواند همزمان با تشخیص VINDPM فعال باشد.' }
+            { condition: (data) => data.EN_MPPT == 0, dependencies: ['EN_MPPT'], message: 'ICO نمی‌تواند همزمان با MPPT فعال باشد.' },
+            { condition: (data) => data.FORCE_VINDPM_DET == 0, dependencies: ['FORCE_VINDPM_DET'], message: 'ICO نمی‌تواند همزمان با تشخیص VINDPM فعال باشد.' }
         ],
         'EN_ACDRV1': [
-            { controller: 'ACRB1_STAT', requiredValue: '1', message: 'ACRB1_STAT باید 1 باشد تا بتوان EN_ACDRV1 را فعال کرد.' },
-            { controller: 'EN_ACDRV2', requiredValue: '0', message: 'EN_ACDRV1 و EN_ACDRV2 نمی‌توانند همزمان فعال باشند.' }
+            { condition: (data) => data.ACRB1_STAT == 1, dependencies: ['ACRB1_STAT'], message: 'ACRB1_STAT باید 1 باشد تا بتوان EN_ACDRV1 را فعال کرد.' },
+            { condition: (data) => data.EN_ACDRV2 == 0, dependencies: ['EN_ACDRV2'], message: 'EN_ACDRV1 و EN_ACDRV2 نمی‌توانند همزمان فعال باشند.' }
         ],
         'EN_ACDRV2': [
-            { controller: 'ACRB2_STAT', requiredValue: '1', message: 'ACRB2_STAT باید 1 باشد تا بتوان EN_ACDRV2 را فعال کرد.' },
-            { controller: 'EN_ACDRV1', requiredValue: '0', message: 'EN_ACDRV1 و EN_ACDRV2 نمی‌توانند همزمان فعال باشند.' }
+            { condition: (data) => data.ACRB2_STAT == 1, dependencies: ['ACRB2_STAT'], message: 'ACRB2_STAT باید 1 باشد تا بتوان EN_ACDRV2 را فعال کرد.' },
+            { condition: (data) => data.EN_ACDRV1 == 0, dependencies: ['EN_ACDRV1'], message: 'EN_ACDRV1 و EN_ACDRV2 نمی‌توانند همزمان فعال باشند.' }
+        ],
+        'EN_OTG': [
+            {
+                condition: (data) => {
+                    const DIS_ACDRV = parseInt(data.DIS_ACDRV);
+                    const ACRB1_STAT = parseInt(data.ACRB1_STAT);
+                    const ACRB2_STAT = parseInt(data.ACRB2_STAT);
+                    const EN_ACDRV1 = parseInt(data.EN_ACDRV1);
+                    const EN_ACDRV2 = parseInt(data.EN_ACDRV2);
+
+                    // If DIS_ACDRV = 1, the ACDRV is disabled. The converter starts up with 5ms delay...
+                    // Regardless of ACRB1_STAT and ACRB2_STAT.
+                    if (DIS_ACDRV === 1) return true;
+
+                    // If both ACRB1_STAT = 1 AND ACRB2_STAT = 1
+                    if (ACRB1_STAT === 1 && ACRB2_STAT === 1) {
+                        return (EN_ACDRV1 === 1 || EN_ACDRV2 === 1);
+                    }
+
+                    // If only ACRB1_STAT = 1
+                    if (ACRB1_STAT === 1 && ACRB2_STAT === 0) {
+                        return EN_ACDRV1 === 1;
+                    }
+
+                    // If only ACRB2_STAT = 1
+                    if (ACRB2_STAT === 1 && ACRB1_STAT === 0) {
+                        return EN_ACDRV2 === 1;
+                    }
+
+                    // Fallback: If neither are present (Logic implies operation is same as not detected)
+                    // If ACFETs are not detected, maybe OTG is allowed freely? 
+                    // Text says: "The operation is the same as that when ACFET1-RBFET1 and ACFET2-RBFET2 are not detected."
+                    // which refers to the DIS_ACDRV behavior (starts up immediately).
+                    return true;
+                },
+                dependencies: ['DIS_ACDRV', 'ACRB1_STAT', 'ACRB2_STAT', 'EN_ACDRV1', 'EN_ACDRV2'],
+                message: "برای فعال‌سازی OTG در حالت حضور منابع ورودی (ACRB)، باید یکی از ورودی‌ها (ACDRV) فعال باشد یا DIS_ACDRV یک باشد."
+            }
         ]
     };
 
@@ -888,19 +926,37 @@ document.addEventListener('DOMContentLoaded', function () {
             // --- START CHANGED SECTION ---
             const dependencies = registerDependencies[currentEditingReg];
             if (dependencies) {
-                // تبدیل به آرایه اگر قبلاً نبوده (برای پشتیبانی از ساختار قدیمی)
+                // Ensure array format
                 const rules = Array.isArray(dependencies) ? dependencies : [dependencies];
 
                 for (const rule of rules) {
-                    const controllerValue = currentPageData[rule.controller];
-                    if (controllerValue === undefined) {
-                        showToast(`وضعیت کنترل‌کننده (${rule.controller}) هنوز بارگذاری نشده است.`, 'warning');
-                        return;
-                    }
-                    // مقایسه به صورت رشته‌ای (چون مقادیر requiredValue رشته هستند)
-                    if (String(controllerValue) !== rule.requiredValue) {
-                        showToast(rule.message, 'warning');
-                        return;
+                    if (typeof rule.condition === 'function') {
+                        // Check for data dependencies first
+                        if (rule.dependencies && Array.isArray(rule.dependencies)) {
+                            for (const dep of rule.dependencies) {
+                                if (currentPageData[dep] === undefined) {
+                                    showToast(`داده‌های مورد نیاز (${dep}) هنوز بارگذاری نشده‌اند.`, 'warning');
+                                    return;
+                                }
+                            }
+                        }
+
+                        // New Logic: Execute condition function
+                        if (!rule.condition(currentPageData)) {
+                            showToast(rule.message, 'warning');
+                            return;
+                        }
+                    } else if (rule.controller) {
+                        // Fallback Logic: Old string matching (though we removed it from data, keeping safety)
+                        const controllerValue = currentPageData[rule.controller];
+                        if (controllerValue === undefined) {
+                            showToast(`وضعیت کنترل‌کننده (${rule.controller}) هنوز بارگذاری نشده است.`, 'warning');
+                            return;
+                        }
+                        if (String(controllerValue) !== rule.requiredValue) {
+                            showToast(rule.message, 'warning');
+                            return;
+                        }
                     }
                 }
             }
