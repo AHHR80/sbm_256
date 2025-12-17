@@ -17,8 +17,10 @@
     --status-connecting: #f39c12;
     --status-disconnected: #c0392b;
     /* رنگ‌های مورد نیاز برای لودینگ */
-    --bg-color: #1a1a2e;       /* رنگ پس‌زمینه کل صفحه */
-    --font-color: #e0e0e0;     /* رنگ متن */
+    --bg-color: #1a1a2e;
+    /* رنگ پس‌زمینه کل صفحه */
+    --font-color: #e0e0e0;
+    /* رنگ متن */
 }
 
 /* --- استایل‌های پایه --- */
@@ -36,7 +38,8 @@ body {
 
 .component {
     transition: transform 0.2s ease-in-out, filter 0.2s ease-in-out;
-    cursor: default; /* Changed from pointer to default */
+    cursor: default;
+    /* Changed from pointer to default */
 }
 
 .component text {
@@ -48,10 +51,27 @@ body {
     fill: var(--card-bg-color);
     transition: fill 0.3s;
 }
-.component-stroke-info { stroke: var(--info-color); stroke-width: 2; }
-.component-stroke-secondary { stroke: var(--secondary-color); stroke-width: 2; transition: stroke 0.3s; }
-.component-stroke-success { stroke: var(--success-color); stroke-width: 2; }
-.component-stroke-warning { stroke: var(--warning-color); stroke-width: 2; }
+
+.component-stroke-info {
+    stroke: var(--info-color);
+    stroke-width: 2;
+}
+
+.component-stroke-secondary {
+    stroke: var(--secondary-color);
+    stroke-width: 2;
+    transition: stroke 0.3s;
+}
+
+.component-stroke-success {
+    stroke: var(--success-color);
+    stroke-width: 2;
+}
+
+.component-stroke-warning {
+    stroke: var(--warning-color);
+    stroke-width: 2;
+}
 
 .data-text {
     font-size: 18px;
@@ -91,7 +111,9 @@ body {
 }
 
 @keyframes march {
-    to { stroke-dashoffset: 0; }
+    to {
+        stroke-dashoffset: 0;
+    }
 }
 
 /* --- آیکون‌های وضعیت --- */
@@ -100,18 +122,40 @@ body {
 }
 
 @keyframes blink-warning {
-    50% { opacity: 0.5; }
+    50% {
+        opacity: 0.5;
+    }
 }
 
 /* --- پنل وضعیت کلی --- */
 #overall-status-indicator {
     transition: background-color 0.3s;
 }
-.status-bg-error { background-color: var(--error-color); color: white; }
-.status-bg-warning { background-color: var(--warning-color); color: #1a1a2e; }
-.status-bg-success { background-color: var(--success-color); color: white; }
-.status-bg-info { background-color: var(--info-color); color: white; }
-.status-bg-idle { background-color: var(--idle-color); color: white; }
+
+.status-bg-error {
+    background-color: var(--error-color);
+    color: white;
+}
+
+.status-bg-warning {
+    background-color: var(--warning-color);
+    color: #1a1a2e;
+}
+
+.status-bg-success {
+    background-color: var(--success-color);
+    color: white;
+}
+
+.status-bg-info {
+    background-color: var(--info-color);
+    color: white;
+}
+
+.status-bg-idle {
+    background-color: var(--idle-color);
+    color: white;
+}
 
 
 /* --- استایل پنل وضعیت --- */
@@ -153,7 +197,7 @@ body {
     font-size: 17px;
     opacity: 0;
     transition: opacity 0.5s, bottom 0.5s, visibility 0.5s;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
 }
 
 #toast.show {
@@ -163,9 +207,17 @@ body {
 }
 
 /* انواع رنگ‌بندی توست */
-#toast.interrupt { background-color: var(--command-color); }
-#toast.warning { background-color: var(--status-connecting); }
-#toast.success { background-color: var(--status-connected); }
+#toast.interrupt {
+    background-color: var(--command-color);
+}
+
+#toast.warning {
+    background-color: var(--status-connecting);
+}
+
+#toast.success {
+    background-color: var(--status-connected);
+}
 
 .status-indicator {
     position: fixed;
@@ -179,9 +231,17 @@ body {
     transition: background-color 0.5s ease;
 }
 
-.status-indicator.connected { background-color: var(--status-connected); }
-.status-indicator.connecting { background-color: var(--status-connecting); }
-.status-indicator.disconnected { background-color: var(--status-disconnected); }
+.status-indicator.connected {
+    background-color: var(--status-connected);
+}
+
+.status-indicator.connecting {
+    background-color: var(--status-connecting);
+}
+
+.status-indicator.disconnected {
+    background-color: var(--status-disconnected);
+}
 
 
 /* استایل سایدبار (دسکتاپ) */
@@ -217,9 +277,11 @@ body {
     z-index: 999;
     background-color: var(--primary-color);
     padding: 20px;
-    box-shadow: -5px 0 15px rgba(0, 0, 0, 0.5); /* سایه به سمت چپ */
+    box-shadow: -5px 0 15px rgba(0, 0, 0, 0.5);
+    /* سایه به سمت چپ */
     transition: transform 0.3s ease-in-out;
-    transform: translateX(100%); /* پیش‌فرض: مخفی در سمت راست */
+    transform: translateX(100%);
+    /* پیش‌فرض: مخفی در سمت راست */
     border-radius: 0;
     overflow-y: auto;
 }
@@ -231,7 +293,8 @@ body {
 
 .sidebar .nav-grid {
     display: flex;
-    flex-direction: column; /* چیدمان عمودی دکمه‌ها */
+    flex-direction: column;
+    /* چیدمان عمودی دکمه‌ها */
     gap: 15px;
 }
 
@@ -242,7 +305,7 @@ body {
 
 /* استایل دکمه فعال (صفحه جاری) */
 .sidebar .nav-button.active {
-    background-color: var(--secondary-color);
+    background-color: var(--bg-secondary-color);
     color: #fff;
     border-color: #fff;
     transform: translateY(-2px);
@@ -250,7 +313,8 @@ body {
 
 /* دکمه همبرگری */
 .menu-toggle {
-    display: block; /* همیشه نمایش داده شود */
+    display: block;
+    /* همیشه نمایش داده شود */
     position: fixed;
     top: 15px;
     right: 15px;
@@ -263,7 +327,7 @@ body {
     border-radius: 50%;
     font-size: 24px;
     cursor: pointer;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
 }
 
 /* لایه تاریک پشت منو */
@@ -274,7 +338,7 @@ body {
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(0,0,0,0.5);
+    background: rgba(0, 0, 0, 0.5);
     z-index: 998;
 }
 
@@ -284,7 +348,8 @@ body {
 
 /* کدهای مربوط به بخش notification counter */
 .notification-badge {
-    background-color: #e94560; /* رنگ قرمز (secondary-color) */
+    background-color: #e94560;
+    /* رنگ قرمز (secondary-color) */
     color: white;
     border-radius: 50%;
     width: 24px;
@@ -294,6 +359,7 @@ body {
     align-items: center;
     font-size: 0.8em;
     font-weight: bold;
-    border: 2px solid #0f3460; /* همرنگ پس‌زمینه منو برای ایجاد حاشیه */
+    border: 2px solid #0f3460;
+    /* همرنگ پس‌زمینه منو برای ایجاد حاشیه */
     /* اگر در حالت absolute می‌خواهید گوشه دکمه باشد، استایل‌های position را اضافه کنید */
 }
