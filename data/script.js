@@ -770,6 +770,27 @@ document.addEventListener('DOMContentLoaded', function () {
             const dataContainer = document.getElementById('data-container');
             if (!dataContainer) return;
 
+            // Temperature conversion function for TS_ADC
+            function bq25672TsToTemp(tsAdcRaw, rt1 = 5230, rt2 = 30100, r0 = 10000, beta = 3435) {
+                // Convert ts_adc_raw to ratio (0.0 to 1.0)
+                const ratio = tsAdcRaw / 100.0;
+
+                // Avoid division by zero if the ratio is too high/low
+                if (ratio <= 0 || ratio >= (rt2 / (rt1 + rt2))) {
+                    return NaN;
+                }
+
+                // Solve for Thermistor Resistance (Rth)
+                const rth = (ratio * rt1 * rt2) / (rt2 - ratio * (rt1 + rt2));
+
+                // Use Steinhart-Hart/Beta Equation to find Temperature
+                const t0 = 25 + 273.15; // 25C in Kelvin
+                const invT = (1.0 / t0) + (1.0 / beta) * Math.log(rth / r0);
+                const tempKelvin = 1.0 / invT;
+
+                return tempKelvin - 273.15;
+            }
+
             const statusInterpreters = {
                 CHG_STAT_2_0: v => ["Not Charging", "Trickle", "Pre-charge", "Fast Charge", "Taper", "Reserved", "Top-off", "Done"][v] || "Unknown",
                 VBUS_STAT_3_0: v => ({ 0: "No Input", 1: "SDP", 2: "CDP", 3: "DCP", 4: "HVDCP", 5: "Unknown", 6: "Non-Standard", 7: "OTG", 8: "Not Qualified" })[v] || "Reserved",
@@ -795,6 +816,14 @@ document.addEventListener('DOMContentLoaded', function () {
                         }
                     } else if (statusInterpreters[key]) {
                         displayValue = statusInterpreters[key](rawValue);
+                    } else if (key === 'TS_ADC_15_0') {
+                        // Convert TS_ADC percentage to temperature in Celsius
+                        const tempC = bq25672TsToTemp(rawValue);
+                        if (isNaN(tempC)) {
+                            displayValue = 'خطا';
+                        } else {
+                            displayValue = tempC.toFixed(1);
+                        }
                     } else if (typeof rawValue === 'number' && !Number.isInteger(rawValue)) {
                         displayValue = rawValue.toFixed(2);
                     } else {
