@@ -512,6 +512,8 @@ document.addEventListener('DOMContentLoaded', function () {
                                 seen: true
                             });
                             historyList.prepend(newItem);
+                            // Mark the new interrupt as seen since we're already viewing the history page
+                            fetch('/api/mark_history_seen', { method: 'POST' });
                         }
                     }
                 }
