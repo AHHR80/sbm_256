@@ -220,7 +220,7 @@ document.addEventListener('DOMContentLoaded', function () {
             setPathStyle(path, { color: 'var(--error-color)', isAnimated: true, isReversed: true });
         }
         // 4. خاکستری (رفت و برگشت)
-        else if (((d.ACRB1_STAT == 0 && d.ACRB2_STAT == 0) || (d.EN_ACDRV1 == 1 || d.EN_ACDRV2 == 1)) && d.SDRV_CTRL == 0 && (d.VBUS_PRESENT_STAT == 1 || d.EN_OTG == 1) && (d.VSYS_OVP_STAT == 1 || d.VBAT_OVP_STAT == 1 || d.TSHUT_STAT == 1 || d.EN_HIZ == 1 || d.VSYS_SHORT_STAT == 1)) {
+        else if (((d.ACRB1_STAT == 0 && d.ACRB2_STAT == 0) || (d.EN_ACDRV1 == 1 || d.EN_ACDRV2 == 1)) && d.SDRV_CTRL == 0 && (d.VBUS_PRESENT_STAT == 1 || (d.AC1_PRESENT_STAT == 1 || d.AC2_PRESENT_STAT == 1) || d.EN_OTG == 1) && (d.VSYS_OVP_STAT == 1 || d.VBAT_OVP_STAT == 1 || d.TSHUT_STAT == 1 || d.EN_HIZ == 1 || d.VSYS_SHORT_STAT == 1)) {
             console.log("VBUS Path: خاکستری (رفت و برگشت)");
             setPathStyle(path, { color: 'var(--idle-color)', isAnimated: false, isStatic: true });
         }
