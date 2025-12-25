@@ -2,6 +2,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
     let globalRegisterState = {};
     let currentPageData = {}; // برای نگهداری آخرین داده‌های صفحه فعلی
+    let vbusPathOverallStatus = "";
+    let vbatPathOverallStatus = "";
 
     const interruptExplanations = {
         "IINDPM_EVENT": { title: "محدودیت جریان ورودی (IINDPM_STAT)", description: "جریان کشیده شده از ورودی به حد تنظیم شده (IINDPM) رسیده است. جریان شارژ برای محافظت از آداپتور کاهش یافته است." },
@@ -78,8 +80,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // --- Main UI Update Function ---
     function updateUI(data) {
-        updateTextInfo(data);
         updatePowerFlow(data);
+        updateTextInfo(data);
     }
 
     function updateTextInfo(data) {
@@ -208,51 +210,173 @@ document.addEventListener('DOMContentLoaded', function () {
         // 1. قطع
         if ((d.VBUS_PRESENT_STAT == 0 && d.AC1_PRESENT_STAT == 0 && d.AC2_PRESENT_STAT == 0) && d.EN_OTG == 0) {
             console.log("VBUS Path: قطع");
+            vbusPathOverallStatus = "آداپتور حضور ندارد.";
         }
         // 2. قرمز (رفت)
         else if ((d.VBUS_OVP_STAT == 1 || d.IBUS_OCP_STAT == 1 || d.VAC_OVP_STAT == 1 || (((d.ACRB1_STAT == 0 && d.ACRB2_STAT == 0) || (d.EN_ACDRV1 == 1 || d.EN_ACDRV2 == 1)) && d.PG_STAT == 0)) && (d.VBUS_PRESENT_STAT == 1 || d.AC1_PRESENT_STAT == 1 || d.AC2_PRESENT_STAT == 1) && d.EN_OTG == 0) {
             console.log("VBUS Path: قرمز (رفت)");
+            vbusPathOverallStatus = "قرمز (رفت)";
+            if (d.VBUS_OVP_STAT) {
+                vbusPathOverallStatus = "آداپتور حضور دارد اما به علت خطای اضافه ولتاژ ورودی از آن استفاده نمیشود.";
+            }
+            else if (d.IBUS_OCP_STAT) {
+                vbusPathOverallStatus = "آداپتور حضور دارد اما به علت جریان کشی بیش از حد از ورودی از آن استفاده نمیشود.";
+            }
+            else if (d.VAC_OVP_STAT) {
+                vbusPathOverallStatus = "آداپتور حضور دارد اما به علت ولتاژ بیش از حد در جفت ماسفت ها از آن استفاده نمیشود.";
+            }
+            else if (d.PG_STAT) {
+                vbusPathOverallStatus = "آداپتور حضور دارد اما ضعیف است.";
+            }
+
             setPathStyle(path, { color: 'var(--error-color)', isAnimated: true });
         }
         // 3. قرمز (برگشت)
         else if ((d.TS_COLD_STAT == 1 || d.TS_HOT_STAT == 1 || d.OTG_OVP_STAT == 1 || d.OTG_UVP_STAT == 1 || d.VBATOTG_LOW_STAT == 1 || d.VBUS_OVP_STAT == 1 || d.IBUS_OCP_STAT == 1 || d.VAC_OVP_STAT == 1) && d.EN_OTG == 1) {
             console.log("VBUS Path: قرمز (برگشت)");
+            vbusPathOverallStatus = "قرمز (برگشت)";
+            if (d.TS_COLD_STAT == 1) {
+                vbusPathOverallStatus = "در حالت OTG اما خروجی به علت دمای سرد باطری موقتا خاموش شده.";
+            }
+            else if (d.TS_HOT_STAT == 1) {
+                vbusPathOverallStatus = "در حالت OTG اما خروجی به علت دمای زیاد باطری موقتا خاموش شده.";
+            }
+            else if (d.OTG_OVP_STAT == 1) {
+                vbusPathOverallStatus = "در حالت OTG اما خروجی به علت خطای اضافه ولتاژ خروجی خاموش شده.";
+            }
+            else if (d.OTG_UVP_STAT == 1) {
+                vbusPathOverallStatus = "در حالت OTG اما خروجی به علت افت جدید ولتاژ خروجی خاموش شده.";
+            }
+            else if (d.VBATOTG_LOW_STAT == 1) {
+                vbusPathOverallStatus = "در حالت OTG اما خروجی به علت کاهش شدید ولتاژ باطری خاموش شده.";
+            }
+            else if (d.VBUS_OVP_STAT == 1) {
+                vbusPathOverallStatus = "در حالت OTG اما خروجی به علت اضافه خطای اضافه ولتاژ خروجی خاموش شده.";
+            }
+            else if (d.IBUS_OCP_STAT == 1) {
+                vbusPathOverallStatus = "در حالت OTG اما خروجی در حالت جریان بیش از حد ورودی.";
+            }
+            else if (d.VAC_OVP_STAT == 1) {
+                vbusPathOverallStatus = "در حالت OTG اما خروجی به علت خطای اضافه ولتاژ جفت ماسفت ها خاموش شده.";
+            }
             setPathStyle(path, { color: 'var(--error-color)', isAnimated: true, isReversed: true });
         }
         // 4. خاکستری (رفت و برگشت)
         else if (((d.ACRB1_STAT == 0 && d.ACRB2_STAT == 0) || (d.EN_ACDRV1 == 1 || d.EN_ACDRV2 == 1)) && d.SDRV_CTRL == 0 && (d.VBUS_PRESENT_STAT == 1 || (d.AC1_PRESENT_STAT == 1 || d.AC2_PRESENT_STAT == 1) || d.EN_OTG == 1) && (d.VSYS_OVP_STAT == 1 || d.VBAT_OVP_STAT == 1 || d.TSHUT_STAT == 1 || d.EN_HIZ == 1 || d.VSYS_SHORT_STAT == 1)) {
             console.log("VBUS Path: خاکستری (رفت و برگشت)");
+            vbusPathOverallStatus = "خاکستری (رفت و برگشت)";
+            if (EN_OTG == 1) {
+                if (d.VSYS_OVP_STAT == 1) {
+                    vbusPathOverallStatus = "در حالت OTG اما خروجی به علت اضافه ولتاژ SYS خاموش شده.";
+                }
+                else if (d.VBAT_OVP_STAT == 1) {
+                    vbusPathOverallStatus = "درحالت OTG اما خروجی به علت اضافه ولتاژ باطری خاموش شده.";
+                }
+                else if (d.TSHUT_STAT == 1) {
+                    vbusPathOverallStatus = "در حالت OTG اما خروجی به علت گرمای زیاد IC خاموش شده.";
+                }
+                else if (d.EN_HIZ == 1) {
+                    vbusPathOverallStatus = "درحالت OTG اما خروجی به علت EN_HIZ خاموش شده.";
+                }
+                else if (d.VSYS_SHORT_STAT == 1) {
+                    vbusPathOverallStatus = "در حالت OTG اما خروجی به علت خطای اتصال کوتاه SYS خاموش شده.";
+                }
+            }
+            else if (d.VBUS_PRESENT_STAT == 1 || (d.AC1_PRESENT_STAT == 1 || d.AC2_PRESENT_STAT == 1)) {
+                if (d.VSYS_OVP_STAT == 1) {
+                    vbusPathOverallStatus = "آداپتور حضور دارد اما به علت خطای اضافه ولتاژ SYS از آن استفاده نمیشود.";
+                }
+                else if (d.VBAT_OVP_STAT == 1) {
+                    vbusPathOverallStatus = "آداپتور حضور دارد اما به علت خطای اضافه ولتاژِ باطری از آن استفاده نمیشود.";
+                }
+                else if (d.TSHUT_STAT == 1) {
+                    vbusPathOverallStatus = "آداپتور حضور دارد اما به علت گرمای زیاد IC از آن استفاده نمیشود.";
+                }
+                else if (d.EN_HIZ == 1) {
+                    vbusPathOverallStatus = "آداپتور حضور دارد اما به علت EN_HIZ از آن استفاده نمیشود.";
+                }
+                else if (d.VSYS_SHORT_STAT == 1) {
+                    vbusPathOverallStatus = "آداپتور حضور دارد اما به علت خطای اتصال کوتاه SYS از آن استفاده نمیشود.";
+                }
+            }
             setPathStyle(path, { color: 'var(--idle-color)', isAnimated: false, isStatic: true });
         }
         // 5. صورتی (رفت و برگشت)
         else if (!(d.VBUS_OVP_STAT == 1 || d.VSYS_OVP_STAT == 1 || d.VBAT_OVP_STAT == 1 || d.IBUS_OCP_STAT == 1 || d.TSHUT_STAT == 1 || d.OTG_OVP_STAT == 1 || d.OTG_UVP_STAT == 1 || (d.EN_OTG == 1 && (d.TS_COLD_STAT == 1 || d.TS_HOT_STAT == 1)) || d.EN_HIZ == 1 || d.SDRV_CTRL != 0 || d.VAC_OVP_STAT == 1 || d.VSYS_SHORT_STAT == 1) && d.TS_COLD_STAT == 0 && d.TS_HOT_STAT == 0 && d.OTG_OVP_STAT == 0 && d.OTG_UVP_STAT == 0 && d.VBATOTG_LOW_STAT == 0 && ((d.ACRB1_STAT == 1 || d.ACRB2_STAT == 1) && (d.EN_ACDRV1 == 0 && d.EN_ACDRV2 == 0)) && d.CHG_STAT_2_0 == 0) {
             console.log("VBUS Path: صورتی (رفت و برگشت)");
-            setPathStyle(path, { color: 'var(--secondary-color)', isAnimated: true, isReversed: true });
+            vbusPathOverallStatus = "صورتی (رفت و برگشت)";
+            if (d.EN_OTG == 1) {
+                vbusPathOverallStatus = "در حالت OTG اما بسته بودن جفت ماسفت خروجی";
+                setPathStyle(path, { color: 'var(--secondary-color)', isAnimated: true, isReversed: true });
+            }
+            else if (d.AC1_PRESENT_STAT == 1 || d.AC2_PRESENT_STAT == 1) {
+                vbusPathOverallStatus = "آداپتور حضور دارد اما جفت ماسفت ها بسته اند";
+                setPathStyle(path, { color: 'var(--secondary-color)', isAnimated: true, isReversed: false });
+            }
         }
         // 6. زرد (رفت)
         else if (!(d.VBUS_OVP_STAT == 1 || d.VSYS_OVP_STAT == 1 || d.VBAT_OVP_STAT == 1 || d.IBUS_OCP_STAT == 1 || d.PG_STAT == 0 || d.TSHUT_STAT == 1 || d.OTG_OVP_STAT == 1 || d.OTG_UVP_STAT == 1 || (d.EN_OTG == 1 && (d.TS_COLD_STAT == 1 || d.TS_HOT_STAT == 1)) || d.EN_HIZ == 1 || d.SDRV_CTRL != 0 || d.VAC_OVP_STAT == 1 || d.VSYS_SHORT_STAT == 1) && d.VBUS_PRESENT_STAT == 1 && d.EN_OTG == 0 && ((d.ACRB1_STAT == 0 && d.ACRB2_STAT == 0) || (d.EN_ACDRV1 == 1 || d.EN_ACDRV2 == 1)) && (d.VINDPM_STAT == 1 || d.IINDPM_STAT == 1 || d.IBAT_REG_STAT == 1 || d.TREG_STAT == 1)) {
             console.log("VBUS Path: زرد (رفت)");
+            vbusPathOverallStatus = "زرد (رفت)";
             setPathStyle(path, { color: 'var(--warning-color)', isAnimated: true });
+            if (d.VINDPM_STAT == 1) {
+                vbusPathOverallStatus = "استفاده از آداپتور اما در حال تنظیم ولتاژ ورودی.";
+            }
+            else if (d.IINDPM_STAT == 1) {
+                vbusPathOverallStatus = "استفاده از آداپتور اما درحال تنظیم جریان ورودی";
+            }
+            else if (d.TREG_STAT == 1) {
+                vbusPathOverallStatus = "استفاده از آداپتور اما درحال کاهش جریان شارژ برای خنک کرد IC";
+            }
         }
         // 7. زرد (برگشت)
         else if (!(d.VBUS_OVP_STAT == 1 || d.VSYS_OVP_STAT == 1 || d.VBAT_OVP_STAT == 1 || d.IBUS_OCP_STAT == 1 || d.TSHUT_STAT == 1 || d.OTG_OVP_STAT == 1 || d.OTG_UVP_STAT == 1 || (d.EN_OTG == 1 && (d.TS_COLD_STAT == 1 || d.TS_HOT_STAT == 1)) || d.EN_HIZ == 1 || d.SDRV_CTRL != 0 || d.VAC_OVP_STAT == 1 || d.VSYS_SHORT_STAT == 1) && d.TS_COLD_STAT == 0 && d.TS_HOT_STAT == 0 && d.OTG_OVP_STAT == 0 && d.OTG_UVP_STAT == 0 && d.VBATOTG_LOW_STAT == 0 && d.EN_OTG == 1 && ((d.ACRB1_STAT == 0 && d.ACRB2_STAT == 0) || (d.EN_ACDRV1 == 1 || d.EN_ACDRV2 == 1)) && d.CHG_STAT_2_0 == 0 && (d.IINDPM_STAT == 1 || d.IBAT_REG_STAT == 1 || d.TREG_STAT == 1) && d.VBUS_STAT_3_0 == 7) {
             console.log("VBUS Path: زرد (برگشت)");
+            vbusPathOverallStatus = "زرد (برگشت)";
+            if (d.IINDPM_STAT == 1) {
+                vbusPathOverallStatus = "در حالت OTG اما در حال تنظیم نگهداشتن جریان خروجی";
+            }
+            else if (d.IBAT_REG_STAT == 1) {
+                vbusPathOverallStatus = "در حالت OTG اما در حال تنظیم نگهداشتن جریان کششی از باطری";
+            }
+            else if (d.TREG_STAT == 1) {
+                vbusPathOverallStatus = "در حالت OTG اما در حال رگوله کردن جریان برای خنک کردن IC";
+            }
             setPathStyle(path, { color: 'var(--warning-color)', isAnimated: true, isReversed: true });
         }
         // 8. بنفش (رفت)
         else if (!(d.VBUS_OVP_STAT == 1 || d.VSYS_OVP_STAT == 1 || d.VBAT_OVP_STAT == 1 || d.IBUS_OCP_STAT == 1 || d.PG_STAT == 0 || d.TSHUT_STAT == 1 || d.OTG_OVP_STAT == 1 || d.OTG_UVP_STAT == 1 || (d.EN_OTG == 1 && (d.TS_COLD_STAT == 1 || d.TS_HOT_STAT == 1)) || d.EN_HIZ == 1 || d.SDRV_CTRL != 0 || d.VAC_OVP_STAT == 1 || d.VSYS_SHORT_STAT == 1) && d.VBUS_PRESENT_STAT == 1 && d.EN_OTG == 0 && ((d.ACRB1_STAT == 0 && d.ACRB2_STAT == 0) || (d.EN_ACDRV1 == 1 || d.EN_ACDRV2 == 1)) && ((d.CHG_STAT_2_0 == 0 || d.CHG_STAT_2_0 == 7) || (d.CHG_TMR_STAT == 1 || d.TRICHG_TMR_STAT == 1 || d.PRECHG_TMR_STAT == 1 || d.TS_HOT_STAT == 1 || d.TS_COLD_STAT == 1 || (d.STOP_WD_CHG == 1 && d.WD_STAT == 1))) && d.SDRV_CTRL == 0 && d.VINDPM_STAT == 0 && d.IINDPM_STAT == 0 && d.IBAT_REG_STAT == 0 && d.TREG_STAT == 0) {
             console.log("VBUS Path: بنفش (رفت)");
+            vbusPathOverallStatus = "بنفش (رفت)";
+            if (d.STOP_WD_CHG == 1 && d.WD_STAT == 1) {
+                vbusPathOverallStatus = "باطری به دلیل عدم ریست WD_STAT شارژ نمیشود.";
+            }
+            else if (d.CHG_TMR_STAT == 1) {
+                vbusPathOverallStatus = "به علت طولانی شدن مرحله fast-charge باطری شارژ نمیشود.";
+            }
+            else if (d.TRICHG_TMR_STAT == 1) {
+                vbusPathOverallStatus = "به علت طولانی شدن مرحله tricle باطری شارژ نمیشود.";
+            }
+            else if (d.PRECHG_TMR_STAT == 1) {
+                vbusPathOverallStatus = "به علت طولانی شدن مرحله پیش-شارژ باطری شارژ نمیشود.";
+            }
             setPathStyle(path, { color: '#a855f7', isAnimated: true });
         }
         // 9. سبز (رفت)
         else if (!(d.VBUS_OVP_STAT == 1 || d.VSYS_OVP_STAT == 1 || d.VBAT_OVP_STAT == 1 || d.IBUS_OCP_STAT == 1 || d.PG_STAT == 0 || d.TSHUT_STAT == 1 || d.OTG_OVP_STAT == 1 || d.OTG_UVP_STAT == 1 || (d.EN_OTG == 1 && (d.TS_COLD_STAT == 1 || d.TS_HOT_STAT == 1)) || d.EN_HIZ == 1 || d.SDRV_CTRL != 0 || d.VAC_OVP_STAT == 1 || d.VSYS_SHORT_STAT == 1) && d.VBUS_PRESENT_STAT == 1 && d.VBAT_PRESENT_STAT == 1 && d.EN_OTG == 0 && ((d.ACRB1_STAT == 0 && d.ACRB2_STAT == 0) || (d.EN_ACDRV1 == 1 || d.EN_ACDRV2 == 1)) && (d.CHG_STAT_2_0 != 0 && d.CHG_STAT_2_0 != 7) && d.CHG_TMR_STAT == 0 && d.TRICHG_TMR_STAT == 0 && d.PRECHG_TMR_STAT == 0 && d.TS_COLD_STAT == 0 && d.TS_HOT_STAT == 0 && d.VBATOTG_LOW_STAT == 0 && d.VBAT_OVP_STAT == 0 && d.IBAT_OCP_STAT == 0 && (d.STOP_WD_CHG == 0 || d.WD_STAT == 0) && d.SDRV_CTRL == 0 && d.VINDPM_STAT == 0 && d.IINDPM_STAT == 0 && d.IBAT_REG_STAT == 0 && d.TREG_STAT == 0 && (d.TS_WARM_STAT == 0 || (d.JEITA_VSET_2 != 0 && d.JEITA_ISETH_1 != 0)) && (d.TS_COOL_STAT == 0 || (d.JEITA_ISETC_1 != 0))) {
             console.log("VBUS Path: سبز (رفت)");
+            vbusPathOverallStatus = "درحال تغذیه SYS و شارژ باطری.";
             setPathStyle(path, { color: 'var(--success-color)', isAnimated: true });
         }
         // 10. آبی (برگشت)
         else if (!(d.VBUS_OVP_STAT == 1 || d.VSYS_OVP_STAT == 1 || d.VBAT_OVP_STAT == 1 || d.IBUS_OCP_STAT == 1 || d.TSHUT_STAT == 1 || d.OTG_OVP_STAT == 1 || d.OTG_UVP_STAT == 1 || (d.EN_OTG == 1 && (d.TS_COLD_STAT == 1 || d.TS_HOT_STAT == 1)) || d.EN_HIZ == 1 || d.SDRV_CTRL != 0 || d.VAC_OVP_STAT == 1 || d.VSYS_SHORT_STAT == 1) && d.TS_COLD_STAT == 0 && d.TS_HOT_STAT == 0 && d.OTG_OVP_STAT == 0 && d.OTG_UVP_STAT == 0 && d.VBATOTG_LOW_STAT == 0 && d.EN_OTG == 1 && ((d.ACRB1_STAT == 0 && d.ACRB2_STAT == 0) || (d.EN_ACDRV1 == 1 || d.EN_ACDRV2 == 1)) && d.CHG_STAT_2_0 == 0 && d.IINDPM_STAT == 0 && d.IBAT_REG_STAT == 0 && d.TREG_STAT == 0 && d.VBUS_STAT_3_0 == 7) {
             console.log("VBUS Path: آبی (برگشت)");
+            vbusPathOverallStatus = "در حالت OTG";
             setPathStyle(path, { color: 'var(--info-color)', isAnimated: true, isReversed: true });
+        }
+        else {
+            console.log("bad working now.");
+            vbusPathOverallStatus = "bad working now.";
         }
     }
 
@@ -266,58 +390,172 @@ document.addEventListener('DOMContentLoaded', function () {
         // 1. قطع
         if (d.VBAT_PRESENT_STAT == 0 || d.SDRV_CTRL != 0 || (!(d.VBUS_OVP_STAT == 1 || d.VSYS_OVP_STAT == 1 || d.VBAT_OVP_STAT == 1 || d.IBUS_OCP_STAT == 1 || d.PG_STAT == 0 || d.TSHUT_STAT == 1 || d.OTG_OVP_STAT == 1 || d.OTG_UVP_STAT == 1 || (d.EN_OTG == 1 && (d.TS_COLD_STAT == 1 || d.TS_HOT_STAT == 1)) || d.EN_HIZ == 1 || d.SDRV_CTRL != 0 || d.VAC_OVP_STAT == 1 || d.VSYS_SHORT_STAT == 1) && (d.VBUS_PRESENT_STAT == 1) && d.VBAT_PRESENT_STAT == 1 && d.CHG_STAT_2_0 == 7 && d.EN_OTG == 0 && d.VBATOTG_LOW_STAT == 0 && d.TS_COLD_STAT == 0 && d.TS_HOT_STAT == 0 && d.VBAT_OVP_STAT == 0 && d.IBAT_OCP_STAT == 0 && d.TSHUT_STAT == 0 && d.OTG_OVP_STAT == 0 && d.OTG_UVP_STAT == 0 && d.VINDPM_STAT == 0 && d.IINDPM_STAT == 0 && d.IBAT_REG_STAT == 0 && d.TREG_STAT == 0 && ((d.ACRB1_STAT == 0 && d.ACRB2_STAT == 0) || (d.EN_ACDRV1 == 1 || d.EN_ACDRV2 == 1)) && (d.TS_WARM_STAT == 0 || (d.JEITA_VSET_2 != 0 && d.JEITA_ISETH_1 != 0)) && (d.TS_COOL_STAT == 0 || (d.JEITA_ISETC_1 != 0)))) {
             console.log("VBAT Path: قطع");
+            vbatPathOverallStatus = "قطع";
+            if (d.VBAT_PRESENT_STAT == 0) {
+                vbatPathOverallStatus = "باطری حضور ندارد.";
+            }
+            else if (d.SDRV_CTRL != 0) {
+                vbatPathOverallStatus = "از باطری علت خاموش بودن SDRV_CTRL استفاده نمیشود.";
+            }
+            else {
+                vbatPathOverallStatus = "باطری پر است و شارژ نمیشود.";
+            }
         }
         // 2. خاکستری
         else if (d.IBAT_OCP_STAT == 1 && d.SFET_PRESENT == 1 && d.EN_BATOCP == 1) {
             console.log("VBAT Path: خاکستری");
+            vbatPathOverallStatus = "به علت خطای جریان زیاد کششی از باطری، باطری غیرفعال شده.";
             setPathStyle(pathFromBat, { color: 'var(--idle-color)', isAnimated: false, isStatic: true });
         }
         // 3. قرمز
         else if ((d.TS_COLD_STAT == 1 || d.TS_HOT_STAT == 1 || d.VBAT_OVP_STAT == 1 || d.IBAT_OCP_STAT == 1 || d.CHG_TMR_STAT == 1 || d.TRICHG_TMR_STAT == 1 || d.PRECHG_TMR_STAT == 1) && d.VBAT_PRESENT_STAT == 1 && d.SDRV_CTRL == 0) {
             console.log("VBAT Path: قرمز");
+            vbatPathOverallStatus = "قرمز";
+            if (d.TS_COLD_STAT == 1) {
+                vbatPathOverallStatus = "دمای باطری خیلی پایین است.";
+            }
+            else if (d.TS_HOT_STAT == 1) {
+                vbatPathOverallStatus = "دمای باطری خیلی بالا است.";
+            }
+            else if (d.VBAT_OVP_STAT == 1) {
+                vbatPathOverallStatus = "ولتاژ باطری بیش از حد است.";
+            }
+            else if (d.IBAT_OCP_STAT == 1) {
+                vbatPathOverallStatus = "جریان کششی از باطری بیش از حد است.";
+            }
+            else if (d.CHG_TMR_STAT == 1) {
+                vbatPathOverallStatus = "مرحله شارژ سریع بیش از حد طول کشیده.";
+            }
+            else if (d.TRICHG_TMR_STAT == 1) {
+                vbatPathOverallStatus = "مرحله شارژ قطره ایی بیش از حد طول کشیده.";
+            }
+            else if (d.PRECHG_TMR_STAT == 1) {
+                vbatPathOverallStatus = "مرحله پیش-شارژ بیش از حد طول کشیده.";
+            }
+
             setPathStyle(pathFromBat, { color: 'var(--error-color)', isAnimated: true, isStatic: false });
         }
         // 4. بنفش (برگشت)
         else if ((d.VBUS_PRESENT_STAT == 0 || (d.VBUS_OVP_STAT == 1 || d.VSYS_OVP_STAT == 1 || d.IBUS_OCP_STAT == 1 || (d.EN_OTG == 0 && (((d.ACRB1_STAT == 0 && d.ACRB2_STAT == 0) || (d.EN_ACDRV1 == 1 || d.EN_ACDRV2 == 1)) && d.PG_STAT == 0)) || d.TSHUT_STAT == 1 || d.OTG_OVP_STAT == 1 || d.OTG_UVP_STAT == 1 || d.EN_HIZ == 1 || d.VBATOTG_LOW_STAT == 1 || d.VAC_OVP_STAT == 1 || d.VSYS_SHORT_STAT == 1)) && d.SDRV_CTRL == 0 && d.VBATOTG_LOW_STAT == 0 && d.TS_COLD_STAT == 0 && d.TS_HOT_STAT == 0 && d.VBAT_OVP_STAT == 0 && d.IBAT_OCP_STAT == 0 && (d.EN_OTG == 0 || ((d.ACRB1_STAT == 0 && d.ACRB2_STAT == 0) || (d.EN_ACDRV1 == 1 || d.EN_ACDRV2 == 1))) && d.VBAT_PRESENT_STAT == 1) {
             console.log("VBAT Path: بنفش");
+            vbatPathOverallStatus = "بنفش";
+            if (d.VBUS_PRESENT_STAT == 0) {
+                vbatPathOverallStatus = "باطری به علت نبود ولتاژ ورودی در حال تغذیه SYS است.";
+            }
+            else if (d.VBUS_OVP_STAT == 1) {
+                vbatPathOverallStatus = "باطری به علت خطای اضافه ولتاژ ورودی در حال تغذیه SYS است.";
+            }
+            else if (d.VSYS_OVP_STAT == 1) {
+                vbatPathOverallStatus = "باطری به علت خطای اضافه ولتاژ SYS در حال تغذیه SYS است.";
+            }
+            else if (d.IBUS_OCP_STAT == 1) {
+                vbatPathOverallStatus = "باطری به علت جریان کشی زیاد از VBUS در حال تغذیه SYS است.";
+            }
+            else if ((d.EN_OTG == 0 && (((d.ACRB1_STAT == 0 && d.ACRB2_STAT == 0) || (d.EN_ACDRV1 == 1 || d.EN_ACDRV2 == 1)) && d.PG_STAT == 0))) {
+                vbatPathOverallStatus = "باطری به دلیل آداپتور ضعیف در حال تغذیه SYS است.";
+            }
+            else if (d.TSHUT_STAT == 1) {
+                vbatPathOverallStatus = "باطری به دلیل گرمای بحرانی IC در حالت تغذیه SYS است.";
+            }
+            else if (d.OTG_OVP_STAT == 1) {
+                vbatPathOverallStatus = "در حالت OTG اما خطای اضافه ولتاژ خروجی";
+            }
+            else if (d.OTG_UVP_STAT == 1) {
+                vbatPathOverallStatus = "در حالت OTG اما افت شدید ولتاژ خروجی";
+            }
+            else if (d.EN_HIZ == 1) {
+                vbatPathOverallStatus = "باطری به علت EN_HIZ در حال تغذیه SYS.";
+            }
+            else if (d.VAC_OVP_STAT == 1) {
+                vbatPathOverallStatus = "باطری به علت خطای اضافه ولتاژ در جفت ماسفت ها در حال تغذیه SYS است.";
+            }
+            else if (d.VSYS_SHORT_STAT == 1) {
+                vbatPathOverallStatus = "باطری به علت خطای اتصال کوتاه SYS در حال تغذیه SYS است.";
+            }
+            else if (d.VBATOTG_LOW_STAT == 1) {
+                vbatPathOverallStatus = "در حالت OTG اما به علت خطای عدم ولتاژ کافی خروجی خاموش شده.";
+            }
             setPathStyle(pathFromBat, { color: '#a855f7', isAnimated: true });
         }
         // 5. صورتی
         else if (!(d.VBUS_OVP_STAT == 1 || d.VSYS_OVP_STAT == 1 || d.VBAT_OVP_STAT == 1 || d.IBUS_OCP_STAT == 1 || d.TSHUT_STAT == 1 || d.OTG_OVP_STAT == 1 || d.OTG_UVP_STAT == 1 || (d.EN_OTG == 1 && (d.TS_COLD_STAT == 1 || d.TS_HOT_STAT == 1)) || d.EN_HIZ == 1 || d.SDRV_CTRL != 0 || d.VAC_OVP_STAT == 1 || d.VSYS_SHORT_STAT == 1) && d.VBAT_PRESENT_STAT == 1 && d.VBATOTG_LOW_STAT == 0 && d.TS_COLD_STAT == 0 && d.TS_HOT_STAT == 0 && d.VBAT_OVP_STAT == 0 && d.IBAT_OCP_STAT == 0 && d.TSHUT_STAT == 0 && d.OTG_OVP_STAT == 0 && d.OTG_UVP_STAT == 0 && ((d.ACRB1_STAT == 1 || d.ACRB2_STAT == 1) && (d.EN_ACDRV1 == 0 && d.EN_ACDRV2 == 0)) && d.CHG_STAT_2_0 == 0 && d.SDRV_CTRL == 0) {
             console.log("VBAT Path: صورتی");
+            vbatPathOverallStatus = "صورتی";
+            if (d.EN_OTG == 1) {
+                vbatPathOverallStatus = "در حالت OTG اما بسته بودن جفت ماسفت ها.";
+            }
+            else if (d.AC1_PRESENT_STAT == 1 || d.AC2_PRESENT_STAT == 1) {
+                vbatPathOverallStatus = "باطری به علت بسته بودن جفت ماسفت ها در حال تغذیه SYS است.";
+            }
+
             setPathStyle(pathFromBat, { color: 'var(--secondary-color)', isAnimated: true });
         }
         // 6. زرد (رفت)
         else if (!(d.VBUS_OVP_STAT == 1 || d.VSYS_OVP_STAT == 1 || d.VBAT_OVP_STAT == 1 || d.IBUS_OCP_STAT == 1 || d.PG_STAT == 0 || d.TSHUT_STAT == 1 || d.OTG_OVP_STAT == 1 || d.OTG_UVP_STAT == 1 || (d.EN_OTG == 1 && (d.TS_COLD_STAT == 1 || d.TS_HOT_STAT == 1)) || d.EN_HIZ == 1 || d.SDRV_CTRL != 0 || d.VAC_OVP_STAT == 1 || d.VSYS_SHORT_STAT == 1) && d.VBUS_PRESENT_STAT == 1 && d.VBAT_PRESENT_STAT == 1 && d.EN_OTG == 0 && ((d.ACRB1_STAT == 0 && d.ACRB2_STAT == 0) || (d.EN_ACDRV1 == 1 || d.EN_ACDRV2 == 1)) && (d.CHG_STAT_2_0 != 0 && d.CHG_STAT_2_0 != 7) && d.CHG_TMR_STAT == 0 && d.TRICHG_TMR_STAT == 0 && d.PRECHG_TMR_STAT == 0 && d.TS_COLD_STAT == 0 && d.TS_HOT_STAT == 0 && d.VBATOTG_LOW_STAT == 0 && d.VBAT_OVP_STAT == 0 && d.IBAT_OCP_STAT == 0 && (d.STOP_WD_CHG == 0 || d.WD_STAT == 0) && d.SDRV_CTRL == 0 && ((d.VINDPM_STAT == 1 || d.IINDPM_STAT == 1 || d.IBAT_REG_STAT == 1 || d.TREG_STAT == 1) && (d.VSYS_ADC_15_0 > d.VBAT_ADC_15_0)) && (d.TS_WARM_STAT == 0 || (d.JEITA_VSET_2 != 0 && d.JEITA_ISETH_1 != 0)) && (d.TS_COOL_STAT == 0 || (d.JEITA_ISETC_1 != 0))) {
             console.log("VBAT Path: زرد (رفت)");
+            vbatPathOverallStatus = "زرد (رفت)";
+            if (d.VINDPM_STAT == 1) {
+                vbatPathOverallStatus = "در حال شارژ باطری اما جریان شارژ باطری به دلیل تنظیم ولتاژ ورودی کاهش پیدا میکند.";
+            }
+            else if (d.IINDPM_STAT == 1) {
+                vbatPathOverallStatus = "در حال شارژ باطری اما جریان باطری دلیل تنظیم جریان کشی از ورودی  کاهش پیدا میکند.";
+            }
+            else if (d.TREG_STAT == 1) {
+                vbatPathOverallStatus = "در حال شارژ باطری اما جریان شارژ باطری به دلیل تنظیم دمای IC کاهش پیدا میکند.";
+            }
+
             setPathStyle(pathToBat, { color: 'var(--warning-color)', isAnimated: true });
         }
         // 7. زرد (برگشت)
         else if (!(d.VBUS_OVP_STAT == 1 || d.VSYS_OVP_STAT == 1 || d.VBAT_OVP_STAT == 1 || d.IBUS_OCP_STAT == 1 || d.TSHUT_STAT == 1 || d.OTG_OVP_STAT == 1 || d.OTG_UVP_STAT == 1 || (d.EN_OTG == 1 && (d.TS_COLD_STAT == 1 || d.TS_HOT_STAT == 1)) || d.EN_HIZ == 1 || d.SDRV_CTRL != 0 || d.VAC_OVP_STAT == 1 || d.VSYS_SHORT_STAT == 1) && d.VBAT_PRESENT_STAT == 1 && ((d.EN_OTG == 1 && d.TS_COLD_STAT == 0 && d.TSHUT_STAT == 0 && d.OTG_OVP_STAT == 0 && d.OTG_UVP_STAT == 0 && (d.IINDPM_STAT == 1 || d.IBAT_REG_STAT == 1 || d.TREG_STAT == 1) && d.CHG_STAT_2_0 == 0) || (d.VBUS_PRESENT_STAT == 1 && d.PG_STAT == 1 && d.EN_OTG == 0 && d.TS_COLD_STAT == 0 && ((d.VINDPM_STAT == 1 || d.IINDPM_STAT == 1 || d.IBAT_REG_STAT == 1 || d.TREG_STAT == 1) && ((d.IBAT_ADC_15_0 <= 0) || (d.VSYS_ADC_15_0 <= d.VBAT_ADC_15_0))))) && d.TS_HOT_STAT == 0 && d.VBATOTG_LOW_STAT == 0 && d.VBAT_OVP_STAT == 0 && d.IBAT_OCP_STAT == 0 && ((d.ACRB1_STAT == 0 && d.ACRB2_STAT == 0) || (d.EN_ACDRV1 == 1 || d.EN_ACDRV2 == 1)) && d.SDRV_CTRL == 0) {
             if (d.EN_OTG == 1) {
                 console.log("VBAT Path: زرد (برگشت) حالت OTG");
+                vbatPathOverallStatus = "زرد (برگشت) حالت OTG";
+                if (d.IBAT_REG_STAT == 1) {
+                    vbatPathOverallStatus = "در حالت OTG اما درحال تنظیم جریان کششی از باطری.";
+                }
+                else if (d.IINDPM_STAT == 1) {
+                    vbatPathOverallStatus = "در حالت OTG اما در حال تنظیم جریان خروجی:";
+                }
+                else if (d.TREG_STAT == 1) {
+                    vbatPathOverallStatus = "در حالت OTG اما درحال تنظیم جریان خروجی به دلیل دمای بیش از حد IC.";
+                }
             } else {
                 console.log("VBAT Path: زرد (برگشت) حالت supplement.");
+                vbatPathOverallStatus = "زرد (برگشت) حالت supplement";
+                if (d.VINDPM_STAT == 1) {
+                    vbatPathOverallStatus = "به علت افت ولتاژ منبع ورودی دستگاه وارد حالت کمکی از باطری شده.";
+                }
+                else if (d.IINDPM_STAT == 1) {
+                    vbatPathOverallStatus = "به علت رسیدن به حداکثر جریان مجاز ورودی دستگاه وارد حالت کمکی از باطری شده.";
+                }
+                else if (d.TREG_STAT == 1) {
+                    vbatPathOverallStatus = "به علت دمای بیش از حد IC دستگاه وارد حالت کمکی از باطری شده.";
+                }
             };
             setPathStyle(pathFromBat, { color: 'var(--warning-color)', isAnimated: true });
         }
         // 8. آبی (برگشت)
         else if (!(d.VBUS_OVP_STAT == 1 || d.VSYS_OVP_STAT == 1 || d.VBAT_OVP_STAT == 1 || d.IBUS_OCP_STAT == 1 || d.TSHUT_STAT == 1 || d.OTG_OVP_STAT == 1 || d.OTG_UVP_STAT == 1 || (d.EN_OTG == 1 && (d.TS_COLD_STAT == 1 || d.TS_HOT_STAT == 1)) || d.EN_HIZ == 1 || d.SDRV_CTRL != 0 || d.VAC_OVP_STAT == 1 || d.VSYS_SHORT_STAT == 1) && d.EN_OTG == 1 && d.VBAT_PRESENT_STAT == 1 && d.VBUS_PRESENT_STAT == 1 && d.VBATOTG_LOW_STAT == 0 && d.TS_COLD_STAT == 0 && d.TS_HOT_STAT == 0 && d.VBAT_OVP_STAT == 0 && d.IBAT_OCP_STAT == 0 && d.TSHUT_STAT == 0 && d.OTG_OVP_STAT == 0 && d.OTG_UVP_STAT == 0 && d.VBUS_STAT_3_0 == 7 && ((d.ACRB1_STAT == 0 && d.ACRB2_STAT == 0) || (d.EN_ACDRV1 == 1 || d.EN_ACDRV2 == 1)) && d.IINDPM_STAT == 0 && d.IBAT_REG_STAT == 0 && d.TREG_STAT == 0 && d.CHG_STAT_2_0 == 0 && d.SDRV_CTRL == 0) {
             console.log("VBAT Path: آبی در vbat");
+            vbatPathOverallStatus = "در حالت OTG.";
             setPathStyle(pathFromBat, { color: 'var(--info-color)', isAnimated: true });
         }
         // 9. مشکی
         else if (!(d.VBUS_OVP_STAT == 1 || d.VSYS_OVP_STAT == 1 || d.VBAT_OVP_STAT == 1 || d.IBUS_OCP_STAT == 1 || d.PG_STAT == 0 || d.TSHUT_STAT == 1 || d.OTG_OVP_STAT == 1 || d.OTG_UVP_STAT == 1 || (d.EN_OTG == 1 && (d.TS_COLD_STAT == 1 || d.TS_HOT_STAT == 1)) || d.EN_HIZ == 1 || d.SDRV_CTRL != 0 || d.VAC_OVP_STAT == 1 || d.VSYS_SHORT_STAT == 1) && d.EN_OTG == 0 && d.VBAT_PRESENT_STAT == 1 && d.VBUS_PRESENT_STAT == 1 && d.VBATOTG_LOW_STAT == 0 && d.TS_COLD_STAT == 0 && d.TS_HOT_STAT == 0 && d.VBAT_OVP_STAT == 0 && d.IBAT_OCP_STAT == 0 && d.TSHUT_STAT == 0 && d.OTG_OVP_STAT == 0 && d.OTG_UVP_STAT == 0 && d.VBUS_STAT_3_0 != 0 && ((d.ACRB1_STAT == 0 && d.ACRB2_STAT == 0) || (d.EN_ACDRV1 == 1 || d.EN_ACDRV2 == 1)) && d.CHG_STAT_2_0 == 0 && d.VINDPM_STAT == 0 && d.IINDPM_STAT == 0 && d.IBAT_REG_STAT == 0 && d.TREG_STAT == 0 && d.SDRV_CTRL == 0) {
             console.log("VBAT Path: مشکی");
+            vbatPathOverallStatus = "عملیات شارژ توسط کاربر لغو شده.";
             setPathStyle(pathFromBat, { color: '#333', isAnimated: false, isStatic: true });
         }
         // 10. سبز (رفت)
         else if (!(d.VBUS_OVP_STAT == 1 || d.VSYS_OVP_STAT == 1 || d.VBAT_OVP_STAT == 1 || d.IBUS_OCP_STAT == 1 || d.PG_STAT == 0 || d.TSHUT_STAT == 1 || d.OTG_OVP_STAT == 1 || d.OTG_UVP_STAT == 1 || (d.EN_OTG == 1 && (d.TS_COLD_STAT == 1 || d.TS_HOT_STAT == 1)) || d.EN_HIZ == 1 || d.SDRV_CTRL != 0 || d.VAC_OVP_STAT == 1 || d.VSYS_SHORT_STAT == 1) && d.VBUS_PRESENT_STAT == 1 && d.VBAT_PRESENT_STAT == 1 && d.EN_OTG == 0 && ((d.ACRB1_STAT == 0 && d.ACRB2_STAT == 0) || (d.EN_ACDRV1 == 1 || d.EN_ACDRV2 == 1)) && (d.CHG_STAT_2_0 != 0 && d.CHG_STAT_2_0 != 7) && d.CHG_TMR_STAT == 0 && d.TRICHG_TMR_STAT == 0 && d.PRECHG_TMR_STAT == 0 && d.TS_COLD_STAT == 0 && d.TS_HOT_STAT == 0 && d.VBATOTG_LOW_STAT == 0 && d.VBAT_OVP_STAT == 0 && d.IBAT_OCP_STAT == 0 && (d.STOP_WD_CHG == 0 || d.WD_STAT == 0) && d.SDRV_CTRL == 0 && d.VINDPM_STAT == 0 && d.IINDPM_STAT == 0 && d.IBAT_REG_STAT == 0 && d.TREG_STAT == 0 && (d.TS_WARM_STAT == 0 || (d.JEITA_VSET_2 != 0 && d.JEITA_ISETH_1 != 0)) && (d.TS_COOL_STAT == 0 || (d.JEITA_ISETC_1 != 0))) {
             console.log("VBAT Path: سبز");
+            vbatPathOverallStatus = "درحال شارژ باطری.";
             setPathStyle(pathToBat, { color: 'var(--success-color)', isAnimated: true });
         }
         else {
             console.log("bad working now.")
+            vbatPathOverallStatus = "bad working now.";
         }
     }
 
