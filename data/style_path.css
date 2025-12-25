@@ -157,6 +157,11 @@ body {
     color: white;
 }
 
+.status-bg-danger {
+    background-color: var(--error-color);
+    color: white;
+}
+
 
 /* --- استایل پنل وضعیت --- */
 .status-panel-card {
