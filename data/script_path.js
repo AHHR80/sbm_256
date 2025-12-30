@@ -105,7 +105,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
         const overallStatus = getOverallStatus();
         UIElements.overallStatusText.textContent = overallStatus.text;
-        UIElements.overallStatusContainer.className = `mb-4 p-3 rounded-lg flex items-center justify-center space-x-3 space-x-reverse text-lg md:text-xl font-bold transition-all duration-300 ${overallStatus.colorClass}`;
+        UIElements.overallStatusContainer.className = `mb-4 p-3 rounded-lg flex items-center justify-center space-x-3 space-x-reverse text-sm md:text-xl font-bold transition-all duration-300 ${overallStatus.colorClass}`;
     }
 
     function getOverallStatus() {
