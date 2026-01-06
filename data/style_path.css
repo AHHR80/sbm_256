@@ -1,0 +1,370 @@
+/* --- متغیرهای اصلی برای تم --- */
+:root {
+    --bg-color: #1a1a2e;
+    --card-bg-color: #16213e;
+    --primary-color: #0f3460;
+    --secondary-color: #e945bd;
+    --bg-secondary-color: #e94560;
+    --font-color: #e0e0e0;
+    --font-color-label: #a0a0c0;
+    --success-color: #2ecc71;
+    --warning-color: #f39c12;
+    --error-color: #c0392b;
+    --info-color: #3498db;
+    --idle-color: #555;
+    --command-color: #3498db;
+    --status-connected: #27ae60;
+    --status-connecting: #f39c12;
+    --status-disconnected: #c0392b;
+    /* رنگ‌های مورد نیاز برای لودینگ */
+    --bg-color: #1a1a2e;
+    /* رنگ پس‌زمینه کل صفحه */
+    --font-color: #e0e0e0;
+    /* رنگ متن */
+}
+
+/* --- استایل‌های پایه --- */
+body {
+    font-family: 'Vazirmatn', sans-serif;
+    background-color: var(--bg-color);
+    color: var(--font-color);
+}
+
+/* --- استایل‌های شماتیک --- */
+.schematic-bg {
+    background-image: radial-gradient(var(--card-bg-color) 1px, transparent 1px);
+    background-size: 20px 20px;
+}
+
+.component {
+    transition: transform 0.2s ease-in-out, filter 0.2s ease-in-out;
+    cursor: default;
+    /* Changed from pointer to default */
+}
+
+.component text {
+    pointer-events: none;
+    user-select: none;
+}
+
+.component-bg {
+    fill: var(--card-bg-color);
+    transition: fill 0.3s;
+}
+
+.component-stroke-info {
+    stroke: var(--info-color);
+    stroke-width: 2;
+}
+
+.component-stroke-secondary {
+    stroke: var(--secondary-color);
+    stroke-width: 2;
+    transition: stroke 0.3s;
+}
+
+.component-stroke-success {
+    stroke: var(--success-color);
+    stroke-width: 2;
+}
+
+.component-stroke-warning {
+    stroke: var(--warning-color);
+    stroke-width: 2;
+}
+
+.data-text {
+    font-size: 18px;
+    font-weight: 700;
+    fill: white;
+    transition: fill 0.3s;
+}
+
+.label-text {
+    font-size: 14px;
+    fill: var(--font-color-label);
+}
+
+/* --- انیمیشن مسیر جریان --- */
+.power-path {
+    stroke-width: 4;
+    fill: none;
+    stroke-dasharray: 15;
+    stroke-dashoffset: 30;
+    opacity: 0;
+    transition: opacity 0.5s, stroke 0.5s, stroke-dasharray 0.5s;
+}
+
+.power-path.flow-active {
+    opacity: 1;
+    animation: march 2s linear infinite;
+}
+
+.power-path.flow-otg {
+    animation-direction: reverse;
+}
+
+.power-path.hiz-mode {
+    stroke-dasharray: 5 10;
+    stroke: #555;
+    opacity: 0.8;
+}
+
+@keyframes march {
+    to {
+        stroke-dashoffset: 0;
+    }
+}
+
+/* --- آیکون‌های وضعیت --- */
+.fault-icon {
+    animation: blink-warning 1s infinite;
+}
+
+@keyframes blink-warning {
+    50% {
+        opacity: 0.5;
+    }
+}
+
+/* --- پنل وضعیت کلی --- */
+#overall-status-indicator {
+    transition: background-color 0.3s;
+}
+
+.status-bg-error {
+    background-color: var(--error-color);
+    color: white;
+}
+
+.status-bg-warning {
+    background-color: var(--warning-color);
+    color: #1a1a2e;
+}
+
+.status-bg-success {
+    background-color: var(--success-color);
+    color: white;
+}
+
+.status-bg-info {
+    background-color: var(--info-color);
+    color: white;
+}
+
+.status-bg-idle {
+    background-color: var(--idle-color);
+    color: white;
+}
+
+.status-bg-danger {
+    background-color: var(--error-color);
+    color: white;
+}
+
+
+/* --- استایل پنل وضعیت --- */
+.status-panel-card {
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+}
+
+.loading-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: var(--bg-color);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 2000;
+    color: var(--font-color);
+    font-size: 1.5em;
+    transition: opacity 0.5s ease;
+}
+
+/* استایل‌های مربوط به پیام شناور (Toast) */
+#toast {
+    visibility: hidden;
+    min-width: 250px;
+    max-width: 90%;
+    color: #fff;
+    text-align: center;
+    border-radius: 8px;
+    padding: 16px;
+    position: fixed;
+    z-index: 1001;
+    left: 50%;
+    transform: translateX(-50%);
+    bottom: 30px;
+    font-size: 17px;
+    opacity: 0;
+    transition: opacity 0.5s, bottom 0.5s, visibility 0.5s;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+}
+
+#toast.show {
+    visibility: visible;
+    opacity: 1;
+    bottom: 50px;
+}
+
+/* انواع رنگ‌بندی توست */
+#toast.interrupt {
+    background-color: var(--command-color);
+}
+
+#toast.warning {
+    background-color: var(--status-connecting);
+}
+
+#toast.success {
+    background-color: var(--status-connected);
+}
+
+.status-indicator {
+    position: fixed;
+    top: 15px;
+    left: 15px;
+    padding: 5px 12px;
+    border-radius: 15px;
+    color: white;
+    font-size: 0.9em;
+    z-index: 1002;
+    transition: background-color 0.5s ease;
+}
+
+.status-indicator.connected {
+    background-color: var(--status-connected);
+}
+
+.status-indicator.connecting {
+    background-color: var(--status-connecting);
+}
+
+.status-indicator.disconnected {
+    background-color: var(--status-disconnected);
+}
+
+
+/* استایل سایدبار (دسکتاپ) */
+.nav-button {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    padding: 20px;
+    background-color: var(--card-bg-color);
+    color: var(--font-color);
+    text-decoration: none;
+    border-radius: 10px;
+    text-align: center;
+    font-size: 1.1em;
+    transition: transform 0.2s ease, background-color 0.2s ease;
+    border: 2px solid transparent;
+    position: relative;
+}
+
+.nav-button:hover {
+    transform: translateY(-5px);
+    background-color: var(--bg-secondary-color);
+    border-color: #fff;
+}
+
+.sidebar {
+    position: fixed;
+    top: 0;
+    right: 0;
+    width: 280px;
+    height: 100%;
+    z-index: 999;
+    background-color: var(--primary-color);
+    padding: 20px;
+    box-shadow: -5px 0 15px rgba(0, 0, 0, 0.5);
+    /* سایه به سمت چپ */
+    transition: transform 0.3s ease-in-out;
+    transform: translateX(100%);
+    /* پیش‌فرض: مخفی در سمت راست */
+    border-radius: 0;
+    overflow-y: auto;
+}
+
+/* کلاس برای باز کردن منو */
+.sidebar.open {
+    transform: translateX(0);
+}
+
+.sidebar .nav-grid {
+    display: flex;
+    flex-direction: column;
+    /* چیدمان عمودی دکمه‌ها */
+    gap: 15px;
+}
+
+.sidebar .nav-button {
+    font-size: 1em;
+    padding: 15px;
+}
+
+/* استایل دکمه فعال (صفحه جاری) */
+.sidebar .nav-button.active {
+    background-color: var(--bg-secondary-color);
+    color: #fff;
+    border-color: #fff;
+    transform: translateY(-2px);
+}
+
+/* دکمه همبرگری */
+.menu-toggle {
+    display: block;
+    /* همیشه نمایش داده شود */
+    position: fixed;
+    top: 15px;
+    right: 15px;
+    z-index: 1100;
+    width: 40px;
+    height: 40px;
+    background: var(--bg-secondary-color);
+    color: white;
+    border: none;
+    border-radius: 50%;
+    font-size: 24px;
+    cursor: pointer;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+}
+
+/* لایه تاریک پشت منو */
+.overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 998;
+}
+
+.overlay.active {
+    display: block;
+}
+
+/* کدهای مربوط به بخش notification counter */
+.notification-badge {
+    background-color: #e94560;
+    /* رنگ قرمز (secondary-color) */
+    color: white;
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 0.8em;
+    font-weight: bold;
+    border: 2px solid #0f3460;
+    /* همرنگ پس‌زمینه منو برای ایجاد حاشیه */
+    /* اگر در حالت absolute می‌خواهید گوشه دکمه باشد، استایل‌های position را اضافه کنید */
+}

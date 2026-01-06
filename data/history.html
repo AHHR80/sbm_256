@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تاریخچه وقایع</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <button class="menu-toggle" id="menu-toggle-btn">☰</button>
+    <div class="overlay" id="overlay"></div>
+
+    <!-- عناصر ثابت در بالای صفحه -->
+    <div id="status-indicator">در حال اتصال...</div>
+    <div id="loading-overlay" class="loading-overlay">در حال بارگذاری تاریخچه...</div>
+
+    <!-- طرح‌بندی اصلی جدید -->
+    <div class="main-layout">
+        <!-- ستون سایدبار برای ناوبری -->
+        <aside class="sidebar" id="sidebar">
+            <h2 style="text-align: center; color: #fff; margin-top: 0;">منوی کنترل</h2>
+            <nav class="nav-grid">
+                <a href="/" class="nav-button">index</a>
+                <a href="/page1" class="nav-button">صفحه ۱: وضعیت اصلی</a>
+                <a href="/page2" class="nav-button">صفحه ۲: کنترل شارژ</a>
+                <a href="/page3" class="nav-button">صفحه ۳: پیش‌شارژ</a>
+                <a href="/page4" class="nav-button">صفحه ۴: کنترل‌های پیشرفته</a>
+                <a href="/page5" class="nav-button">صفحه ۵: وضعیت‌های خطا</a>
+                <a href="/page6" class="nav-button">صفحه ۶: تنظیمات ماسک</a>
+                <a href="/history" class="nav-button" id="history-nav-button">
+                    <span>تاریخچه وقایع</span>
+                    <span class="notification-badge" style="display: none;"></span>
+                </a>
+            </nav>
+        </aside>
+
+        <!-- ستون محتوای اصلی صفحه -->
+        <div class="content">
+            <!-- ====================================================== -->
+            <!-- ### محتوای اصلی و منحصر به فرد این صفحه ### -->
+            <header>
+                <h1>تاریخچه وقایع شارژر</h1>
+                <p>لیست آخرین وقایع ثبت شده. رویدادهای جدید هایلایت شده‌اند.</p>
+            </header>
+            <main id="history-container">
+                <ul id="history-list">
+                    <!-- History items will be inserted here by JavaScript -->
+                </ul>
+            </main>
+            <!-- ====================================================== -->
+        </div>
+    </div>
+
+    <!-- عناصر مودال و هشدار در انتهای صفحه -->
+    <div id="toast"></div>
+    
+    <script> window.API_ENDPOINT = '/api/history'; </script>
+    <script src="script.js"></script>
+    <script>
+        // کدی برای فعال کردن دکمه منوی صفحه فعلی
+        document.addEventListener('DOMContentLoaded', function() {
+            const currentPage = window.location.pathname;
+            const navLinks = document.querySelectorAll('.sidebar .nav-button');
+            navLinks.forEach(link => {
+                if (link.getAttribute('href') === currentPage) {
+                    link.classList.add('active');
+                }
+            });
+        });
+    </script>
+</body>
+</html>

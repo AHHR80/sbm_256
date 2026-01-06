@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>صفحه ۴ - کنترل‌های پیشرفته</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <button class="menu-toggle" id="menu-toggle-btn">☰</button>
+    <div class="overlay" id="overlay"></div>
+    
+    <!-- عناصر ثابت در بالای صفحه -->
+    <div id="status-indicator">در حال اتصال...</div>
+    <div id="loading-overlay" class="loading-overlay">در حال بارگذاری داده‌ها...</div>
+
+    <!-- طرح‌بندی اصلی جدید -->
+    <div class="main-layout">
+        <!-- ستون سایدبار برای ناوبری -->
+        <aside class="sidebar" id="sidebar">
+            <h2 style="text-align: center; color: #fff; margin-top: 0;">منوی کنترل</h2>
+            <nav class="nav-grid">
+                <a href="/" class="nav-button">index</a>
+                <a href="/page1" class="nav-button">صفحه ۱: وضعیت اصلی</a>
+                <a href="/page2" class="nav-button">صفحه ۲: کنترل شارژ</a>
+                <a href="/page3" class="nav-button">صفحه ۳: پیش‌شارژ</a>
+                <a href="/page4" class="nav-button">صفحه ۴: کنترل‌های پیشرفته</a>
+                <a href="/page5" class="nav-button">صفحه ۵: وضعیت‌های خطا</a>
+                <a href="/page6" class="nav-button">صفحه ۶: تنظیمات ماسک</a>
+                <a href="/history" class="nav-button" id="history-nav-button">
+                    <span>تاریخچه وقایع</span>
+                    <span class="notification-badge" style="display: none;"></span>
+                </a>
+            </nav>
+        </aside>
+
+        <!-- ستون محتوای اصلی صفحه -->
+        <div class="content">
+            <!-- ====================================================== -->
+            <!-- ### محتوای اصلی و منحصر به فرد این صفحه ### -->
+            <header>
+                <h1>صفحه ۴: کنترل‌های پیشرفته</h1>
+                <p>تنظیمات در گروه‌های منطقی دسته‌بندی شده‌اند.</p>
+            </header>
+            <main id="data-container">
+
+                <!-- Group: Timer & Watchdog Settings -->
+                <div class="settings-group">
+                    <h3 class="group-title">تنظیمات تایمر و Watchdog</h3>
+                    <div class="data-grid">
+                        <div class="data-card writable" data-reg="WATCHDOG_2_0" data-current-value=""><span class="label">تایمر Watchdog</span><span id="WATCHDOG_2_0" class="value">--</span></div>
+                        <div class="data-card writable" data-reg="STOP_WD_CHG" data-current-value=""><span class="label">توقف شارژ با Watchdog</span><span id="STOP_WD_CHG" class="value">--</span></div>
+                        <div class="data-card writable" data-reg="EN_CHG_TMR" data-current-value=""><span class="label">تایمر ایمنی شارژ سریع</span><span id="EN_CHG_TMR" class="value">--</span></div>
+                        <div class="data-card writable" data-reg="CHG_TMR_1_0" data-current-value=""><span class="label">مدت زمان تایمر شارژ سریع</span><span id="CHG_TMR_1_0" class="value">--</span></div>
+                        <div class="data-card writable" data-reg="EN_PRECHG_TMR" data-current-value=""><span class="label">تایمر ایمنی پیش‌شارژ</span><span id="EN_PRECHG_TMR" class="value">--</span></div>
+                        <div class="data-card writable" data-reg="PRECHG_TMR" data-current-value=""><span class="label">مدت زمان تایمر پیش‌شارژ</span><span id="PRECHG_TMR" class="value">--</span></div>
+                        <div class="data-card writable" data-reg="EN_TRICHG_TMR" data-current-value=""><span class="label">تایمر ایمنی شارژ قطره‌ای</span><span id="EN_TRICHG_TMR" class="value">--</span></div>
+                        <div class="data-card writable" data-reg="TOPOFF_TMR_1_0" data-current-value=""><span class="label">تایمر شارژ تکمیلی (Top-off)</span><span id="TOPOFF_TMR_1_0" class="value">--</span></div>
+                        <div class="data-card writable" data-reg="TMR2X_EN" data-current-value=""><span class="label">کاهش سرعت تایمر در DPM</span><span id="TMR2X_EN" class="value">--</span></div>
+                    </div>
+                </div>
+
+                <!-- Group: Temperature Profile (JEITA) -->
+                <div class="settings-group">
+                    <h3 class="group-title">پروفایل دما (JEITA)</h3>
+                    <div class="data-grid">
+                        <div class="data-card writable" data-reg="TREG_1_0" data-current-value=""><span class="label">آستانه کاهش جریان حرارتی</span><span id="TREG_1_0" class="value">--</span></div>
+                        <div class="data-card writable" data-reg="TSHUT_1_0" data-current-value=""><span class="label">آستانه خاموشی حرارتی</span><span id="TSHUT_1_0" class="value">--</span></div>
+                        <div class="data-card writable" data-reg="JEITA_VSET_2_0" data-current-value=""><span class="label">کاهش ولتاژ در دمای گرم</span><span id="JEITA_VSET_2_0" class="value">--</span></div>
+                        <div class="data-card writable" data-reg="JEITA_ISETH_1_0" data-current-value=""><span class="label">کاهش جریان در دمای گرم</span><span id="JEITA_ISETH_1_0" class="value">--</span></div>
+                        <div class="data-card writable" data-reg="JEITA_ISETC_1_0" data-current-value=""><span class="label">کاهش جریان در دمای سرد</span><span id="JEITA_ISETC_1_0" class="value">--</span></div>
+                        <div class="data-card writable" data-reg="TS_COOL_1_0" data-current-value=""><span class="label">آستانه دمای خنک (Cool)</span><span id="TS_COOL_1_0" class="value">--</span></div>
+                        <div class="data-card writable" data-reg="TS_WARM_1_0" data-current-value=""><span class="label">آستانه دمای گرم (Warm)</span><span id="TS_WARM_1_0" class="value">--</span></div>
+                        <div class="data-card writable" data-reg="BHOT_1_0" data-current-value=""><span class="label">آستانه دمای داغ (OTG)</span><span id="BHOT_1_0" class="value">--</span></div>
+                        <div class="data-card writable" data-reg="BCOLD" data-current-value=""><span class="label">آستانه دمای سرد (OTG)</span><span id="BCOLD" class="value">--</span></div>
+                        <div class="data-card writable" data-reg="TS_IGNORE" data-current-value=""><span class="label">نادیده گرفتن سنسور دما</span><span id="TS_IGNORE" class="value">--</span></div>
+                    </div>
+                </div>
+
+                <!-- Group: ADC Control -->
+                <div class="settings-group">
+                    <h3 class="group-title">کنترل ADC</h3>
+                    <div class="data-grid">
+                        <div class="data-card writable" data-reg="ADC_RATE" data-current-value=""><span class="label">نرخ نمونه‌برداری ADC</span><span id="ADC_RATE" class="value">--</span></div>
+                        <div class="data-card writable" data-reg="ADC_SAMPLE_1_0" data-current-value=""><span class="label">دقت نمونه‌برداری ADC</span><span id="ADC_SAMPLE_1_0" class="value">--</span></div>
+                        <div class="data-card writable" data-reg="ADC_AVG" data-current-value=""><span class="label">میانگین‌گیری نتایج ADC</span><span id="ADC_AVG" class="value">--</span></div>
+                        <div class="data-card writable" data-reg="ADC_AVG_INIT" data-current-value=""><span class="label">شروع میانگین‌گیری با نمونه جدید</span><span id="ADC_AVG_INIT" class="value">--</span></div>
+                        <div class="data-card writable" data-reg="IBUS_ADC_DIS" data-current-value=""><span class="label">غیرفعال‌سازی ADC جریان ورودی</span><span id="IBUS_ADC_DIS" class="value">--</span></div>
+                        <div class="data-card writable" data-reg="IBAT_ADC_DIS" data-current-value=""><span class="label">غیرفعال‌سازی ADC جریان باتری</span><span id="IBAT_ADC_DIS" class="value">--</span></div>
+                        <div class="data-card writable" data-reg="VBUS_ADC_DIS" data-current-value=""><span class="label">غیرفعال‌سازی ADC ولتاژ ورودی</span><span id="VBUS_ADC_DIS" class="value">--</span></div>
+                        <div class="data-card writable" data-reg="VBAT_ADC_DIS" data-current-value=""><span class="label">غیرفعال‌سازی ADC ولتاژ باتری</span><span id="VBAT_ADC_DIS" class="value">--</span></div>
+                        <div class="data-card writable" data-reg="VSYS_ADC_DIS" data-current-value=""><span class="label">غیرفعال‌سازی ADC ولتاژ سیستم</span><span id="VSYS_ADC_DIS" class="value">--</span></div>
+                        <div class="data-card writable" data-reg="TS_ADC_DIS" data-current-value=""><span class="label">غیرفعال‌سازی ADC سنسور دما</span><span id="TS_ADC_DIS" class="value">--</span></div>
+                        <div class="data-card writable" data-reg="TDIE_ADC_DIS" data-current-value=""><span class="label">غیرفعال‌سازی ADC دمای چیپ</span><span id="TDIE_ADC_DIS" class="value">--</span></div>
+                        <div class="data-card writable" data-reg="DP_ADC_DIS" data-current-value=""><span class="label">غیرفعال‌سازی ADC پین D+</span><span id="DP_ADC_DIS" class="value">--</span></div>
+                        <div class="data-card writable" data-reg="DM_ADC_DIS" data-current-value=""><span class="label">غیرفعال‌سازی ADC پین D-</span><span id="DM_ADC_DIS" class="value">--</span></div>
+                        <div class="data-card writable" data-reg="VAC2_ADC_DIS" data-current-value=""><span class="label">غیرفعال‌سازی ADC ورودی VAC2</span><span id="VAC2_ADC_DIS" class="value">--</span></div>
+                        <div class="data-card writable" data-reg="VAC1_ADC_DIS" data-current-value=""><span class="label">غیرفعال‌سازی ADC ورودی VAC1</span><span id="VAC1_ADC_DIS" class="value">--</span></div>
+                    </div>
+                </div>
+
+                <!-- Group: Advanced Charger Control -->
+                <div class="settings-group">
+                    <h3 class="group-title">کنترل‌های پیشرفته شارژر</h3>
+                    <div class="data-grid">
+                        <div class="data-card writable" data-reg="EN_AUTO_IBATDIS" data-current-value=""><span class="label">دشارژ خودکار در BATOVP</span><span id="EN_AUTO_IBATDIS" class="value">--</span></div>
+                        <div class="data-card writable command" data-reg="FORCE_IBATDIS" data-current-value=""><span class="label">اجرای دشارژ باتری</span><span id="FORCE_IBATDIS" class="value">--</span></div>
+                        <div class="data-card writable" data-reg="EN_TERM" data-current-value=""><span class="label">خاتمه خودکار شارژ</span><span id="EN_TERM" class="value">--</span></div>
+                        <div class="data-card writable command" data-reg="FORCE_INDET" data-current-value=""><span class="label">تشخیص مجدد نوع آداپتور</span><span id="FORCE_INDET" class="value">--</span></div>
+                        <div class="data-card writable" data-reg="AUTO_INDET_EN" data-current-value=""><span class="label">تشخیص خودکار آداپتور</span><span id="AUTO_INDET_EN" class="value">--</span></div>
+                        <div class="data-card writable" data-reg="EN_12V" data-current-value=""><span class="label">درخواست ولتاژ 12V (HVDCP)</span><span id="EN_12V" class="value">--</span></div>
+                        <div class="data-card writable" data-reg="EN_9V" data-current-value=""><span class="label">درخواست ولتاژ 9V (HVDCP)</span><span id="EN_9V" class="value">--</span></div>
+                        <div class="data-card writable" data-reg="HVDCP_EN" data-current-value=""><span class="label">فعال‌سازی شارژر ولتاژ بالا</span><span id="HVDCP_EN" class="value">--</span></div>
+                        <div class="data-card writable" data-reg="SDRV_DLY" data-current-value=""><span class="label">تأخیر در کنترل ماسفت خارجی</span><span id="SDRV_DLY" class="value">--</span></div>
+                        <div class="data-card writable" data-reg="PFM_OTG_DIS" data-current-value=""><span class="label">غیرفعال‌سازی PFM در OTG</span><span id="PFM_OTG_DIS" class="value">--</span></div>
+                        <div class="data-card writable" data-reg="PFM_FWD_DIS" data-current-value=""><span class="label">غیرفعال‌سازی PFM در شارژ</span><span id="PFM_FWD_DIS" class="value">--</span></div>
+                        <div class="data-card writable" data-reg="WKUP_DLY" data-current-value=""><span class="label">زمان بیداری از Ship Mode</span><span id="WKUP_DLY" class="value">--</span></div>
+                        <div class="data-card writable" data-reg="DIS_LDO" data-current-value=""><span class="label">غیرفعال‌سازی LDO پیش‌شارژ</span><span id="DIS_LDO" class="value">--</span></div>
+                        <div class="data-card writable" data-reg="DIS_OTG_OOA" data-current-value=""><span class="label">غیرفعال‌سازی Out-of-Audio در OTG</span><span id="DIS_OTG_OOA" class="value">--</span></div>
+                        <div class="data-card writable" data-reg="DIS_FWD_OOA" data-current-value=""><span class="label">غیرفعال‌سازی Out-of-Audio در شارژ</span><span id="DIS_FWD_OOA" class="value">--</span></div>
+                        <div class="data-card writable" data-reg="PWM_FREQ" data-current-value=""><span class="label">فرکانس سوئیچینگ</span><span id="PWM_FREQ" class="value">--</span></div>
+                        <div class="data-card writable" data-reg="DIS_STAT" data-current-value=""><span class="label">غیرفعال‌سازی پین STAT</span><span id="DIS_STAT" class="value">--</span></div>
+                        <div class="data-card writable" data-reg="DIS_VSYS_SHORT" data-current-value=""><span class="label">غیرفعال‌سازی حفاظت اتصال کوتاه</span><span id="DIS_VSYS_SHORT" class="value">--</span></div>
+                        <div class="data-card writable" data-reg="DIS_VOTG_UVP" data-current-value=""><span class="label">غیرفعال‌سازی حفاظت ولتاژ پایین OTG</span><span id="DIS_VOTG_UVP" class="value">--</span></div>
+                        <div class="data-card writable" data-reg="EN_IBUS_OCP" data-current-value=""><span class="label">حفاظت جریان بیش از حد ورودی</span><span id="EN_IBUS_OCP" class="value">--</span></div>
+                        <div class="data-card writable" data-reg="EN_BATOC" data-current-value=""><span class="label">حفاظت جریان بیش از حد باتری</span><span id="EN_BATOC" class="value">--</span></div>
+                    </div>
+                </div>
+
+                <!-- Group: MPPT Control -->
+                <div class="settings-group">
+                    <h3 class="group-title">کنترل MPPT (پنل خورشیدی)</h3>
+                    <div class="data-grid">
+                        <div class="data-card writable" data-reg="VOC_PCT_2_0" data-current-value=""><span class="label">درصد ولتاژ مدار باز (MPPT)</span><span id="VOC_PCT_2_0" class="value">--</span></div>
+                        <div class="data-card writable" data-reg="VOC_DLY_1_0" data-current-value=""><span class="label">تأخیر اندازه‌گیری ولتاژ (MPPT)</span><span id="VOC_DLY_1_0" class="value">--</span></div>
+                        <div class="data-card writable" data-reg="VOC_RATE_1_0" data-current-value=""><span class="label">نرخ اندازه‌گیری ولتاژ (MPPT)</span><span id="VOC_RATE_1_0" class="value">--</span></div>
+                    </div>
+                </div>
+                
+                <!-- Group: Hardware & Pin Control -->
+                <div class="settings-group">
+                    <h3 class="group-title">کنترل سخت‌افزار و پین‌ها</h3>
+                    <div class="data-grid">
+                        <div class="data-card writable" data-reg="VBUS_PD_EN" data-current-value=""><span class="label">مقاومت Pull-down ورودی VBUS</span><span id="VBUS_PD_EN" class="value">--</span></div>
+                        <div class="data-card writable" data-reg="VAC1_PD_EN" data-current-value=""><span class="label">مقاومت Pull-down ورودی VAC1</span><span id="VAC1_PD_EN" class="value">--</span></div>
+                        <div class="data-card writable" data-reg="VAC2_PD_EN" data-current-value=""><span class="label">مقاومت Pull-down ورودی VAC2</span><span id="VAC2_PD_EN" class="value">--</span></div>
+                        <div class="data-card writable" data-reg="DPLUS_DAC_2_0" data-current-value=""><span class="label">کنترل دستی پین D+</span><span id="DPLUS_DAC_2_0" class="value">--</span></div>
+                        <div class="data-card writable" data-reg="DMINUS_DAC_2_0" data-current-value=""><span class="label">کنترل دستی پین D-</span><span id="DMINUS_DAC_2_0" class="value">--</span></div>
+                    </div>
+                </div>
+
+                <!-- Group: Device Information -->
+                <div class="settings-group">
+                    <h3 class="group-title">اطلاعات دستگاه (فقط خواندنی)</h3>
+                    <div class="data-grid">
+                        <div class="data-card" data-reg="PN_2_0"><span class="label">شماره قطعه</span><span id="PN_2_0" class="value">--</span></div>
+                        <div class="data-card" data-reg="DEV_REV_2_0"><span class="label">نسخه بازبینی سخت‌افزار</span><span id="DEV_REV_2_0" class="value">--</span></div>
+                    </div>
+                </div>
+
+            </main>
+            <!-- ====================================================== -->
+        </div>
+    </div>
+
+    <!-- عناصر مودال و هشدار در انتهای صفحه -->
+    <div id="toast"></div>
+    <div id="edit-modal" class="modal">
+        <div class="modal-content">
+            <h3 id="modal-title">ویرایش رجیستر</h3>
+            <div id="modal-body"></div>
+            <div class="modal-footer">
+                <button id="modal-cancel" class="modal-button">لغو</button>
+                <button id="modal-save" class="modal-button">ذخیره</button>
+            </div>
+        </div>
+    </div>
+
+    <script> window.API_ENDPOINT = '/api/data4'; </script>
+    <script src="script.js"></script>
+    <script>
+        // کدی برای فعال کردن دکمه منوی صفحه فعلی
+        document.addEventListener('DOMContentLoaded', function() {
+            const currentPage = window.location.pathname;
+            const navLinks = document.querySelectorAll('.sidebar .nav-button');
+            navLinks.forEach(link => {
+                if (link.getAttribute('href') === currentPage) {
+                    link.classList.add('active');
+                }
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>صفحه ۱ - وضعیت اصلی</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <button class="menu-toggle" id="menu-toggle-btn">☰</button>
+    <div class="overlay" id="overlay"></div>
+
+    <!-- عناصر ثابت در بالای صفحه -->
+    <div id="status-indicator">در حال اتصال...</div>
+    <div id="loading-overlay" class="loading-overlay">در حال بارگذاری داده‌ها...</div>
+
+    <!-- طرح‌بندی اصلی جدید -->
+    <div class="main-layout">
+        <!-- ستون سایدبار برای ناوبری -->
+        <aside class="sidebar" id="sidebar">
+            <h2 style="text-align: center; color: #fff; margin-top: 0;">منوی کنترل</h2>
+            <nav class="nav-grid">
+                <a href="/" class="nav-button">index</a>
+                <a href="/page1" class="nav-button">صفحه ۱: وضعیت اصلی</a>
+                <a href="/page2" class="nav-button">صفحه ۲: کنترل شارژ</a>
+                <a href="/page3" class="nav-button">صفحه ۳: پیش‌شارژ</a>
+                <a href="/page4" class="nav-button">صفحه ۴: کنترل‌های پیشرفته</a>
+                <a href="/page5" class="nav-button">صفحه ۵: وضعیت‌های خطا</a>
+                <a href="/page6" class="nav-button">صفحه ۶: تنظیمات ماسک</a>
+                <a href="/history" class="nav-button" id="history-nav-button">
+                    <span>تاریخچه وقایع</span>
+                    <span class="notification-badge" style="display: none;"></span>
+                </a>
+            </nav>
+        </aside>
+
+        <!-- ستون محتوای اصلی صفحه -->
+        <div class="content">
+            <!-- ====================================================== -->
+            <!-- ### محتوای اصلی و منحصر به فرد این صفحه ### -->
+            <header>
+                <h1>صفحه ۱: وضعیت اصلی و ADC</h1>
+                <p>برای ویرایش، روی کارت‌های قابل نوشتن کلیک کنید. برای راهنمایی، موس را روی (?) نگه دارید.</p>
+            </header>
+            <main class="data-grid" id="data-container">
+                <!-- Writable registers -->
+                <div class="data-card writable" data-reg="VSYSMIN_5_0" data-current-value=""><span class="label">حداقل
+                        ولتاژ سیستم (mV)</span><span id="VSYSMIN_5_0" class="value">--</span></div>
+                <div class="data-card writable" data-reg="CELL_1_0" data-current-value=""><span class="label">تعداد
+                        سلول‌های باتری</span><span id="CELL_1_0" class="value">--</span></div>
+                <div class="data-card writable" data-reg="VOTG_10_0" data-current-value=""><span class="label">ولتاژ
+                        خروجی پاوربانک (mV)</span><span id="VOTG_10_0" class="value">--</span></div>
+                <div class="data-card writable" data-reg="IOTG_6_0" data-current-value=""><span class="label">حداکثر
+                        جریان خروجی (mA)</span><span id="IOTG_6_0" class="value">--</span></div>
+                <div class="data-card writable" data-reg="EN_CHG" data-current-value=""><span class="label">وضعیت شارژ
+                        (فعال/غیرفعال)</span><span id="EN_CHG" class="value">--</span></div>
+
+                <!-- Read-only registers -->
+                <div class="data-card" data-reg="VBUS_PRESENT_STAT"><span class="label">وضعیت اتصال آداپتور</span><span
+                        id="VBUS_PRESENT_STAT" class="value">--</span></div>
+                <div class="data-card" data-reg="CHG_STAT_2_0"><span class="label">مرحله فعلی شارژ</span><span
+                        id="CHG_STAT_2_0" class="value">--</span></div>
+                <div class="data-card" data-reg="VBUS_STAT_3_0"><span class="label">نوع آداپتور شناسایی شده</span><span
+                        id="VBUS_STAT_3_0" class="value">--</span></div>
+                <div class="data-card" data-reg="VBAT_PRESENT_STAT"><span class="label">وضعیت اتصال باتری</span><span
+                        id="VBAT_PRESENT_STAT" class="value">--</span></div>
+                <div class="data-card" data-reg="VSYS_STAT"><span class="label">وضعیت رگولاسیون سیستم</span><span
+                        id="VSYS_STAT" class="value">--</span></div>
+                <div class="data-card" data-reg="IBUS_ADC_15_0"><span class="label">جریان لحظه‌ای ورودی (mA)</span><span
+                        id="IBUS_ADC_15_0" class="value">--</span></div>
+                <div class="data-card" data-reg="IBAT_ADC_15_0"><span class="label">جریان لحظه‌ای باتری (mA)</span><span
+                        id="IBAT_ADC_15_0" class="value">--</span></div>
+                <div class="data-card" data-reg="VBUS_ADC_15_0"><span class="label">ولتاژ لحظه‌ای ورودی (mV)</span><span
+                        id="VBUS_ADC_15_0" class="value">--</span></div>
+                <div class="data-card" data-reg="VAC1_ADC_15_0"><span class="label">ولتاژ ورودی ۱ (قبل از
+                        ماسفت)</span><span id="VAC1_ADC_15_0" class="value">--</span></div>
+                <div class="data-card" data-reg="VAC2_ADC_15_0"><span class="label">ولتاژ ورودی ۲ (قبل از
+                        ماسفت)</span><span id="VAC2_ADC_15_0" class="value">--</span></div>
+                <div class="data-card" data-reg="VBAT_ADC_15_0"><span class="label">ولتاژ لحظه‌ای باتری (mV)</span><span
+                        id="VBAT_ADC_15_0" class="value">--</span></div>
+                <div class="data-card" data-reg="VSYS_ADC_15_0"><span class="label">ولتاژ لحظه‌ای سیستم (mV)</span><span
+                        id="VSYS_ADC_15_0" class="value">--</span></div>
+                <div class="data-card" data-reg="TS_ADC_15_0"><span class="label">دمای باطری (°C)</span><span
+                        id="TS_ADC_15_0" class="value">--</span></div>
+                <div class="data-card" data-reg="TDIE_ADC_15_0"><span class="label">دمای داخلی چیپ (°C)</span><span
+                        id="TDIE_ADC_15_0" class="value">--</span></div>
+
+                <!-- Reset Button Container -->
+                <div class="reset-container">
+                    <button id="reset-button" class="action-button">بازگردانی به تنظیمات اولیه (REG_RST)</button>
+                </div>
+            </main>
+            <!-- ====================================================== -->
+        </div>
+    </div>
+
+    <!-- عناصر مودال و هشدار در انتهای صفحه -->
+    <div id="toast"></div>
+    <div id="edit-modal" class="modal">
+        <div class="modal-content">
+            <h3 id="modal-title">ویرایش رجیستر</h3>
+            <div id="modal-body"></div>
+            <div class="modal-footer">
+                <button id="modal-cancel" class="modal-button">لغو</button>
+                <button id="modal-save" class="modal-button">ذخیره</button>
+            </div>
+        </div>
+    </div>
+    <div id="confirm-modal" class="modal">
+        <div class="modal-content">
+            <p>آیا مطمئن هستید که می‌خواهید تمام تنظیمات را به حالت اولیه بازگردانید؟</p>
+            <div class="modal-buttons">
+                <button id="confirm-no">خیر</button>
+                <button id="confirm-yes">بله</button>
+            </div>
+        </div>
+    </div>
+
+    <script> window.API_ENDPOINT = '/api/data1'; </script>
+    <script src="script.js"></script>
+    <script>
+        // کدی برای فعال کردن دکمه منوی صفحه فعلی
+        document.addEventListener('DOMContentLoaded', function () {
+            const currentPage = window.location.pathname;
+            const navLinks = document.querySelectorAll('.sidebar .nav-button');
+            navLinks.forEach(link => {
+                // For the root page, the href is "/"
+                if (link.getAttribute('href') === currentPage || (currentPage === '/' && link.getAttribute('href') === '/')) {
+                    link.classList.add('active');
+                }
+            });
+        });
+    </script>
+</body>
+
+</html>
