@@ -251,7 +251,7 @@ document.addEventListener('DOMContentLoaded', function () {
             else if (d.VAC_OVP_STAT) {
                 vbusPathOverallStatus = { text: "آداپتور حضور دارد اما به علت ولتاژ بیش از حد در جفت ماسفت ها از آن استفاده نمیشود.", colorClass: "status-bg-error" };
             }
-            else if (d.PG_STAT) {
+            else if (d.PG_STAT == 0) {
                 vbusPathOverallStatus = { text: "آداپتور حضور دارد اما ضعیف است.", colorClass: "status-bg-error" };
             }
 
