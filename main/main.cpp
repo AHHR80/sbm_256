@@ -2076,11 +2076,47 @@ void handleApiCrash(AsyncWebServerRequest *request) {
   }
 }
 
+/**
+ * @brief Waits for BQ25672 to be connected by reading Part Information
+ * register. Blocks until the device responds with correct Part Number.
+ */
+void waitForBQ25672Connection() {
+  Serial.println("Waiting for BQ25672 connection...");
+  uint8_t partInfo = 0;
+  int retryCount = 0;
+
+  while (true) {
+    if (readByte(0x48, partInfo)) {
+      // Extract PN bits (bits 5:3)
+      uint8_t pn = (partInfo >> 3) & 0x07;
+      if (pn == 0x04) {
+        Serial.printf(
+            "BQ25672 detected! Part Info Reg: 0x%02X (PN=%d, DEV_REV=%d)\n",
+            partInfo, pn, partInfo & 0x07);
+        return;
+      } else {
+        Serial.printf(
+            "Unexpected PN value: %d (expected %d), reg value: 0x%02X\n", pn,
+            0x04, partInfo);
+      }
+    } else {
+      retryCount++;
+      if (retryCount % 10 == 0) {
+        Serial.printf("BQ25672 not responding... (attempt %d)\n", retryCount);
+      }
+    }
+    delay(500); // Wait 500ms before retry
+  }
+}
+
 void setup() {
   Serial.begin(115200);
   Wire.begin();
 
   delay(50);
+
+  // Wait for BQ25672 to be connected before proceeding
+  waitForBQ25672Connection();
 
   if (!LittleFS.begin(true)) {
     Serial.println("An Error has occurred while mounting LittleFS");

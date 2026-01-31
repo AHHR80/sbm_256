@@ -15,5 +15,7 @@
     "--background-index",
     "--query-driver=**",
     "--compile-commands-dir=d:\\mycode\\Arduino\\bq25672_and_web_server_esp_idf_base\\build"
-  ]
+  ],
+  "idf.portWin": "COM5",
+  "idf.flashType": "UART"
 }
