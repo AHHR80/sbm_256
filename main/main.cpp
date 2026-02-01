@@ -1632,6 +1632,14 @@ void handleApiIndex(AsyncWebServerRequest *request) {
     doc["EN_OTG"] = -1;
   }
 
+  // --- REG0B-0C: VOTG (OTG Voltage) ---
+  if (readWord(0x0B, val16)) {
+    // VOTG_10_0: bits 10:0, value in mV = reg_val * 10 + 2800
+    doc["VOTG_10_0"] = (val16 & 0x07FF) * 10 + 2800;
+  } else {
+    doc["VOTG_10_0"] = -1;
+  }
+
   // --- REG13: Charger Control 4 ---
   if (readByte(0x13, val8)) {
     doc["EN_ACDRV2"] = (val8 >> 7) & 0x01;
@@ -1805,6 +1813,13 @@ void handleApiIndex(AsyncWebServerRequest *request) {
     doc["VSYS_ADC_15_0"] = val16;
   } else {
     doc["VSYS_ADC_15_0"] = -1;
+  }
+
+  // REG00: VSYSMIN (Minimum System Voltage)
+  if (readByte(0x00, val8)) {
+    doc["VSYSMIN_5_0"] = 2500 + ((val8 & 0x3F) * 250);
+  } else {
+    doc["VSYSMIN_5_0"] = -1;
   }
 
   // REG41: TDIE ADC (ADDED) - Requires 0.5 scaling

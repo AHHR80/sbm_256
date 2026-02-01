@@ -288,7 +288,7 @@ document.addEventListener('DOMContentLoaded', function () {
             setPathStyle(path, { color: 'var(--error-color)', isAnimated: true, isReversed: true });
         }
         // 4. خاکستری (رفت و برگشت)
-        else if (((d.ACRB1_STAT == 0 && d.ACRB2_STAT == 0) || (d.EN_ACDRV1 == 1 || d.EN_ACDRV2 == 1)) && d.SDRV_CTRL == 0 && (d.VBUS_PRESENT_STAT == 1 || (d.AC1_PRESENT_STAT == 1 || d.AC2_PRESENT_STAT == 1) || d.EN_OTG == 1) && (d.VSYS_OVP_STAT == 1 || d.VBAT_OVP_STAT == 1 || d.TSHUT_STAT == 1 || d.EN_HIZ == 1 || d.VSYS_SHORT_STAT == 1)) {
+        else if (((d.ACRB1_STAT == 0 && d.ACRB2_STAT == 0) || (d.EN_ACDRV1 == 1 || d.EN_ACDRV2 == 1)) && d.SDRV_CTRL == 0 && (d.VBUS_PRESENT_STAT == 1 || (d.AC1_PRESENT_STAT == 1 || d.AC2_PRESENT_STAT == 1) || d.EN_OTG == 1) && (d.VSYS_OVP_STAT == 1 || d.VBAT_OVP_STAT == 1 || d.TSHUT_STAT == 1 || d.EN_HIZ == 1 || d.VSYS_SHORT_STAT == 1 || (d.CHG_STAT_2_0 == 0 && ((d.EN_OTG == 0 && d.VBAT_PRESENT_STAT == 1 && d.VSYS_ADC_15_0 - d.VBAT_ADC_15_0 - 50 <= 0) || (d.EN_OTG == 1 && d.VBUS_ADC_15_0 < d.VOTG_10_0) || (d.VBAT_PRESENT_STAT == 0 && d.VSYS_ADC_15_0 < d.VSYSMIN_5_0)) && ((d.EN_OTG == 0 && d.VINDPM_STAT == 0) || d.EN_OTG == 1) && d.IINDPM_STAT == 0 && d.IBAT_REG_STAT == 0 && d.TREG_STAT == 0))) {
             console.log("VBUS Path: خاکستری (رفت و برگشت)");
             vbusPathOverallStatus = { text: "آداپتور حضور دارد یا در حالت OTG اما مبدل بدلیل خطاهایی که متناسب به vbus یا otg نیست خاموش میشود", colorClass: "status-bg-error" };
             if (d.EN_OTG == 1) {
@@ -307,6 +307,9 @@ document.addEventListener('DOMContentLoaded', function () {
                 else if (d.VSYS_SHORT_STAT == 1) {
                     vbusPathOverallStatus = { text: "در حالت OTG اما خروجی به علت خطای اتصال کوتاه SYS خاموش شده.", colorClass: "status-bg-error" };
                 }
+                else if (d.CHG_STAT_2_0 == 0 && d.VBUS_ADC_15_0 < d.VOTG_10_0 && d.IINDPM_STAT == 0 && d.IBAT_REG_STAT == 0 && d.TREG_STAT == 0) {
+                    vbusPathOverallStatus = { text: "در حالت OTG اما خروجی به علت HIZ در پین ILIM_HIZ قطع شده.", colorClass: "status-bg-error" };
+                }
             }
             else if (d.VBUS_PRESENT_STAT == 1 || (d.AC1_PRESENT_STAT == 1 || d.AC2_PRESENT_STAT == 1)) {
                 if (d.VSYS_OVP_STAT == 1) {
@@ -323,6 +326,9 @@ document.addEventListener('DOMContentLoaded', function () {
                 }
                 else if (d.VSYS_SHORT_STAT == 1) {
                     vbusPathOverallStatus = { text: "آداپتور حضور دارد اما به علت خطای اتصال کوتاه SYS از آن استفاده نمیشود.", colorClass: "status-bg-error" };
+                }
+                else if (d.CHG_STAT_2_0 == 0 && ((d.VBAT_PRESENT_STAT == 1 && d.VSYS_ADC_15_0 - d.VBAT_ADC_15_0 - 50 <= 0) || (d.VBAT_PRESENT_STAT == 0 && d.VSYS_ADC_15_0 < d.VSYSMIN_5_0)) && d.VINDPM_STAT == 0 && d.IINDPM_STAT == 0 && d.IBAT_REG_STAT == 0 && d.TREG_STAT == 0) {
+                    vbusPathOverallStatus = { text: "آداپتور حضور دارد اما به علت HIZ توسط پین ILIM_HIZ از آن استفاده نمیشود.", colorClass: "status-bg-error" };
                 }
             }
             setPathStyle(path, { color: 'var(--idle-color)', isAnimated: false, isStatic: true });
@@ -462,7 +468,7 @@ document.addEventListener('DOMContentLoaded', function () {
             setPathStyle(pathFromBat, { color: 'var(--error-color)', isAnimated: true, isStatic: false });
         }
         // 4. بنفش (برگشت)
-        else if ((d.VBUS_PRESENT_STAT == 0 || (d.VBUS_OVP_STAT == 1 || d.VSYS_OVP_STAT == 1 || d.IBUS_OCP_STAT == 1 || (d.EN_OTG == 0 && (((d.ACRB1_STAT == 0 && d.ACRB2_STAT == 0) || (d.EN_ACDRV1 == 1 || d.EN_ACDRV2 == 1)) && d.PG_STAT == 0)) || d.TSHUT_STAT == 1 || d.OTG_OVP_STAT == 1 || d.OTG_UVP_STAT == 1 || d.EN_HIZ == 1 || d.VBATOTG_LOW_STAT == 1 || d.VAC_OVP_STAT == 1 || d.VSYS_SHORT_STAT == 1)) && d.SDRV_CTRL == 0 && d.VBATOTG_LOW_STAT == 0 && d.TS_COLD_STAT == 0 && d.TS_HOT_STAT == 0 && d.VBAT_OVP_STAT == 0 && d.IBAT_OCP_STAT == 0 && (d.EN_OTG == 0 || ((d.ACRB1_STAT == 0 && d.ACRB2_STAT == 0) || (d.EN_ACDRV1 == 1 || d.EN_ACDRV2 == 1))) && d.VBAT_PRESENT_STAT == 1) {
+        else if ((d.VBUS_PRESENT_STAT == 0 || (d.VBUS_OVP_STAT == 1 || d.VSYS_OVP_STAT == 1 || d.IBUS_OCP_STAT == 1 || (d.EN_OTG == 0 && (((d.ACRB1_STAT == 0 && d.ACRB2_STAT == 0) || (d.EN_ACDRV1 == 1 || d.EN_ACDRV2 == 1)) && d.PG_STAT == 0)) || d.TSHUT_STAT == 1 || d.OTG_OVP_STAT == 1 || d.OTG_UVP_STAT == 1 || d.EN_HIZ == 1 || d.VBATOTG_LOW_STAT == 1 || d.VAC_OVP_STAT == 1 || d.VSYS_SHORT_STAT == 1 || (d.CHG_STAT_2_0 == 0 && ((d.EN_OTG == 0 && d.VSYS_ADC_15_0 - d.VBAT_ADC_15_0 - 50 <= 0) || (d.EN_OTG == 1 && d.VBUS_ADC_15_0 < d.VOTG_10_0)) && ((d.EN_OTG == 0 && d.VINDPM_STAT == 0) || d.EN_OTG == 1) && d.IINDPM_STAT == 0 && d.IBAT_REG_STAT == 0 && d.TREG_STAT == 0))) && d.SDRV_CTRL == 0 && d.VBATOTG_LOW_STAT == 0 && d.TS_COLD_STAT == 0 && d.TS_HOT_STAT == 0 && d.VBAT_OVP_STAT == 0 && d.IBAT_OCP_STAT == 0 && (d.EN_OTG == 0 || ((d.ACRB1_STAT == 0 && d.ACRB2_STAT == 0) || (d.EN_ACDRV1 == 1 || d.EN_ACDRV2 == 1))) && d.VBAT_PRESENT_STAT == 1) {
             console.log("VBAT Path: بنفش");
             vbatPathOverallStatus = { text: "حالت فقط باطری، خطاهای مربوط به باطری رخ نداده اما باطری در حال تغذیه SYS است", colorClass: "status-bg-error" };
             if (d.VBUS_PRESENT_STAT == 0) {
@@ -500,6 +506,14 @@ document.addEventListener('DOMContentLoaded', function () {
             }
             else if (d.VBATOTG_LOW_STAT == 1) {
                 vbatPathOverallStatus = { text: "در حالت OTG اما به علت خطای عدم ولتاژ کافی خروجی خاموش شده.", colorClass: "status-bg-error" };
+            }
+            else if (d.CHG_STAT_2_0 == 0 && ((d.EN_OTG == 0 && d.VSYS_ADC_15_0 - d.VBAT_ADC_15_0 - 50 <= 0) || (d.EN_OTG == 1 && d.VBUS_ADC_15_0 < d.VOTG_10_0)) && ((d.EN_OTG == 0 && d.VINDPM_STAT == 0) || d.EN_OTG == 1) && d.IINDPM_STAT == 0 && d.IBAT_REG_STAT == 0 && d.TREG_STAT == 0) {
+                if (d.EN_OTG == 1) {
+                    vbatPathOverallStatus = { text: "در حالت OTG اما بدلیل HIZ توسط ILIM_HIZ خروجی قطع شده.", colorClass: "status-bg-error" };
+                }
+                else {
+                    vbatPathOverallStatus = { text: "به علت HIZ توسط پین ILIM_HIZ باطری در حالت تغذیه SYS است.", colorClass: "status-bg-error" };
+                }
             }
             setPathStyle(pathFromBat, { color: '#a855f7', isAnimated: true });
         }
