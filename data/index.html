@@ -59,11 +59,20 @@
                 <path id="path-chip-to-bat" class="power-path" d="M 400 200 V 280" />
                 <path id="path-bat-to-chip" class="power-path" d="M 400 280 V 200" />
 
-                <!-- VBUS Component -->
+                <!-- VBUS Component - Power Adapter Symbol -->
                 <g id="vbus-component" class="component">
-                    <rect x="20" y="125" width="80" height="50" rx="10" class="component-bg component-stroke-info" />
-                    <text x="60" y="145" text-anchor="middle" class="label-text">VBUS</text>
-                    <text id="vbus-voltage-text" x="60" y="170" text-anchor="middle" class="data-text">-- V</text>
+                    <!-- Adapter body (main housing) -->
+                    <rect x="20" y="115" width="80" height="55" rx="6" class="component-bg component-stroke-info" />
+                    <!-- Plug prongs -->
+                    <rect x="30" y="100" width="10" height="18" rx="2" class="component-bg component-stroke-info" />
+                    <rect x="60" y="100" width="10" height="18" rx="2" class="component-bg component-stroke-info" />
+                    <!-- Cable output -->
+                    <rect x="55" y="168" width="12" height="10" rx="3" class="component-bg component-stroke-info" />
+                    <path d="M 61 178 Q 61 190 75 190 H 100" stroke="var(--info-color)" stroke-width="3" fill="none"
+                        stroke-linecap="round" />
+                    <!-- Labels -->
+                    <text x="60" y="140" text-anchor="middle" class="label-text">آداپتور</text>
+                    <text id="vbus-voltage-text" x="60" y="160" text-anchor="middle" class="data-text">-- V</text>
                 </g>
 
                 <!-- BQ25672 Chip -->
@@ -87,7 +96,7 @@
                         class="component-bg component-stroke-success" />
                     <rect id="battery-cap" x="385" y="270" width="30" height="10" rx="3"
                         class="component-bg component-stroke-success" />
-                    <text x="400" y="320" text-anchor="middle" class="label-text">BAT</text>
+                    <text x="400" y="320" text-anchor="middle" class="label-text">باتری</text>
                     <text id="battery-voltage-text" x="400" y="345" text-anchor="middle" class="data-text">-- V</text>
                     <text id="battery-current-text" x="400" y="370" text-anchor="middle" class="label-text">-- A</text>
                     <g id="temp-indicator" style="visibility: hidden;">
@@ -100,7 +109,7 @@
                 <g id="sys-component" class="component">
                     <rect x="700" y="125" width="80" height="50" rx="10"
                         class="component-bg component-stroke-warning" />
-                    <text x="740" y="145" text-anchor="middle" class="label-text">SYS</text>
+                    <text x="740" y="145" text-anchor="middle" class="label-text">سیستم</text>
                     <text id="sys-voltage-text" x="740" y="170" text-anchor="middle" class="data-text">-- V</text>
                 </g>
             </svg>
