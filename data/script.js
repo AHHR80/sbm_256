@@ -457,11 +457,29 @@ document.addEventListener('DOMContentLoaded', function () {
                 condition: (data) => {
                     const chgStat = parseInt(data.CHG_STAT_2_0);
                     if ((chgStat === 6 || chgStat === 7) && parseInt(data.EN_TERM) === 1) {
-                        return "the changing applay in new charging cycle";
+                        return "این تنظیمات در چرخه بعدی شارژ اعمال میشود.";
                     }
                     return true;
                 },
                 dependencies: ['CHG_STAT_2_0', 'EN_TERM'],
+                message: 'No message'
+            }
+        ],
+        'TOPOFF_TMR_1_0': [
+            {
+                condition: (data) => data.EN_TERM == 1,
+                dependencies: ['EN_TERM'],
+                message: 'تنظیم TOPOFF_TMR_1_0 تا زمانی که EN_TERM فعال نباشد اعمال نمی‌شود.'
+            },
+            {
+                condition: (data) => {
+                    const chgStat = parseInt(data.CHG_STAT_2_0);
+                    if ((chgStat === 6 || chgStat === 7) && parseInt(data.TOPOFF_TMR_1_0) === 0) {
+                        return "این تغییرات در چرخه بعدی شارژ اعمال میشود.";
+                    }
+                    return true;
+                },
+                dependencies: ['CHG_STAT_2_0', 'TOPOFF_TMR_1_0'],
                 message: 'No message'
             }
         ]
