@@ -1213,6 +1213,12 @@ void handleApiData4(AsyncWebServerRequest *request) {
   JsonDocument doc;
   uint8_t val8;
 
+  if (readByte(0x1C, val8)) {
+    doc["CHG_STAT_2_0"] = (val8 >> 5) & 0x07;
+  } else {
+    doc["CHG_STAT_2_0"] = -1;
+  }
+
   // --- Original Page 4 Data ---
   if (readByte(0x09, val8)) {
     doc["STOP_WD_CHG"] = (val8 >> 5) & 0x01;

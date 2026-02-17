@@ -451,6 +451,19 @@ document.addEventListener('DOMContentLoaded', function () {
                 dependencies: ['DIS_ACDRV', 'ACRB1_STAT', 'ACRB2_STAT'],
                 message: "برای فعال‌سازی OTG در حالت حضور منابع ورودی (ACRB)، باید یکی از ورودی‌ها (ACDRV) فعال باشد یا DIS_ACDRV یک باشد."
             }
+        ],
+        'EN_TERM': [
+            {
+                condition: (data) => {
+                    const chgStat = parseInt(data.CHG_STAT_2_0);
+                    if ((chgStat === 6 || chgStat === 7) && parseInt(data.EN_TERM) === 1) {
+                        return "the changing applay in new charging cycle";
+                    }
+                    return true;
+                },
+                dependencies: ['CHG_STAT_2_0', 'EN_TERM'],
+                message: 'No message'
+            }
         ]
     };
 
