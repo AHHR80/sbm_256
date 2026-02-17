@@ -1632,6 +1632,13 @@ void handleApiIndex(AsyncWebServerRequest *request) {
     doc["EN_OTG"] = -1;
   }
 
+  // --- REG01-02: ICHG (Charge Current) ---
+  if (readWord(0x03, val16)) {
+    doc["ICHG_8_0"] = (val16 & 0x1FF) * 10;
+  } else {
+    doc["ICHG_8_0"] = -1;
+  }
+
   // --- REG0B-0C: VOTG (OTG Voltage) ---
   if (readWord(0x0B, val16)) {
     // VOTG_10_0: bits 10:0, value in mV = reg_val * 10 + 2800

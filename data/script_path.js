@@ -600,6 +600,9 @@ document.addEventListener('DOMContentLoaded', function () {
         else if (!(d.VSYS_OVP_STAT == 1 || d.VBAT_OVP_STAT == 1 || d.PG_STAT == 0 || d.TSHUT_STAT == 1 || d.OTG_OVP_STAT == 1 || d.OTG_UVP_STAT == 1 || (d.EN_OTG == 1 && (d.TS_COLD_STAT == 1 || d.TS_HOT_STAT == 1)) || d.EN_HIZ == 1 || d.SDRV_CTRL != 0 || d.VSYS_SHORT_STAT == 1) && ((d.VBUS_OVP_STAT == 0 && d.VSYS_OVP_STAT == 0 && d.VBAT_OVP_STAT == 0) || ((d.AC1_PRESENT_STAT == 1 && d.AC2_PRESENT_STAT == 1) && d.VBAT_PRESENT_STAT == 1 && ((d.VSYS_ADC_15_0 - d.VBAT_ADC_15_0 - 50 > 0) || ((d.VINDPM_STAT == 1 || d.IINDPM_STAT == 1 || d.IBAT_REG_STAT == 1 || d.TREG_STAT == 1) && d.VSYS_ADC_15_0 - d.VBAT_ADC_15_0 - 50 <= 0)))) && d.VBUS_PRESENT_STAT == 1 && d.VBAT_PRESENT_STAT == 1 && d.EN_OTG == 0 && ((d.ACRB1_STAT == 0 && d.ACRB2_STAT == 0) || (d.EN_ACDRV1 == 1 || d.EN_ACDRV2 == 1)) && (d.CHG_STAT_2_0 != 0 && d.CHG_STAT_2_0 != 7) && d.CHG_TMR_STAT == 0 && d.TRICHG_TMR_STAT == 0 && d.PRECHG_TMR_STAT == 0 && d.TS_COLD_STAT == 0 && d.TS_HOT_STAT == 0 && d.VBATOTG_LOW_STAT == 0 && d.VBAT_OVP_STAT == 0 && d.IBAT_OCP_STAT == 0 && (d.STOP_WD_CHG == 0 || d.WD_STAT == 0) && d.SDRV_CTRL == 0 && d.VINDPM_STAT == 0 && d.IINDPM_STAT == 0 && d.IBAT_REG_STAT == 0 && d.TREG_STAT == 0 && (d.TS_WARM_STAT == 0 || (d.JEITA_VSET_2 != 0 && d.JEITA_ISETH_1 != 0)) && (d.TS_COOL_STAT == 0 || (d.JEITA_ISETC_1 != 0))) {
             console.log("VBAT Path: سبز");
             vbatPathOverallStatus = { text: "درحال شارژ باطری.", colorClass: "status-bg-success" };
+            if (d.CHG_STAT_2_0 == 3 && d.ICHG_8_0 > 2000 && d.VSYS_STAT == 1) {
+                vbatPathOverallStatus = { text: "جریان شارژ باطری به 2A محدود شده است، صرف‌نظر از مقدار رجیستر ICHG، زیرا VBAT کمتر از VSYSMIN است و BATFET در حالت LDO قرار دارد برای محافظت از BATFET.", colorClass: "status-bg-warning" };
+            }
             setPathStyle(pathToBat, { color: 'var(--success-color)', isAnimated: true });
         }
         else {
