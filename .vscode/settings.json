@@ -17,5 +17,6 @@
     "--compile-commands-dir=d:\\mycode\\Arduino\\bq25672_and_web_server_esp_idf_base\\build"
   ],
   "idf.portWin": "COM5",
-  "idf.flashType": "UART"
+  "idf.flashType": "UART",
+  "idf.currentSetup": "C:\\Users\\AmirH\\esp\\v5.5.2\\esp-idf"
 }
