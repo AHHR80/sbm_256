@@ -482,6 +482,27 @@ document.addEventListener('DOMContentLoaded', function () {
                 dependencies: ['CHG_STAT_2_0', 'TOPOFF_TMR_1_0'],
                 message: 'No message'
             }
+        ],
+        'TMR2X_EN': [
+            {
+                condition: (data) => {
+                    if (parseInt(data.TMR2X_EN) !== 1) return true;
+
+                    if (parseInt(data.VINDPM_STAT) === 1) {
+                        return "این تنظیم پس از خروج از حالت رگولاسیون ولتاژ ورودی (VINDPM) اعمال خواهد شد.";
+                    } else if (parseInt(data.IINDPM_STAT) === 1) {
+                        return "این تنظیم پس از خروج از حالت رگولاسیون جریان ورودی (IINDPM) اعمال خواهد شد.";
+                    } else if (parseInt(data.TREG_STAT) === 1) {
+                        return "این تنظیم پس از خروج از حالت رگولاسیون حرارتی (TREG) اعمال خواهد شد.";
+                    } else if (parseInt(data.IBAT_REG_STAT) === 1) {
+                        return "این تنظیم پس از خروج از حالت رگولاسیون جریان خروجی باتری (IBAT_REG) اعمال خواهد شد.";
+                    }
+
+                    return true;
+                },
+                dependencies: ['TMR2X_EN', 'VINDPM_STAT', 'IINDPM_STAT', 'TREG_STAT', 'IBAT_REG_STAT'],
+                message: 'No message'
+            }
         ]
     };
 

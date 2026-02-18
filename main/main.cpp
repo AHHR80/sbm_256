@@ -1218,6 +1218,23 @@ void handleApiData4(AsyncWebServerRequest *request) {
   } else {
     doc["CHG_STAT_2_0"] = -1;
   }
+  if (readByte(0x1B, val8)) {
+    doc["VINDPM_STAT"] = (val8 >> 6) & 0x01;
+    doc["IINDPM_STAT"] = (val8 >> 7) & 0x01;
+  } else {
+    doc["VINDPM_STAT"] = -1;
+    doc["IINDPM_STAT"] = -1;
+  }
+  if (readByte(0x1D, val8)) {
+    doc["TREG_STAT"] = (val8 >> 2) & 0x01;
+  } else {
+    doc["TREG_STAT"] = -1;
+  }
+  if (readByte(0x20, val8)) {
+    doc["IBAT_REG_STAT"] = (val8 >> 7) & 0x01;
+  } else {
+    doc["IBAT_REG_STAT"] = -1;
+  }
 
   // --- Original Page 4 Data ---
   if (readByte(0x09, val8)) {
