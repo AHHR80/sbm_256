@@ -1235,6 +1235,13 @@ void handleApiData4(AsyncWebServerRequest *request) {
   } else {
     doc["IBAT_REG_STAT"] = -1;
   }
+  if (readByte(0x1F, val8)) {
+    doc["TS_WARM_STAT"] = (val8 >> 1) & 0x01;
+    doc["TS_COOL_STAT"] = (val8 >> 2) & 0x01;
+  } else {
+    doc["TS_WARM_STAT"] = -1;
+    doc["TS_COOL_STAT"] = -1;
+  }
 
   // --- Original Page 4 Data ---
   if (readByte(0x09, val8)) {

@@ -496,11 +496,15 @@ document.addEventListener('DOMContentLoaded', function () {
                         return "این تنظیم پس از خروج از حالت رگولاسیون حرارتی (TREG) اعمال خواهد شد.";
                     } else if (parseInt(data.IBAT_REG_STAT) === 1) {
                         return "این تنظیم پس از خروج از حالت رگولاسیون جریان خروجی باتری (IBAT_REG) اعمال خواهد شد.";
+                    } else if (parseInt(data.TS_WARM_STAT) === 1 && parseInt(data.JEITA_ISETH_1_0) !== 0 && parseInt(data.JEITA_ISETH_1_0) !== 3) {
+                        return "این تنظیم پس از خروج باتری از محدوده دمای گرم اعمال خواهد شد.";
+                    } else if (parseInt(data.TS_COOL_STAT) === 1 && parseInt(data.JEITA_ISETC_1_0) !== 0 && parseInt(data.JEITA_ISETC_1_0) !== 3) {
+                        return "این تنظیم پس از خروج باتری از محدوده دمای خنک اعمال خواهد شد.";
                     }
 
                     return true;
                 },
-                dependencies: ['TMR2X_EN', 'VINDPM_STAT', 'IINDPM_STAT', 'TREG_STAT', 'IBAT_REG_STAT'],
+                dependencies: ['TMR2X_EN', 'VINDPM_STAT', 'IINDPM_STAT', 'TREG_STAT', 'IBAT_REG_STAT', 'TS_WARM_STAT', 'JEITA_ISETH_1_0', 'TS_COOL_STAT', 'JEITA_ISETC_1_0'],
                 message: 'No message'
             }
         ]
