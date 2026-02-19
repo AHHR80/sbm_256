@@ -388,7 +388,18 @@ document.addEventListener('DOMContentLoaded', function () {
             { condition: (data) => data.FORCE_VINDPM_DET == 0, dependencies: ['FORCE_VINDPM_DET'], message: 'قابلیت ICO نمی‌تواند همزمان با تشخیص VINDPM فعال باشد.' }
         ],
         'SDRV_CTRL_1_0': [
-            { condition: (data) => data.SFET_PRESENT == 1, dependencies: ['SFET_PRESENT'], message: 'برای کنترل Ship FET، ابتدا باید SFET_PRESENT فعال باشد.' }
+            { condition: (data) => data.SFET_PRESENT == 1, dependencies: ['SFET_PRESENT'], message: 'برای کنترل Ship FET، ابتدا باید SFET_PRESENT فعال باشد.' },
+            {
+                condition: (data) => {
+                    if (parseInt(data.SDRV_CTRL_1_0) === 0 &&
+                        (parseInt(data.VBUS_PRESENT_STAT) === 1 || parseInt(data.AC1_PRESENT_STAT) === 1 || parseInt(data.AC2_PRESENT_STAT) === 1)) {
+                        return "توجه: برای تغییر به حالت Shutdown یا Ship Mode، آداپتور باید از ورودی جدا شده باشد.";
+                    }
+                    return true;
+                },
+                dependencies: ['SDRV_CTRL_1_0', 'VBUS_PRESENT_STAT', 'AC1_PRESENT_STAT', 'AC2_PRESENT_STAT'],
+                message: 'No message'
+            }
         ],
         'EN_BATOC': [
             { condition: (data) => data.SFET_PRESENT == 1, dependencies: ['SFET_PRESENT'], message: 'برای فعال‌سازی حفاظت جریان باتری، ابتدا باید SFET_PRESENT فعال باشد.' }

@@ -1093,9 +1093,11 @@ void handleApiData2(AsyncWebServerRequest *request) {
   if (readByte(0x1B, val8)) {
     doc["AC2_PRESENT_STAT"] = (val8 >> 2) & 0x01;
     doc["AC1_PRESENT_STAT"] = (val8 >> 1) & 0x01;
+    doc["VBUS_PRESENT_STAT"] = val8 & 0x01;
   } else {
     doc["AC2_PRESENT_STAT"] = -1;
     doc["AC1_PRESENT_STAT"] = -1;
+    doc["VBUS_PRESENT_STAT"] = -1;
   }
   if (readByte(0x1E, val8)) {
     doc["ACRB2_STAT"] = (val8 >> 7) & 0x01;
