@@ -1140,6 +1140,31 @@ void handleApiData2(AsyncWebServerRequest *request) {
     doc["OTG_UVP_STAT"] = -1;
     doc["TSHUT_STAT"] = -1;
   }
+  if (readWord(0x35, val16)) {
+    doc["VBUS_ADC_15_0"] = val16;
+  } else {
+    doc["VBUS_ADC_15_0"] = -1;
+  }
+  if (readWord(0x37, val16)) {
+    doc["VAC1_ADC_15_0"] = val16;
+  } else {
+    doc["VAC1_ADC_15_0"] = -1;
+  }
+  if (readWord(0x39, val16)) {
+    doc["VAC2_ADC_15_0"] = val16;
+  } else {
+    doc["VAC2_ADC_15_0"] = -1;
+  }
+  if (readWord(0x3B, val16)) {
+    doc["VBAT_ADC_15_0"] = val16;
+  } else {
+    doc["VBAT_ADC_15_0"] = -1;
+  }
+  if (readByte(0x2F, val8)) {
+    doc["TS_ADC_DIS"] = (val8 >> 2) & 0x01;
+  } else {
+    doc["TS_ADC_DIS"] = -1;
+  }
   String output;
   serializeJson(doc, output);
   request->send(200, "application/json", output);

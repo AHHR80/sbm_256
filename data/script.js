@@ -507,6 +507,23 @@ document.addEventListener('DOMContentLoaded', function () {
                 dependencies: ['TMR2X_EN', 'VINDPM_STAT', 'IINDPM_STAT', 'TREG_STAT', 'IBAT_REG_STAT', 'TS_WARM_STAT', 'JEITA_ISETH_1_0', 'TS_COOL_STAT', 'JEITA_ISETC_1_0'],
                 message: 'No message'
             }
+        ],
+        'ADC_EN': [
+            {
+                condition: (data) => {
+                    const vbatThreshold = parseInt(data.TS_ADC_DIS) === 0 ? 3200 : 2900;
+                    if (parseInt(data.ADC_EN) === 0 &&
+                        parseInt(data.VAC1_ADC_15_0) < 3400 &&
+                        parseInt(data.VAC2_ADC_15_0) < 3400 &&
+                        parseInt(data.VBAT_ADC_15_0) < vbatThreshold &&
+                        parseInt(data.VBUS_ADC_15_0) < 3400) {
+                        return "ولتاژ ورودی‌ها کمتر از حداقل مقدار مجاز است. ADC پس از رسیدن ولتاژ به سطح مناسب فعال خواهد شد.";
+                    }
+                    return true;
+                },
+                dependencies: ['ADC_EN', 'VAC1_ADC_15_0', 'VAC2_ADC_15_0', 'VBAT_ADC_15_0', 'VBUS_ADC_15_0', 'TS_ADC_DIS'],
+                message: 'No message'
+            }
         ]
     };
 
