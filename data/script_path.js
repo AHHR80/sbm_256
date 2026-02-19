@@ -386,7 +386,7 @@ document.addEventListener('DOMContentLoaded', function () {
             setPathStyle(path, { color: 'var(--warning-color)', isAnimated: true, isReversed: true });
         }
         // 8. بنفش (رفت)
-        else if (!(d.VBUS_OVP_STAT == 1 || d.VSYS_OVP_STAT == 1 || d.VBAT_OVP_STAT == 1 || d.IBUS_OCP_STAT == 1 || d.PG_STAT == 0 || d.TSHUT_STAT == 1 || d.OTG_OVP_STAT == 1 || d.OTG_UVP_STAT == 1 || (d.EN_OTG == 1 && (d.TS_COLD_STAT == 1 || d.TS_HOT_STAT == 1)) || d.EN_HIZ == 1 || d.SDRV_CTRL != 0 || d.VAC_OVP_STAT == 1 || d.VSYS_SHORT_STAT == 1) && d.VBUS_PRESENT_STAT == 1 && d.EN_OTG == 0 && ((d.ACRB1_STAT == 0 && d.ACRB2_STAT == 0) || (d.EN_ACDRV1 == 1 || d.EN_ACDRV2 == 1)) && ((d.CHG_STAT_2_0 == 0 || d.CHG_STAT_2_0 == 7) || (d.CHG_TMR_STAT == 1 || d.TRICHG_TMR_STAT == 1 || d.PRECHG_TMR_STAT == 1 || d.TS_HOT_STAT == 1 || d.TS_COLD_STAT == 1 || (d.STOP_WD_CHG == 1 && d.WD_STAT == 1) || (d.TS_WARM_STAT == 1 && (d.JEITA_VSET_2 == 0 || d.JEITA_ISETH_1 == 0)) || (d.TS_COOL_STAT == 1 && d.JEITA_ISETC_1 == 0))) && d.SDRV_CTRL == 0 && d.VINDPM_STAT == 0 && d.IINDPM_STAT == 0 && d.IBAT_REG_STAT == 0 && d.TREG_STAT == 0) {
+        else if (!(d.VBUS_OVP_STAT == 1 || d.VSYS_OVP_STAT == 1 || d.VBAT_OVP_STAT == 1 || d.IBUS_OCP_STAT == 1 || d.PG_STAT == 0 || d.TSHUT_STAT == 1 || d.OTG_OVP_STAT == 1 || d.OTG_UVP_STAT == 1 || (d.EN_OTG == 1 && (d.TS_COLD_STAT == 1 || d.TS_HOT_STAT == 1)) || d.EN_HIZ == 1 || d.SDRV_CTRL != 0 || d.VAC_OVP_STAT == 1 || d.VSYS_SHORT_STAT == 1) && d.VBUS_PRESENT_STAT == 1 && d.EN_OTG == 0 && ((d.ACRB1_STAT == 0 && d.ACRB2_STAT == 0) || (d.EN_ACDRV1 == 1 || d.EN_ACDRV2 == 1)) && ((d.CHG_STAT_2_0 == 0 || d.CHG_STAT_2_0 == 7) || (d.CHG_TMR_STAT == 1 || d.TRICHG_TMR_STAT == 1 || d.PRECHG_TMR_STAT == 1 || d.TS_HOT_STAT == 1 || d.TS_COLD_STAT == 1 || (d.STOP_WD_CHG == 1 && d.WD_STAT == 1) || (d.TS_WARM_STAT == 1 && (d.JEITA_VSET_2 == 0 || d.JEITA_ISETH_1 == 0)) || (d.TS_COOL_STAT == 1 && d.JEITA_ISETC_1 == 0) || (d.IBAT_OCP_STAT == 1 && d.SFET_PRESENT == 1 && d.EN_BATOCP == 1))) && d.SDRV_CTRL == 0 && d.VINDPM_STAT == 0 && d.IINDPM_STAT == 0 && d.IBAT_REG_STAT == 0 && d.TREG_STAT == 0) {
             console.log("VBUS Path: بنفش (رفت)");
             vbusPathOverallStatus = { text: "استفاده VBUS فقط برای SYS", colorClass: "status-bg-warning" };
             if (d.STOP_WD_CHG == 1 && d.WD_STAT == 1) {
@@ -403,6 +403,9 @@ document.addEventListener('DOMContentLoaded', function () {
             }
             else if ((d.TS_WARM_STAT == 1 && (d.JEITA_VSET_2 == 0 || d.JEITA_ISETH_1 == 0)) || (d.TS_COOL_STAT == 1 && d.JEITA_ISETC_1 == 0)) {
                 vbusPathOverallStatus = { text: "باطری به دلیل دمای بالا یا پایین شارژ نمیشود.", colorClass: "status-bg-warning" };
+            }
+            else if (d.IBAT_OCP_STAT == 1 && d.SFET_PRESENT == 1 && d.EN_BATOCP == 1) {
+                vbusPathOverallStatus = { text: "باطری به دلیل جریان بیش از حد جدا شده.", colorClass: "status-bg-warning" };
             }
             setPathStyle(path, { color: '#a855f7', isAnimated: true });
         }
