@@ -2202,6 +2202,14 @@ void setup() {
     return;
   }
 
+  // Set WATCHDOG_2:0 to 80s (REG10, bits 2:0 = 6h)
+  Serial.println("Setting watchdog timer to 80s...");
+  if (writeBqRegister("WATCHDOG_2_0", 6)) {
+    Serial.println("Watchdog timer set to 80s.");
+  } else {
+    Serial.println("FAILED to set watchdog timer.");
+  }
+
   Serial.println("Setting initial ADC state to: Enabled, Continuous mode, "
                  "15-bit resolution.");
   if (writeByte(0x2E, 0x80)) {
