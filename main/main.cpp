@@ -2202,14 +2202,15 @@ void setup() {
     return;
   }
 
-  applySavedSettings();
-
-  Serial.println("Setting initial ADC state to: Enabled, One-Shot mode.");
-  if (writeByte(0x2E, 0xC0)) {
+  Serial.println("Setting initial ADC state to: Enabled, Continuous mode, "
+                 "15-bit resolution.");
+  if (writeByte(0x2E, 0x80)) {
     Serial.println("Initial ADC configuration successful.");
   } else {
     Serial.println("FAILED to set initial ADC configuration.");
   }
+
+  applySavedSettings();
 
   WiFi.softAP(ssid, password);
   IPAddress IP = WiFi.softAPIP();
