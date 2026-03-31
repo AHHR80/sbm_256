@@ -1,0 +1,999 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ماژول شارژ هوشمند BQ25672 | SBM_256</title>
+  <style>
+    :root {
+      --bg: #f4f7fb;
+      --surface: rgba(255,255,255,0.92);
+      --surface-strong: #ffffff;
+      --text: #0f172a;
+      --muted: #475569;
+      --muted-2: #64748b;
+      --primary: #2563eb;
+      --primary-2: #1d4ed8;
+      --accent: #0f172a;
+      --border: #e2e8f0;
+      --shadow: 0 18px 50px rgba(15, 23, 42, 0.10);
+      --shadow-soft: 0 10px 24px rgba(15, 23, 42, 0.06);
+      --radius: 24px;
+      --radius-sm: 16px;
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      /* font-family: Tahoma, Arial, sans-serif; */
+      line-height: 1.85;
+      color: var(--text);
+      background:
+        radial-gradient(circle at top right, rgba(37,99,235,0.10), transparent 28%),
+        radial-gradient(circle at bottom left, rgba(14,165,233,0.08), transparent 26%),
+        var(--bg);
+    }
+
+    a { color: inherit; text-decoration: none; }
+    img { max-width: 100%; display: block; }
+
+    .hero {
+      position: relative;
+      overflow: hidden;
+      background: linear-gradient(135deg, #0f172a 0%, #1d4ed8 55%, #2563eb 100%);
+      color: #fff;
+      padding: 4rem 1rem 3rem;
+      border-bottom: 1px solid rgba(255,255,255,0.14);
+      box-shadow: 0 18px 44px rgba(15, 23, 42, 0.18);
+    }
+
+    .hero::before,
+    .hero::after {
+      content: "";
+      position: absolute;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.08);
+      filter: blur(2px);
+    }
+    .hero::before { width: 180px; height: 180px; top: -60px; left: -40px; }
+    .hero::after { width: 240px; height: 240px; bottom: -120px; right: -80px; }
+
+    .hero-inner {
+      position: relative;
+      max-width: 1180px;
+      margin: 0 auto;
+      display: grid;
+      gap: 1.5rem;
+      grid-template-columns: 1.4fr 0.9fr;
+      align-items: center;
+    }
+
+    .hero h1 {
+      margin: 0;
+      font-size: clamp(2.1rem, 4.4vw, 4rem);
+      line-height: 1.18;
+      letter-spacing: -0.04em;
+    }
+
+    .hero p {
+      margin: 1rem 0 0;
+      max-width: 58rem;
+      color: rgba(255,255,255,0.84);
+      font-size: 1.02rem;
+    }
+
+    .hero-badges {
+      display: flex;
+      flex-wrap: wrap;
+      gap: .65rem;
+      margin-top: 1.25rem;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: .45rem;
+      padding: .55rem .8rem;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.12);
+      border: 1px solid rgba(255,255,255,0.16);
+      backdrop-filter: blur(6px);
+      font-size: .93rem;
+      color: #fff;
+      white-space: nowrap;
+    }
+
+    .hero-panel {
+      background: rgba(255,255,255,0.10);
+      border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 24px;
+      padding: 1rem;
+      backdrop-filter: blur(12px);
+      box-shadow: 0 20px 38px rgba(15,23,42,0.20);
+    }
+
+    .hero-panel .panel-title {
+      margin: 0 0 0.9rem;
+      font-weight: 700;
+      color: #fff;
+      font-size: 1.05rem;
+    }
+
+    .spec-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .spec-card {
+      background: rgba(255,255,255,0.10);
+      border: 1px solid rgba(255,255,255,0.14);
+      border-radius: 18px;
+      padding: .85rem .9rem;
+      min-height: 84px;
+    }
+
+    .spec-card .label {
+      display: block;
+      color: rgba(255,255,255,0.76);
+      font-size: .82rem;
+      margin-bottom: .25rem;
+    }
+
+    .spec-card .value {
+      display: block;
+      font-size: 1.05rem;
+      font-weight: 700;
+      line-height: 1.35;
+    }
+
+    .container {
+      max-width: 1180px;
+      margin: 2rem auto 3rem;
+      padding: 0 1rem;
+    }
+
+    .card-section {
+      background: var(--surface);
+      border: 1px solid rgba(226,232,240,0.9);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 1.4rem;
+      margin-bottom: 1.2rem;
+      backdrop-filter: blur(10px);
+    }
+
+    .section-title {
+      margin: 0 0 0.75rem;
+      color: #0f172a;
+      font-size: 1.3rem;
+      display: inline-flex;
+      align-items: center;
+      gap: .5rem;
+      padding-bottom: .35rem;
+      border-bottom: 3px solid var(--primary);
+    }
+
+    .lead {
+      color: var(--muted);
+      margin: 0.15rem 0 0.95rem;
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    .info-box {
+      background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 1rem;
+      box-shadow: var(--shadow-soft);
+    }
+
+    .info-box h3 {
+      margin: 0 0 .5rem;
+      font-size: 1.03rem;
+      color: var(--accent);
+    }
+
+    ul { margin: .75rem 0 0; }
+    .main-list {
+      padding-right: 1.15rem;
+    }
+
+    .main-list > li {
+      margin-bottom: .55rem;
+    }
+
+    .main-list li > ul {
+      padding-right: 1.1rem;
+      margin-top: .35rem;
+    }
+
+    .gallery {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+      gap: 14px;
+      margin-top: 1rem;
+    }
+
+    .gallery-item {
+      position: relative;
+      overflow: hidden;
+      border-radius: 18px;
+      border: 1px solid var(--border);
+      background: #fff;
+      box-shadow: var(--shadow-soft);
+      cursor: zoom-in;
+      transition: transform .22s ease, box-shadow .22s ease, border-color .22s ease;
+    }
+
+    .gallery-item:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 16px 34px rgba(15,23,42,0.12);
+      border-color: #cbd5e1;
+    }
+
+    .gallery-item img {
+      width: 100%;
+      height: 210px;
+      object-fit: cover;
+    }
+
+    .gallery-item::after {
+      content: "بزرگ‌نمایی";
+      position: absolute;
+      inset: auto 12px 12px auto;
+      padding: .35rem .65rem;
+      border-radius: 999px;
+      background: rgba(15,23,42,.78);
+      color: #fff;
+      font-size: .78rem;
+      opacity: 0;
+      transition: opacity .2s ease;
+    }
+
+    .gallery-item:hover::after { opacity: 1; }
+
+    .hero-mini-note {
+      color: rgba(255,255,255,.78);
+      margin-top: .85rem;
+      font-size: .95rem;
+    }
+
+    .apps-list {
+      list-style: none;
+      padding: 0;
+      margin: 1rem 0 0;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(265px, 1fr));
+      gap: 12px;
+    }
+
+    .apps-list li {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      margin: 0;
+      padding: 14px 14px;
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      background: linear-gradient(180deg, #fff 0%, #f8fbff 100%);
+      box-shadow: 0 6px 18px rgba(15,23,42,.05);
+      transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease;
+    }
+
+    .apps-list li:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 26px rgba(15,23,42,.08);
+      border-color: #cbd5e1;
+    }
+
+    .apps-list li.hidden-item { display: none; }
+
+    .emoji-bullet {
+      flex: 0 0 auto;
+      width: 1.8rem;
+      text-align: center;
+      font-size: 1.15rem;
+      line-height: 1.5;
+    }
+
+    .toggle-btn {
+      margin-top: 1rem;
+      width: 100%;
+      padding: 1rem 1.15rem;
+      border: none;
+      border-radius: 16px;
+      cursor: pointer;
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-2) 100%);
+      color: #fff;
+      font-size: 1rem;
+      font-weight: 700;
+      box-shadow: 0 12px 24px rgba(37,99,235,.22);
+      transition: transform .2s ease, box-shadow .2s ease, opacity .2s ease;
+    }
+
+    .toggle-btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 16px 28px rgba(37,99,235,.28);
+    }
+
+    .toggle-btn:active { transform: translateY(0); opacity: .96; }
+
+    .footer-note {
+      margin-top: .85rem;
+      color: var(--muted-2);
+      font-size: .95rem;
+    }
+
+    .gallery-caption {
+      margin-top: .65rem;
+      color: var(--muted);
+      font-size: .95rem;
+    }
+
+    .modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 1000;
+      background: rgba(2,6,23,.90);
+      backdrop-filter: blur(6px);
+      padding: 24px;
+    }
+
+    .modal-content {
+      margin: 0 auto;
+      display: block;
+      max-width: min(1100px, 94vw);
+      max-height: 82vh;
+      margin-top: 5vh;
+      border-radius: 16px;
+      box-shadow: 0 18px 50px rgba(0,0,0,.45);
+      animation: zoomIn .22s ease;
+      object-fit: contain;
+      background: #fff;
+    }
+
+    @keyframes zoomIn {
+      from { transform: scale(.94); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+
+    .close-btn {
+      position: absolute;
+      top: 16px;
+      right: 24px;
+      color: #fff;
+      font-size: 44px;
+      line-height: 1;
+      font-weight: 300;
+      cursor: pointer;
+      user-select: none;
+      transition: transform .2s ease, color .2s ease;
+    }
+
+    .close-btn:hover {
+      color: #fca5a5;
+      transform: scale(1.08);
+    }
+
+    #caption {
+      margin: 1rem auto 0;
+      width: min(1100px, 92vw);
+      text-align: center;
+      color: #e5e7eb;
+      font-size: 1rem;
+      min-height: 1.6rem;
+    }
+
+    .section-kicker {
+      color: var(--muted-2);
+      margin: -0.1rem 0 1rem;
+    }
+
+    .top-features {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+      gap: 12px;
+      margin-top: 1rem;
+    }
+
+    .feature-pill {
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 1rem;
+      box-shadow: var(--shadow-soft);
+    }
+
+    .feature-pill strong {
+      display: block;
+      font-size: 1.05rem;
+      margin-bottom: .15rem;
+    }
+
+    .feature-pill span {
+      color: var(--muted);
+      font-size: .95rem;
+    }
+
+    @media (max-width: 920px) {
+      .hero-inner,
+      .grid-2 {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .hero { padding: 3rem 1rem 2.5rem; }
+      .card-section { padding: 1.05rem; border-radius: 20px; }
+      .gallery { grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); }
+      .gallery-item img { height: 160px; }
+      .apps-list { grid-template-columns: 1fr; }
+      .toggle-btn { font-size: .96rem; }
+      .spec-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <header class="hero">
+    <div class="hero-inner">
+      <div>
+        <h1>ماژول شارژ هوشمند SBM_256</h1>
+        <p>
+          شارژر سوئیچینگ برای باتری‌های <b>1 تا 4 سل</b> با <b>مدیریت مسیر توان</b>، <b>MPPT برای پنل خورشیدی</b>، DPM، OTG و <b>مانیتورینگ دقیق</b> ولتاژ، جریان و دما.
+        </p>
+        <div class="hero-badges">
+          <span class="badge">🔋 1 تا 4 سل</span>
+          <span class="badge">☀️ MPPT خورشیدی</span>
+          <span class="badge">⚡ Power Path</span>
+          <span class="badge">📡 مانیتورینگ وب</span>
+          <span class="badge">🧠 ESP32</span>
+        </div>
+        </div>
+
+      <aside class="hero-panel">
+        <div class="panel-title">خلاصه مشخصات کلیدی</div>
+        <div class="spec-grid">
+          <div class="spec-card"><span class="label">ورودی</span><span class="value">3.6V تا 24V</span></div>
+          <div class="spec-card"><span class="label">باتری</span><span class="value">1 تا 4 سل</span></div>
+          <div class="spec-card"><span class="label">توان</span><span class="value">تا 207.8W</span></div>
+          <div class="spec-card"><span class="label">دمای کار</span><span class="value">-40 تا +85°C</span></div>
+        </div>
+      </aside>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="card-section">
+      <h2 class="section-title">ویژگی‌های فنی و عملکرد</h2>
+      <p class="lead">
+        برد SBM_256 یک ماژول شارژر هوشمند باتری <b>1 تا 4 سل</b> است که علاوه بر شارژ هوشمند باتری، <b>منابع ورودی و خروجی را نیز مدیریت می‌کند</b> و با برنامه تحت وب خود امکان <b>دیدن وضعیت سیستم و تغییر پارامترهای شارژ و سیستم</b> را فراهم می‌کند.
+      </p>
+
+      <div class="top-features">
+        <div class="feature-pill"><strong>ESP32</strong><span>پردازنده و رابط وب</span></div>
+        <div class="feature-pill"><strong>NVDC</strong><span>قطع باتری زمان پر بودن</span></div>
+        <div class="feature-pill"><strong>DPM</strong><span>مدیریت توان ورودی</span></div>
+        <div class="feature-pill"><strong>ADC</strong><span>مانیتورینگ ولتاژ و جریان</span></div>
+        <div class="feature-pill"><strong>POWERPATH</strong><span>سوییچ بدون خاموشی</span></div>
+      </div>
+
+      <div class="grid" style="margin-top: 1rem;">
+        <div class="info-box">
+          <h3>نکات برجسته</h3>
+          <ul class="main-list">
+            <li>پشتیبانی از پردازنده قدرتمند <b>ESP32</b></li>
+            <li><b>تصویرسازی مسیر توان</b> (Power Path Visualization) به صورت زنده
+              <div class="gallery">
+                <div class="gallery-item" onclick="openModal(this)">
+                  <img src="C:\Users\AmirH\Desktop\bq25672_image\UI\GIF-260318_164126.gif" alt="نمایش درحال شارژ باتری و تغذیه خروجی توسط آداپتور">
+                </div>
+                <div class="gallery-item" onclick="openModal(this)">
+                  <img src="C:\Users\AmirH\Desktop\bq25672_image\UI\GIF-260318_164806.gif" alt="قطع کردن آداپتور بدلیل ولتاژ زیاد آداپتور و استفاده خودکار از باتری بدون خاموش شدن خروجی">
+                </div>
+                <div class="gallery-item" onclick="openModal(this)">
+                  <img src="C:\Users\AmirH\Desktop\bq25672_image\UI\GIF-260318_170032.gif" alt="استفاده از باتری و آداپتور بطور همزمان بدلیل کمبود توان آداپتور">
+                </div>
+              </div>
+            </li>
+            <li><b>مدیریت آسان و تحت وب</b> رجیسترها
+              <div class="gallery">
+                <div class="gallery-item" onclick="openModal(this)">
+                  <img src="C:\Users\AmirH\Desktop\bq25672_image\UI\Screenshot_20260317_165123_Chrome.jpg" alt="نمایش اطلاعات حیاتی شامل ولتاژ ورودی و خروجی و....">
+                </div>
+                <div class="gallery-item" onclick="openModal(this)">
+                  <img src="C:\Users\AmirH\Desktop\bq25672_image\UI\Screenshot_20260317_165238_Chrome.jpg" alt="ویراش تعداد سلول های باتری">
+                </div>
+                <div class="gallery-item" onclick="openModal(this)">
+                  <img src="C:\Users\AmirH\Desktop\bq25672_image\UI\Screenshot_20260318_171857_Chrome.jpg" alt="پنل مدیریت رجیسترها">
+                </div>
+              </div>
+            </li>
+            <li>اتصال باتری <b>1 تا 4 سل</b> (تا 18.8V)</li>
+            <li>منبع تغذیه ورودی از <b>3.6V تا 24V</b></li>
+            <li>خروجی، از کمترین مقدار ولتاژ باتری <b>0 تا 19V</b></li>
+            <li>حداکثر جریان خروجی در حالت آداپتور تا <b>5A</b> (توصیه شده و مجاز) و <b>6A</b> در حالت باتری (تا 10A برای 1 ثانیه) و <b>11A</b> در حالت استفاده از هر دو</li>
+            <li>حداکثر توان خروجی در حالت آداپتور <b>95W</b> و در حالت باتری <b>112.8W</b> و در حالت استفاده از باتری و آداپتور <b>207.8W</b></li>
+            <li>جریان مصرفی در حالت خواب <b>500nA</b> و در حالت ship mode (نیمه‌خواب) <b>17uA</b></li>
+            <li>کار در دمای <b>-40 تا +85 درجه سانتی‌گراد</b></li>
+            <li>دارای قابلیت <b>خودکار و دستی</b> (با استفاده از I2C)
+              <div class="gallery">
+                <div class="gallery-item" onclick="openModal(this)">
+                  <img src="C:\Users\AmirH\Desktop\bq25672_image\Screenshot 2026-03-24 094023.png" alt="زمان عملکرد در حالت خودکار و درحالت دستی">
+                </div>
+              </div>
+            </li>
+            <li>امکان <b>تغییر پارامترهای شارژ و مانیتورینگ جریان و ولتاژ</b> و وضعیت کلی توسط برنامه تحت وب با ESP32</li>
+            <li><b>96.5% بهره‌وری</b> در زمان شارژ باتری 4 سل و جریان شارژ 3A و ولتاژ ورودی 20V</li>
+            <li>امکان اتصال <b>همزمان دو آداپتور</b></li>
+            <li>ساپورت انواع ولتاژ ورودی
+              <ul>
+                <li>اندازه‌گیری ولتاژ بدون بار و استفاده از <b>الگوریتم MPPT</b> برای شارژ با پنل‌های خورشیدی</li>
+                <li><b>3.6V تا 24V</b> ورودی با حداکثر ولتاژ ورودی تا 30V</li>
+                <li>امکان اندازه‌گیری حداکثر توان آداپتور ناشناس همراه با قابلیت <b>DPM</b> برای کنترل ولتاژ و جریان منبع ورودی</li>
+                <li>تشخیص USB BC1.2، HVDCP و آداپتورهای غیر استاندارد</li>
+              </ul>
+            </li>
+            <li>دارای <b>Narrow Voltage DC (NVDC) Power Path</b> برای استفاده از آداپتور یا باتری یا هر دو برای تغذیه خروجی و <b>سوئیچ بین آن‌ها بدون خاموشی خروجی</b>.</li>
+            <li>امکان تغذیه ورودی در <b>حالت OTG</b> با مبدل buck-boost از 2.8V تا 22V با حداکثر جریان 2A
+            </li>
+            <li>دارای مبدل آنالوگ به دیجیتال <b>ADC</b> برای مانیتورینگ ولتاژ و جریان و دما در ورودی و خروجی و باتری و خود آی‌سی</li>
+            <li>دارای <b>20 محافظ</b>
+              <ul>
+                <li>اضافه‌ولتاژ و جریان در ورودی و خروجی و باتری و مبدل درون آی‌سی</li>
+                <li>دمای باتری</li>
+                <li>دمای آی‌سی</li>
+                <li>تایمر امنیتی شارژ</li>
+              </ul>
+            </li>
+            <li>امکان <b>اتصال ESP32</b> به برد و راه‌اندازی <b>برنامه تحت وب</b> برای مدیریت و مشاهده وضعیت و مسیرهای بین آداپتور، باتری و خروجی به صورت رایگان</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section class="card-section">
+      <h2 class="section-title">گالری تصاویر برد</h2>
+      <p class="lead">برای مشاهده سایز اصلی و انیمیشن‌ها، روی تصاویر زیر کلیک کنید:</p>
+      <div class="gallery">
+        <div class="gallery-item" onclick="openModal(this)">
+          <img src="C:\Users\AmirH\Desktop\bq25672_image\20260317_154604(1).png" alt="نمای کلی سخت‌افزار برد">
+        </div>
+        <div class="gallery-item" onclick="openModal(this)">
+          <img src="C:\Users\AmirH\Desktop\bq25672_image\20260317_155449.png" alt="نمای برد">
+        </div>
+        <div class="gallery-item" onclick="openModal(this)">
+          <img src="C:\Users\AmirH\Desktop\bq25672_image\20260317_154800(1).png" alt="نمای برد">
+        </div>
+        <div class="gallery-item" onclick="openModal(this)">
+          <img src="C:\Users\AmirH\Desktop\bq25672_image\20260317_154454.png" alt="نمای برد">
+        </div>
+      </div>
+    </section>
+
+    <section class="card-section">
+      <h2 class="section-title">کاربردها</h2>
+      <p class="lead">این ماژول در هر دستگاهی که باتری لیتیوم و لیتیوم-یون دارند قابل استفاده است.</p>
+
+      <div class="gallery">
+        <div class="gallery-item" onclick="openModal(this)">
+          <img src="C:\Users\AmirH\Desktop\bq25672_image\Screenshot 2026-03-24 093811.png" alt="منطق عملکرد ماژول">
+        </div>
+        <div class="gallery-item" onclick="openModal(this)">
+          <img src="C:\Users\AmirH\Desktop\bq25672_image\Screenshot 2026-03-24 093555.png" alt="منطق عملکرد ماژول">
+        </div>
+        <div class="gallery-item" onclick="openModal(this)">
+          <img src="C:\Users\AmirH\Desktop\bq25672_image\Screenshot 2026-03-24 110039.png" alt="منطق عملکرد ماژول">
+        </div>
+        <div class="gallery-item" onclick="openModal(this)">
+          <img src="C:\Users\AmirH\Desktop\bq25672_image\Screenshot 2026-03-24 105628.png" alt="منطق عملکرد ماژول">
+        </div>
+      </div>
+
+      <ul id="appsList" class="apps-list">
+        <li><span class="emoji-bullet">⚡</span><span>هر دستگاهی که بخواهد در زمان قطع ناگهانی منبع تغذیه ورودی یا باتری <b>بدون ریست شدن</b> به کار خود ادامه دهد.</span></li>
+        <li><span class="emoji-bullet">🔋</span><span>هر دستگاه باتری‌خوری که نیاز به <b>مدیریت منابع ورودی</b> (باتری، آداپتور، پنل خورشیدی) و مانیتورینگ آن‌ها را دارد.</span></li>
+        <li><span class="emoji-bullet">🤖</span><span>رباتیک</span></li>
+        <li><span class="emoji-bullet">🌐</span><span>IOT</span></li>
+        <li><span class="emoji-bullet">🔌</span><span>پاور بانک</span></li>
+        <li><span class="emoji-bullet">🧠</span><span>تغذیه بردهای دارای MCU</span></li>
+        <li><span class="emoji-bullet">🏠</span><span>خانه هوشمند</span></li>
+        <li><span class="emoji-bullet">📦</span><span>شارژر پرتابل باتری لیتیوم-یون</span></li>
+        <li><span class="emoji-bullet">☀️</span><span>شارژر خورشیدی برای پک باتری</span></li>
+        <li><span class="emoji-bullet">⚙️</span><span>ایستگاه شارژ قابل‌حمل</span></li>
+        <li class="hidden-item"><span class="emoji-bullet">🛡️</span><span>سیستم UPS کوچک برای مودم</span></li>
+        <li class="hidden-item"><span class="emoji-bullet">📶</span><span>روتر قابل‌حمل با باتری پشتیبان</span></li>
+        <li class="hidden-item"><span class="emoji-bullet">🛰️</span><span>گیت‌وی IoT با منبع برق و باتری</span></li>
+        <li class="hidden-item"><span class="emoji-bullet">🌿</span><span>نود سنسوری فضای باز</span></li>
+        <li class="hidden-item"><span class="emoji-bullet">🗄️</span><span>دیتالاگر صنعتی باتری‌خور</span></li>
+        <li class="hidden-item"><span class="emoji-bullet">🌡️</span><span>دستگاه مانیتورینگ دما و رطوبت</span></li>
+        <li class="hidden-item"><span class="emoji-bullet">📍</span><span>ردیاب GPS</span></li>
+        <li class="hidden-item"><span class="emoji-bullet">🚗</span><span>تله‌ماتیک خودرو</span></li>
+        <li class="hidden-item"><span class="emoji-bullet">📷</span><span>دوربین امنیتی باتری‌خور</span></li>
+        <li class="hidden-item"><span class="emoji-bullet">🌾</span><span>دوربین پایش مزرعه</span></li>
+        <li class="hidden-item"><span class="emoji-bullet">💡</span><span>چراغ اضطراری هوشمند</span></li>
+        <li class="hidden-item"><span class="emoji-bullet">🏕️</span><span>چراغ کمپینگ شارژی</span></li>
+        <li class="hidden-item"><span class="emoji-bullet">🔊</span><span>اسپیکر پرتابل</span></li>
+        <li class="hidden-item"><span class="emoji-bullet">🎚️</span><span>آمپلی‌فایر پرتابل</span></li>
+        <li class="hidden-item"><span class="emoji-bullet">🖥️</span><span>نمایشگر قابل‌حمل</span></li>
+        <li class="hidden-item"><span class="emoji-bullet">🏥</span><span>دستگاه ثبت داده پزشکی</span></li>
+        <li class="hidden-item"><span class="emoji-bullet">❤️</span><span>دستگاه ECG قابل‌حمل</span></li>
+        <li class="hidden-item"><span class="emoji-bullet">📈</span><span>مانیتور علائم حیاتی سیار</span></li>
+        <li class="hidden-item"><span class="emoji-bullet">🩺</span><span>ابزار تشخیص پزشکی باتری‌خور</span></li>
+        <li class="hidden-item"><span class="emoji-bullet">🔍</span><span>اسکنر دستی</span></li>
+        <li class="hidden-item"><span class="emoji-bullet">🖨️</span><span>پرینتر پرتابل کوچک</span></li>
+        <li class="hidden-item"><span class="emoji-bullet">💳</span><span>ترمینال فروش سیار</span></li>
+        <li class="hidden-item"><span class="emoji-bullet">🧾</span><span>دستگاه پوز قابل‌حمل</span></li>
+        <li class="hidden-item"><span class="emoji-bullet">🏪</span><span>کیوسک کوچک باتری‌دار</span></li>
+        <li class="hidden-item"><span class="emoji-bullet">🏭</span><span>کنترلر صنعتی با بکاپ باتری</span></li>
+        <li class="hidden-item"><span class="emoji-bullet">🎛️</span><span>پنل کنترل قابل‌حمل</span></li>
+        <li class="hidden-item"><span class="emoji-bullet">🧰</span><span>ابزار اندازه‌گیری دستی</span></li>
+        <li class="hidden-item"><span class="emoji-bullet">📏</span><span>مولتی‌متر حرفه‌ای شارژی</span></li>
+        <li class="hidden-item"><span class="emoji-bullet">📉</span><span>اسیلوسکوپ دستی</span></li>
+        <li class="hidden-item"><span class="emoji-bullet">🧪</span><span>لاجیک آنالایزر پرتابل</span></li>
+        <li class="hidden-item"><span class="emoji-bullet">🛠️</span><span>تجهیزات تست و کالیبراسیون</span></li>
+        <li class="hidden-item"><span class="emoji-bullet">🤖</span><span>ماژول شارژ برای ربات متحرک</span></li>
+        <li class="hidden-item"><span class="emoji-bullet">🧠</span><span>ربات آموزشی با پک باتری</span></li>
+        <li class="hidden-item"><span class="emoji-bullet">🚙</span><span>ربات خدماتی کوچک</span></li>
+        <li class="hidden-item"><span class="emoji-bullet">🛰️</span><span>پهپاد زمینی (UGV)</span></li>
+        <li class="hidden-item"><span class="emoji-bullet">🌞</span><span>سیستم ذخیره انرژی خورشیدی کوچک</span></li>
+        <li class="hidden-item"><span class="emoji-bullet">🔋</span><span>پاوراستیشن مینی</span></li>
+        <li class="hidden-item"><span class="emoji-bullet">📦</span><span>داک شارژ تجهیزات پرتابل</span></li>
+        <li class="hidden-item"><span class="emoji-bullet">🔗</span><span>هاب USB باتری‌دار</span></li>
+        <li class="hidden-item"><span class="emoji-bullet">🔄</span><span>مبدل تغذیه باتری به USB-C</span></li>
+        <li class="hidden-item"><span class="emoji-bullet">🎓</span><span>کیت توسعه الکترونیکی آموزشی</span></li>
+        <li class="hidden-item"><span class="emoji-bullet">🧪</span><span>برد آزمایشگاهی چندمنظوره</span></li>
+        <li class="hidden-item"><span class="emoji-bullet">⌚</span><span>لوازم پوشیدنی صنعتی</span></li>
+        <li class="hidden-item"><span class="emoji-bullet">🏷️</span><span>دستگاه ردیابی دارایی</span></li>
+        <li class="hidden-item"><span class="emoji-bullet">🔧</span><span>ماژول بکاپ برق برای تجهیزات شبکه</span></li>
+      </ul>
+
+      <button id="toggleAppsBtn" class="toggle-btn" type="button" aria-expanded="false">نمایش ۴۰ مورد بیشتر</button>
+      <div class="footer-note">این دکمه حالت باز/بسته را تغییر می‌دهد و فقط ۱۰ مورد اول را در حالت بسته نشان می‌دهد.</div>
+    </section>
+
+    <section class="card-section">
+      <h2 class="section-title">دیگر قابلیت ها و توضیحات تکمیلی</h2>
+      <p class="lead">این بخش خلاصه‌ای از قابلیت‌های کنترلی، حفاظتی، شارژ هوشمند و مانیتورینگ کامل ماژول را نشان می‌دهد.</p>
+
+      <div class="gallery">
+        <div class="gallery-item" onclick="openModal(this)">
+          <img src="C:\Users\AmirH\Desktop\bq25672_image\Screenshot 2026-03-25 110209.png" alt="منطق عملکرد ماژول">
+        </div>
+        <div class="gallery-item" onclick="openModal(this)">
+          <img src="C:\Users\AmirH\Desktop\bq25672_image\Screenshot 2026-03-25 105415.png" alt="منطق عملکرد ماژول">
+        </div>
+        <div class="gallery-item" onclick="openModal(this)">
+          <img src="C:\Users\AmirH\Desktop\bq25672_image\Screenshot 2026-03-25 102840.png" alt="منطق عملکرد ماژول">
+        </div>
+      </div>
+
+      <div class="info-box">
+        <ul class="main-list details-list">
+          <li>این ماژول علاوه بر امکان کنترل و مانیتور کاربر از طریق <b>رابط تحت وب یا I2C</b>، به‌صورت <b>خودکار</b> نیز کار می‌کند.</li>
+
+          <li>از باتری، ورودی (آداپتور)، خروجی و خود برد محافظت می‌کند و دارای <b>20 نوع محافظ</b> است:
+            <ul>
+              <li>اضافه ولتاژ و جریان ورودی</li>
+              <li>تشخیص آداپتور ضعیف</li>
+              <li>تشخیص نوع آداپتور ورودی</li>
+              <li>اضافه ولتاژ و جریان باتری</li>
+              <li>دمای باتری</li>
+              <li>اضافه ولتاژ و جریان خروجی</li>
+              <li>دمای خود IC</li>
+              <li>...</li>
+            </ul>
+            <div class="gallery">
+                <div class="gallery-item" onclick="openModal(this)">
+                  <img src="C:\Users\AmirH\Desktop\bq25672_image\Screenshot 2026-03-24 121030.png" alt="زمان عملکرد در حالت خودکار و درحالت دستی">
+                </div>
+            </div>
+          </li>
+
+          <li><b>تشخیص نوع آداپتور ورودی. </b> دانستن نوع منبع تغذیه در ورودی باعث می‌شود از <b>حداکثر توان منبع تغذیه</b> استفاده شود بدون اینکه به آن آسیب برسد.
+            <ul>
+              <li><b>آداپتور ناشناس:</b> مثل تغذیه‌های 12 یا 24 ولت یا هر تغذیه دیگری که غیر از پورت MICRO-USB روی برد به برد متصل شود.</li>
+              <li><b>SDP:</b> پورت‌های معمولی USB روی کامپیوترها و لپ‌تاپ‌های قدیمی‌تر.</li>
+              <li><b>CDP:</b> پورت‌های USB روی مانیتورهای مدرن یا پورت‌های دیتای داخل خودروهای جدید.</li>
+              <li><b>DCP:</b> شارژرهای دیواری USB دار معمولی.</li>
+              <li><b>HVDCP:</b> شارژرهای امروز گوشی‌های هوشمند که قابلیت Fast Charge دارند. در این حالت ماژول SBM_256 با شارژر وارد مکالمه می‌شود تا ولتاژ را از 5 ولت به 9 یا 12 ولت افزایش دهد تا توان بیشتری دریافت شود.</li>
+              <li><b>آداپتورهای غیر استاندارد</b> که از طریق مقاومت روی پایه‌های D+ و D- میزان جریان قابل ارائه خود را گزارش می‌دهند.</li>
+            </ul>
+            <div class="gallery">
+                <div class="gallery-item" onclick="openModal(this)">
+                  <img src="C:\Users\AmirH\Desktop\bq25672_image\Screenshot 2026-03-24 152659.png" alt="زمان عملکرد در حالت خودکار و درحالت دستی">
+                </div>
+            </div>
+          </li>
+
+          <li>امکان <b>تشخیص حداکثر توان منبع ورودی</b> یک منبع تغذیه نامشخص. با فعال کردن گزینه ICO توسط کاربر در پنل، ماژول به‌طور <b>خودکار</b> توان آداپتور را تشخیص می‌دهد و از جریان‌کشی بیش از حد یا استفاده نکردن از تمام توان جلوگیری می‌کند.
+            <div class="gallery">
+              <div class="gallery-item" onclick="openModal(this)">
+                <img src="C:\Users\AmirH\Desktop\bq25672_image\Screenshot 2026-03-24 154037.png" alt="تشخیص دقیق توان آداپتور.">
+              </div>
+              <div class="gallery-item" onclick="openModal(this)">
+                <img src="C:\Users\AmirH\Desktop\bq25672_image\Screenshot 2026-03-24 155620.png" alt="زمانی که ICO فعال شد مقدار واقعی جریان ورودی مشخص شد در بعضی از موارد کمتر و در بعضی از موارد بیشتر اما مقدار نهایی اعمال شده همیشه کمترین مقدار بین جریان تعیین شده روی برد توسط جامپر است یا توسط رجیستر">
+              </div>
+            </div>
+          </li>
+
+          <li>امکان <b>اتصال دو آداپتور</b>. (هر دو آداپتور، یکی آداپتور و یکی شارژر گوشی، یکی پنل خورشیدی و یکی آداپتور و ... هر ترکیبی میتوان ایجاد کرد)
+            <div class="gallery">
+                <div class="gallery-item" onclick="openModal(this)">
+                  <img src="C:\Users\AmirH\Desktop\bq25672_image\Screenshot 2026-03-24 160653.png" alt="زمان عملکرد در حالت خودکار و درحالت دستی">
+                </div>
+                <div class="gallery-item" onclick="openModal(this)">
+                  <img src="C:\Users\AmirH\Desktop\bq25672_image\Screenshot 2026-03-24 160939.png" alt="زمان عملکرد در حالت خودکار و درحالت دستی">
+                </div>
+                <div class="gallery-item" onclick="openModal(this)">
+                  <img src="C:\Users\AmirH\Desktop\bq25672_image\Screenshot 2026-03-24 161025.png" alt="زمان عملکرد در حالت خودکار و درحالت دستی">
+                </div>
+                <div class="gallery-item" onclick="openModal(this)">
+                  <img src="C:\Users\AmirH\Desktop\bq25672_image\Screenshot 2026-03-24 161139.png" alt="زمان عملکرد در حالت خودکار و درحالت دستی">
+                </div>
+                <div class="gallery-item" onclick="openModal(this)">
+                  <img src="C:\Users\AmirH\Desktop\bq25672_image\Screenshot 2026-03-24 161316.png" alt="زمان عملکرد در حالت خودکار و درحالت دستی">
+                </div>
+            </div>
+          </li>
+
+          <li>امکان <b>اتصال پنل خورشیدی و مدیریت آن با استفاده از MPPT</b>، بدون هیچ برد یا ماژول اضافه‌ای.
+            <ul>
+              <li>با فعال‌سازی این قابلیت در برنامه تحت وب، شارژر به‌طور <b>خودکار توان ورودی را اندازه‌گیری می‌کند</b> تا:</li>
+              <li>در زمان نور بیشتر، توان بیشتری بکشد برای شارژ باتری یا خروجی.</li>
+              <li>زمانی که نور کمتر است، از جریان‌کشی زیاد و در نتیجه <b>فشار به پنل جلوگیری کند</b>.</li>
+            </ul>
+            <div class="gallery">
+                <div class="gallery-item" onclick="openModal(this)">
+                  <img src="C:\Users\AmirH\Desktop\bq25672_image\IV_curve_solar_cell.png" alt="دلیل استفاده از MPPT، حداکثر توان خروجی پنل در صد در صد ولتاژ پنل بدست نمی آید بلکه در 70%-90% بدست می آید">
+                </div>
+            </div>
+          </li>
+
+          <li>دارای <b>قابلیت POWERPATH</b> است. از باتری یا آداپتور یا هر دو برای تغذیه SYS استفاده می‌کند و باعث می‌شود SYS (خروجی) <b>همیشه روشن باشد</b>. زمانی که آداپتور از برق کشیده شود، به‌طور خودکار روی باتری سوییچ می‌کند <b>بدون اینکه میکروکنترلر یا هر چیز دیگری که در خروجی هست خاموش شود</b>.
+            <ul>
+              <li><b>فناوری Narrow Voltage DC Architecture</b></li>
+              <li>اگر باتری پر باشد، <b>باتری را جدا می‌کند</b> تا تخلیه و شارژ نشود و سلامت آن حفظ شود. از آداپتور برای تأمین خروجی استفاده می‌کند.</li>
+              <li>اگر توان مورد نیاز شارژ باتری و توان مورد نیاز خروجی از توان آداپتور کمتر یا برابر باشد، آداپتور برای شارژ باتری و تأمین خروجی استفاده می‌شود.</li>
+              <li><b>Dynamic Power Management</b></li>
+              <li>اگر توان مورد نیاز شارژ باتری و خروجی از توان آداپتور بیشتر باشد، ولتاژ ورودی را در یک سطح ثابت نگه می‌دارد و نمی‌گذارد ولتاژ منبع تغذیه ورودی افت کند و <b>به آداپتور فشار بیاید</b>. در این حالت جریان شارژ باتری را کم می‌کند.</li>
+              <li>اگر جریان شارژ باتری به صفر رسید اما باز هم جریان بیشتری در خروجی نیاز است، وارد حالت Supplement (کمکی) می‌شود. در این حالت <b>باتری + آداپتور</b> توان مورد نیاز SYS خروجی را تأمین می‌کنند.</li>
+            </ul>
+            <div class="gallery">
+              <div class="gallery-item" onclick="openModal(this)">
+                <img src="C:\Users\AmirH\Desktop\bq25672_image\UI\Screen_Recording_20260317_180150_Chrome_1-ezgif.com-video-to-gif-converter.gif" alt="فقط استفاده باتری">
+              </div>
+              <div class="gallery-item" onclick="openModal(this)">
+                <img src="C:\Users\AmirH\Desktop\bq25672_image\UI\Screen_Recording_20260317_170325_Chrome_1-ezgif.com-video-to-gif-converter.gif" alt="آداپتور توان مورد نیاز خروجی را نداشته برای همین افت ولتاژ پیدا میکند، ماژول هم برای جلوگیری از تحت فشار بودن آداپتور، باتری را وارد مدار میکند تا توان مورد نیاز خروجی توسط هم باتری و هم آداپتور فراهم شود">
+              </div>
+              <div class="gallery-item" onclick="openModal(this)">
+                <img src="C:\Users\AmirH\Desktop\bq25672_image\UI\Screen_Recording_20260317_170730_Chrome_1-ezgif.com-video-to-gif-converter.gif" alt="تنها استفاده از باتری">
+              </div>
+              <div class="gallery-item" onclick="openModal(this)">
+                <img src="C:\Users\AmirH\Desktop\bq25672_image\Screenshot 2026-03-25 114105.png" alt="نسبت ولتاژ خروجی به ولتاژ باتری در زمان شارژ و غیرفعال بودن شارژ">
+              </div>
+              <div class="gallery-item" onclick="openModal(this)">
+                <img src="C:\Users\AmirH\Desktop\bq25672_image\Screenshot 2026-03-25 114357.png" alt="عملکرد قابلیت 'مدیریت پویا توان'">
+              </div>
+            </div>
+          </li>
+
+          <li><b>شارژ باتری در 5 مرحله انجام می‌شود</b>: شارژ قطره‌ای، پیش‌شارژ، فست شارژ، شارژ با ولتاژ ثابت و شارژ تکمیلی.
+            <ul>
+              <li><b>Trickle Charge (شارژ قطره):</b> زمانی که ولتاژ باتری یا باتری‌ها خیلی پایین است، کمتر از 2.25V برای هر سل، عملیات شارژ از این مرحله شروع می‌شود. در این مرحله شارژ با جریان ثابت 100mA انجام می‌شود. همچنین قبل از ورود به مرحله بعدی شارژ (پیش‌شارژ) برای یک بازه زمانی ولتاژ 2.5V به ازای هر سل اعمال می‌کند تا برای جریان‌های بالاتر در مراحل بعدی آماده شود.</li>
+              <li><b>Pre-charge (مرحله پیش‌شارژ)</b></li>
+              <li><b>Fast Charge (شارژ سریع):</b> در مرحله شارژ سریع باتری با جریان ثابت قابل تنظیم در برنامه وب تا 3A شارژ می‌شود. زمانی که باتری، برای مثال یک باتری 3 سل، به ولتاژ 9V برسد تا خود ولتاژ شارژ (12.6V) در این مرحله قرار می‌گیرد و شارژر با نگه‌داشتن جریان باتری سرعت شارژ را بالا می‌برد.</li>
+              <li><b>Taper Charge (شارژ با ولتاژ ثابت):</b> بعد از اینکه ولتاژ باتری به ولتاژ شارژ خود رسید، شارژر ولتاژ شارژ باتری را ثابت نگه می‌دارد. با این کار باتری با پر شدن در گذر زمان جریان کمتری می‌کشد و زمانی که جریان شارژ باتری از آستانه ITERM (در برنامه قابل تنظیم است، پیش‌فرض 200mA) پایین‌تر شود، شارژر <b>پایان شارژ</b> را اعلام می‌کند، باتری را جدا می‌کند و آداپتور وظیفه تغذیه SYS (خروجی) را دارد تا باتری استفاده نشود. البته کاربر می‌تواند در برنامه وب از پایان شارژ جلوگیری کند تا باتری همیشه در حال شارژ باشد یا الگوریتم پایان شارژ اختصاصی خود را اعمال کند.</li>
+              <li><b>Top Off Timer (تایمر تکمیلی):</b> این تایمر یک <b>مرحله اختیاری</b> است که کاربر می‌تواند درون برنامه تحت وب آن را فعال کند. با فعال کردن این گزینه، شارژر زمانی که پر شدن باتری را حس کند این تایمر را فعال می‌کند و زمانی که تایمر به 0 برسد پایان شارژ را اعلام می‌کند. این قابلیت اختیاری برای جلوگیری از خطای ذاتی comparatorهای درون شارژر است که باعث می‌شود پایان شارژ 20 تا 40 درصد زودتر اعمال شود.</li>
+            </ul>
+            <div class="gallery">
+              <div class="gallery-item" onclick="openModal(this)">
+                <img src="C:\Users\AmirH\Desktop\bq25672_image\Screenshot 2026-03-25 162217.png" alt="توضیح مراحل شارژ">
+              </div>
+            </div>
+          </li>
+
+          <li><b>تایمرهای امنیتی (Safety Timer)</b> برای مراحل شارژ باتری.
+            <ul>
+              <li>هر 5 مرحله شارژ تایمر امنیتی دارند. تایمر امنیتی برای جلوگیری از طولانی شدن مراحل شارژ به‌دلیل شرایط غیر نرمال باتری است. یک باتری سالم باید مراحل شارژ قطره، پیش‌شارژ، شارژ سریع و شارژ با ولتاژ ثابت را به ترتیب در 1 ساعت، 2 ساعت (پیش‌فرض) یا 30 دقیقه (قابل تنظیم در برنامه وب)، و 12 ساعت (برای مراحل شارژ سریع تا آخر) طی کند.</li>
+              <li>زمانی که باتری در بازه زمانی تعیین‌شده به مرحله بعدی شارژ نرود:
+                <ul>
+                  <li>شارژر <b>شارژ باتری را متوقف می‌کند</b>.</li>
+                  <li>چراغ روی برد چشمک می‌زند و <b>پیغام در برنامه وب ارسال می‌شود</b>.</li>
+                </ul>
+              </li>
+            </ul>
+            <div class="gallery">
+              <div class="gallery-item" onclick="openModal(this)">
+                <img src="C:\Users\AmirH\Desktop\bq25672_image\Screenshot 2026-03-25 155449.png" alt="تایمر امنیتی شارژ">
+              </div>
+            </div>
+          </li>
+
+          <li><b>اتصال دماسنج به برد برای شارژ بر اساس دمای باتری طبق استاندارد JEITA.</b>
+            <ul>
+              <li>دماسنج (همراه با ماژول ارسال می‌شود) داخل پک باتری قرار می‌گیرد تا عملیات‌هایی مثل شارژ باتری و تخلیه باتری در حالت OTG کنترل شود.</li>
+              <li>زمانی که دمای باتری بین 10 درجه تا 0 درجه باشد، <b>جریان شارژ باتری حدود 20 درصد جریان شارژ اصلی باتری می‌شود</b>. مثلاً اگر 3A بوده، 600mA تنظیم می‌شود تا از آسیب به باتری جلوگیری شود.</li>
+              <li>زمانی که دمای باتری بین 45 تا 60 درجه است، در محدوده دمایی گرم مطابق <b>استاندارد JEITA</b> قرار دارد. در این مرحله ولتاژ شارژ را <b>400mV کمتر</b> از ولتاژ شارژ اصلی قرار می‌دهد تا از آسیب به باتری جلوگیری کند. همچنین در برنامه وب می‌توان جریان شارژ در این دما را که به‌طور پیش‌فرض بدون تغییر است تنظیم کرد تا جریان شارژ نیز ایمن شود و به سلامت باتری کمک کند.</li>
+              <li>زمانی که دمای باتری <b>خیلی سرد</b> باشد (پایین‌تر از 0 درجه) یا <b>خیلی گرم</b> باشد (بیشتر از 60 درجه)، عملیات شارژ <b>متوقف می‌شود</b> و زمانی که دمای باتری نرمال شد ادامه پیدا می‌کند.</li>
+              <li>در حالت OTG اگر دمای باتری به دمای -10 درجه سانتی‌گراد برسد، <b>حالت OTG به حالت تعلیق در می‌آید</b> برای جلوگیری از آسیب به باتری به دلیل دمای خیلی سرد.</li>
+              <li>در حالت OTG اگر دمای باتری به 60 درجه برسد، <b>حالت OTG به حالت تعلیق در می‌آید</b> برای جلوگیری از آسیب به باتری به دلیل دمای خیلی گرم.</li>
+            </ul>
+            <div class="gallery">
+              <div class="gallery-item" onclick="openModal(this)">
+                <img src="C:\Users\AmirH\Desktop\bq25672_image\Screenshot 2026-03-26 084714.png" alt="نحوه اتصال دماسنج به باتری و ماژول">
+              </div>
+              <div class="gallery-item" onclick="openModal(this)">
+                <img src="C:\Users\AmirH\Desktop\bq25672_image\Screenshot 2026-03-26 085458.png" alt="تاثیر دما بر جریان شارژ باتری">
+              </div>
+              <div class="gallery-item" onclick="openModal(this)">
+                <img src="C:\Users\AmirH\Desktop\bq25672_image\Screenshot 2026-03-26 090001.png" alt="تاثیر دما بر ولتاژ شارژ باتری">
+              </div>
+            </div>
+          </li>
+
+          <li><b>مبدل آنالوگ به دیجیتال (ADC)</b> برای مانیتور کردن ولتاژ، جریان و دما در ورودی‌ها، خروجی و باتری. لیست کامل ADC:
+            <ul>
+              <li>ولتاژ ورودی (زمانی که یک آداپتور بدون MOSFETها وصل هستند)</li>
+              <li>جریان ورودی(هم ورودی و هم در حالت OTG و PMID)</li>
+              <li>ولتاژ باتری</li>
+              <li>جریان باتری (شارژ و دشارژ)</li>
+              <li>ولتاژ خروجی</li>
+              <li>دمای خود IC</li>
+              <li>دمای باتری</li>
+              <li>ولتاژ ورودی 1</li>
+              <li>ولتاژ ورودی 2</li>
+              <li>ولتاژ روی پین‌های D+ و D- (برای پورت USB)</li>
+            </ul>
+            <div class="gallery">
+              <div class="gallery-item" onclick="openModal(this)">
+                <img src="C:\Users\AmirH\Desktop\bq25672_image\Screenshot 2026-03-26 093441.png" alt="تمام مبدل های ADC در یک نگاه">
+              </div>
+            </div>
+          </li>
+
+          <li><b>قابلیت Default Mode؛</b> کاربر نیاز به اتصال ESP32 و کنترل شارژر ندارد و <b>همه کارها به‌صورت خودکار انجام می‌شود</b>.
+            <div class="gallery">
+              <div class="gallery-item" onclick="openModal(this)">
+                <img src="C:\Users\AmirH\Desktop\bq25672_image\Screenshot 2026-03-26 103848.png" alt="استفاده از ماژول در حالت خودکار">
+              </div>
+            </div>
+          </li>
+          <li>MOSFET داخلی BATFET با مقاومت داخلی 11 میلی‌اهم برای <b>حداکثر رساندن اتلاف انرژی</b>.</li>
+          <li>امکان <b>قطع کردن آداپتور</b> از طریق جامپر روی برد یا برنامه تحت وب، بدون نیاز به برق کشیدن آن.
+            <div class="gallery">
+              <div class="gallery-item" onclick="openModal(this)">
+                <img src="C:\Users\AmirH\Desktop\bq25672_image\Screenshot 2026-03-26 104630.png" alt="قرار دادن روی حالت ایزوله ورودی بصورت سخت افزاری">
+              </div>
+              <div class="gallery-item" onclick="openModal(this)">
+                <img src="C:\Users\AmirH\Desktop\bq25672_image\UI\Screenshot_20260326_104809_Chrome.jpg" alt="از طریق نرم افزار">
+              </div>
+            </div>
+          </li>
+          <li>امکان <b>تنظیم فقط استفاده از باتری</b>.</li>
+          <li>اندازه‌گیری ولتاژ آداپتور در حالت بدون بار و تنظیم آستانه مجاز افت ولتاژ ورودی برای <b>محافظت از اتصال کوتاه</b>.</li>
+          <li><b>تشخیص خودکار</b> حضور باتری و منبع تغذیه ورودی.</li>
+          <li>امکان تنظیم به <b>حالت OTG</b> در برنامه تحت وب. در این حالت باتری علاوه بر تغذیه خروجی (SYS) می‌تواند با مبدل buck-boost خود ولتاژ 2.8 تا 22 ولت را در ورودی تنظیم کند. برای کاربردهای <b>USB OTG</b>.
+            <ul>
+              <li>امکان <b>تنظیم جریان</b> در حالت OTG</li>
+              <li>همچنین با امکان خواندن و نوشتن روی پین‌های D+ و D- توسعه‌دهندگان می‌توانند یک <b>پاوربانک</b> درست کنند.</li>
+              <li>امکان تنظیم جریان تخلیه باتری در حالت OTG</li>
+            </ul>
+            <div class="gallery">
+              <div class="gallery-item" onclick="openModal(this)">
+                <img src="C:/Users/AmirH/Desktop/bq25672_image/Screenshot%202026-03-24%20105628.png" alt="منطق حالت OTG">
+              </div>
+              <div class="gallery-item" onclick="openModal(this)">
+                <img src="C:\Users\AmirH\Desktop\bq25672_image\UI\Screen_Recording_20260317_170914_Chrome-ezgif.com-video-to-gif-converter.gif" alt="منطق حالت OTG">
+              </div>
+            </div>
+          </li>
+
+          <li>امکان <b>غیرفعال‌سازی پایان شارژ</b> زمانی که می‌خواهیم باتری همیشه پر باشد یا <b>الگوریتم اختصاصی پایان شارژ</b> طراحی کنیم.</li>
+
+          <li>چراغ روی برد برای <b>نمایش وضعیت کلی دستگاه</b>:
+            <ul>
+              <li>زمانی که شارژ می‌شود روشن است.</li>
+              <li>زمانی که شارژ نمی‌شود (باتری پر است یا شارژ غیرفعال است) خاموش است.</li>
+              <li>زمانی که <b>خطایی رخ داده</b> که باعث عدم شارژ شود چراغ چشمک می‌زند.</li>
+            </ul>
+          </li>
+
+          <li>دارای <b>پین وقفه INT</b> و <b>رجیسترهای STAT و FLAG</b> برای اطلاع‌رسانی از وضعیت رجیسترها.</li>
+
+          <li>دارای <b>MOSFET خارجی SFET</b> برای باتری:
+            <ul>
+              <li>زمانی که می‌خواهیم دستگاه را به <b>خواب عمیق</b> ببریم (جریان مصرفی در این حالت 500nA، نگهداری 1 سل به مدت 708 سال)</li>
+              <li>زمانی که می‌خواهیم دستگاه را به <b>حالت نیمه‌خواب</b> ببریم؛ در این حالت برد با دکمه روی برد یا از طریق I2C می‌تواند بیدار شود (جریان مصرفی در این حالت 17uA)</li>
+              <li>زمانی که می‌خواهیم خروجی را <b>ریست</b> کنیم، این کار با دکمه روی برد و I2C امکان‌پذیر است</li>
+              <li>برای <b>محافظت از باتری</b> در مقابل اضافه‌جریان تخلیه</li>
+            </ul>
+            <div class="gallery">
+              <div class="gallery-item" onclick="openModal(this)">
+                <img src="C:\Users\AmirH\Desktop\bq25672_image\Screenshot 2026-03-28 100129.png" alt="کلید خواب، خواب عمیق و ریست خروجی">
+              </div>
+              <div class="gallery-item" onclick="openModal(this)">
+                <img src="C:\Users\AmirH\Desktop\bq25672_image\Screenshot 2026-03-28 100324.png" alt="تفاوت استفاده از قابلیت خواب و بخواب نبرد در هنگام فروش محصول">
+              </div>
+              <div class="gallery-item" onclick="openModal(this)">
+                <img src="C:\Users\AmirH\Desktop\bq25672_image\Screenshot 2026-03-28 102326.png" alt="چه چیزی به خواب برده میشود">
+              </div>
+            </div>
+          </li>
+
+          <li>امکان <b>ریست کردن پارامترهای تغییر داده شده</b> در برنامه تحت وب.</li>
+        </ul>
+      </div>
+    </section>
+  </main>
+
+  <div id="imageModal" class="modal" aria-hidden="true">
+    <span class="close-btn" onclick="closeModal()" aria-label="بستن">&times;</span>
+    <img class="modal-content" id="expandedImg" alt="نمایش بزرگ تصویر" />
+    <div id="caption"></div>
+  </div>
+
+  <script>
+    const modal = document.getElementById('imageModal');
+    const modalImg = document.getElementById('expandedImg');
+    const captionText = document.getElementById('caption');
+
+    function openModal(element) {
+      const img = element.querySelector('img');
+      if (!img) return;
+      modal.style.display = 'block';
+      modal.setAttribute('aria-hidden', 'false');
+      modalImg.src = img.src;
+      modalImg.alt = img.alt || 'نمایش بزرگ تصویر';
+      captionText.textContent = img.alt || '';
+    }
+
+    function closeModal() {
+      modal.style.display = 'none';
+      modal.setAttribute('aria-hidden', 'true');
+      modalImg.src = '';
+      captionText.textContent = '';
+    }
+
+    window.addEventListener('click', function (event) {
+      if (event.target === modal) closeModal();
+    });
+
+    document.addEventListener('keydown', function (event) {
+      if (event.key === 'Escape') closeModal();
+    });
+
+    const appsList = document.getElementById('appsList');
+    const toggleAppsBtn = document.getElementById('toggleAppsBtn');
+    let appsExpanded = false;
+
+    function updateAppsList() {
+      const items = appsList.querySelectorAll('li');
+      items.forEach((li, index) => {
+        if (index < 10) {
+          li.classList.remove('hidden-item');
+        } else {
+          li.classList.toggle('hidden-item', !appsExpanded);
+        }
+      });
+
+      toggleAppsBtn.textContent = appsExpanded ? 'جمع کردن لیست' : 'نمایش ۴۰ مورد بیشتر';
+      toggleAppsBtn.setAttribute('aria-expanded', String(appsExpanded));
+    }
+
+    toggleAppsBtn.addEventListener('click', function () {
+      appsExpanded = !appsExpanded;
+      updateAppsList();
+    });
+
+    updateAppsList();
+  </script>
+</body>
+</html>
